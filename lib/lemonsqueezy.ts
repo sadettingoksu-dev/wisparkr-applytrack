@@ -1,0 +1,39 @@
+import { lemonSqueezySetup, createCheckout } from '@lemonsqueezy/lemonsqueezy.js'
+
+export function isLemonSqueezyConfigured(): boolean {
+  return Boolean(process.env.LEMONSQUEEZY_API_KEY && process.env.LEMONSQUEEZY_STORE_ID)
+}
+
+function setup() {
+  lemonSqueezySetup({ apiKey: process.env.LEMONSQUEEZY_API_KEY! })
+}
+
+/**
+ * Creates a Lemon Squeezy checkout session for the given variant and
+ * returns the hosted checkout URL. `userId`/`email` are passed as custom
+ * data so the webhook can map the resulting subscription back to a profile.
+ */
+export async function createCheckoutUrl(params: {
+  variantId: string
+  userId: string
+  email: string
+}): Promise<string> {
+  setup()
+  const storeId = Number(process.env.LEMONSQUEEZY_STORE_ID)
+
+  const { data, error } = await createCheckout(storeId, Number(params.variantId), {
+    checkoutData: {
+      email: params.email,
+      custom: { user_id: params.userId },
+    },
+    productOptions: {
+      redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`,
+    },
+  })
+
+  if (error || !data) {
+    throw new Error(error?.message || 'Lemon Squeezy checkout creation failed')
+  }
+
+  return data.data.attributes.url
+}
