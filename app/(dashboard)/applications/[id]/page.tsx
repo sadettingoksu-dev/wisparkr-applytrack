@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { FitScoreCard } from '@/components/cv/FitScoreCard'
 import { AIChatPanel } from '@/components/chat/AIChatPanel'
+import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
 import type { Application, AiMessage } from '@/lib/types'
 
@@ -34,7 +35,10 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
             <h1 className="text-2xl font-bold text-slate-800">{app.position_title}</h1>
             <p className="text-sm text-slate-500">{app.company_name}</p>
           </div>
-          <Badge className={STATUS_BADGE_CLASSES[app.status]}>{STATUS_LABELS[app.status]}</Badge>
+          <div className="flex items-center gap-3">
+            <Badge className={STATUS_BADGE_CLASSES[app.status]}>{STATUS_LABELS[app.status]}</Badge>
+            <DeleteApplicationButton applicationId={app.id} />
+          </div>
         </div>
 
         <Card className="space-y-2">

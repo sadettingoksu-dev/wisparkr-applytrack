@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Github } from 'lucide-react'
+import { GoogleIcon } from '@/components/icons/GoogleIcon'
 import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -42,6 +43,14 @@ export default function LoginPage() {
     })
   }
 
+  async function handleGoogleLogin() {
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-purple-50 px-6">
       <Card className="w-full max-w-sm space-y-6">
@@ -70,6 +79,11 @@ export default function LoginPage() {
             Giriş Yap
           </Button>
         </form>
+
+        <Button variant="secondary" className="w-full" onClick={handleGoogleLogin}>
+          <GoogleIcon className="h-4 w-4" />
+          Google ile Giriş Yap
+        </Button>
 
         <Button variant="secondary" className="w-full" onClick={handleGitHubLogin}>
           <Github className="h-4 w-4" />

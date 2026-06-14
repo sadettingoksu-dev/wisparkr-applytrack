@@ -1,7 +1,16 @@
-import { Briefcase, MessageSquare, Trophy, TrendingUp } from 'lucide-react'
+import Link from 'next/link'
+import { Briefcase, MessageSquare, Trophy, TrendingUp, Send, ListChecks } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { MetricCard } from '@/components/dashboard/MetricCard'
+import { Card } from '@/components/ui/Card'
+import { generateTasks, type PlannerTaskKind } from '@/lib/planner'
 import type { Application } from '@/lib/types'
+
+const TASK_ICONS: Record<PlannerTaskKind, typeof Send> = {
+  interview_prep: MessageSquare,
+  follow_up: Send,
+  fit_score: TrendingUp,
+}
 
 export default async function DashboardPage() {
   const supabase = createClient()
@@ -15,6 +24,8 @@ export default async function DashboardPage() {
   const avgScore = scores.length
     ? Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length)
     : null
+
+  const tasks = generateTasks(apps)
 
   return (
     <div className="space-y-6">
@@ -32,6 +43,33 @@ export default async function DashboardPage() {
           value={avgScore !== null ? `%${avgScore}` : '—'}
           icon={TrendingUp}
         />
+      </div>
+
+      <div>
+        <div className="mb-3 flex items-center gap-2">
+          <ListChecks className="h-5 w-5 text-purple-600" />
+          <h2 className="text-lg font-semibold text-slate-800">Yapılacaklar</h2>
+        </div>
+
+        {tasks.length === 0 ? (
+          <Card>
+            <p className="text-sm text-slate-500">Harika, bekleyen bir işin yok!</p>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {tasks.map((task) => {
+              const Icon = TASK_ICONS[task.kind]
+              return (
+                <Link key={task.id} href={task.href}>
+                  <Card className="flex items-center gap-3 transition-shadow hover:shadow-lg">
+                    <Icon className="h-5 w-5 flex-shrink-0 text-purple-600" />
+                    <p className="text-sm font-medium text-slate-800">{task.label}</p>
+                  </Card>
+                </Link>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
