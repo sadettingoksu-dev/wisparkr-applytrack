@@ -35,7 +35,20 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   gerektiriyor. Kullanıcı şu an bu maliyeti/işi istemiyor — Resend Pro alınınca
   veya Cloudflare'e karar verilince: domain DNS kaydı + webhook secret
   (`INBOUND_EMAIL_WEBHOOK_SECRET`) eklenip test edilecek.
-- ❓ Sıradaki adım: başka bir konuya geçildi (bkz. konuşma).
+- ✅ **Faz 3 kod tarafı yazıldı** (2026-06-15): Faz 2, Resend $20/ay engeline
+  takıldığı için roadmap sırasına göre Faz 3'e geçildi. `profiles.extension_token`
+  (migration `0005_extension_token.sql`), `requireExtensionAuth()`
+  (`lib/apiAuth.ts`), `POST /api/extension/applications` (CORS + Bearer token,
+  başvuruyu `pending` olarak ekler, plan limiti kontrolü dahil),
+  `GET/POST /api/extension/token` (token görüntüleme/yenileme), Ayarlar'da
+  `ExtensionTokenCard`, ve `extension/` klasöründe MV3 tarayıcı eklentisi
+  (LinkedIn `/jobs/view/*` ve Indeed `viewjob` sayfalarında "ApplyTrack'e
+  Kaydet" düğmesi, popup'tan site adresi + kişisel anahtar girilir).
+  **Bekleyen adım**: migration `0005`'i Supabase SQL Editor'de çalıştırmak
+  (kullanıcı tarafında) + eklentiyi `chrome://extensions` üzerinden
+  paketlenmemiş yükleyip gerçek LinkedIn/Indeed sayfalarında test etmek
+  (bkz. `extension/README.md`).
+- ❓ Sıradaki adım: Faz 3 testi sonrası Faz 4 (mock mülakat simülasyonu).
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard
 *Yeni dış servis gerektirmez, mevcut altyapı üzerine kurulur.*
