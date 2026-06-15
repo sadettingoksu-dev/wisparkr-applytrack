@@ -1,0 +1,34 @@
+#applytrack-save-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  background: #4f46e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+#applytrack-save-btn:hover {
+  background: #4338ca;
+}
+
+#applytrack-save-btn[data-state="loading"] {
+  opacity: 0.7;
+  cursor: default;
+}
+
+#applytrack-save-btn[data-state="success"] {
+  background: #16a34a;
+}
+
+#applytrack-save-btn[data-state="error"] {
+  background: #dc2626;
+}

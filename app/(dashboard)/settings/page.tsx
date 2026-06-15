@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ForwardingEmailCard } from '@/components/settings/ForwardingEmailCard'
+import { ExtensionTokenCard } from '@/components/settings/ExtensionTokenCard'
 import type { Profile } from '@/lib/types'
 
 export default async function SettingsPage() {
@@ -38,6 +39,8 @@ export default async function SettingsPage() {
       </Card>
 
       <ForwardingEmailCard userId={data.user!.id} />
+
+      <ExtensionTokenCard initialToken={profile?.extension_token ?? ''} />
     </div>
   )
 }

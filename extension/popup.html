@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <title>ApplyTrack Eklentisi</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        width: 280px;
+        padding: 16px;
+        color: #1e293b;
+      }
+      h1 {
+        font-size: 14px;
+        margin: 0 0 12px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        margin-top: 10px;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px 8px;
+        font-size: 13px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+      }
+      button {
+        margin-top: 12px;
+        width: 100%;
+        padding: 8px;
+        background: #4f46e5;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #4338ca;
+      }
+      p {
+        font-size: 11px;
+        color: #64748b;
+        margin-top: 8px;
+      }
+      #status {
+        font-size: 12px;
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ApplyTrack Ayarları</h1>
+
+    <label for="apiBase">Site adresi</label>
+    <input id="apiBase" type="text" placeholder="https://app.applytrack.com" />
+
+    <label for="token">Kişisel anahtar</label>
+    <input id="token" type="text" placeholder="ApplyTrack > Ayarlar sayfasından kopyala" />
+
+    <button id="save">Kaydet</button>
+    <div id="status"></div>
+
+    <p>
+      Kişisel anahtarını ApplyTrack içinde <strong>Ayarlar &gt; Tarayıcı Eklentisi</strong>
+      bölümünden kopyalayabilirsin. Kaydettikten sonra LinkedIn veya Indeed&apos;de bir
+      ilan sayfasına git, sağ altta çıkan &quot;ApplyTrack&apos;e Kaydet&quot; düğmesine tıkla.
+    </p>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
