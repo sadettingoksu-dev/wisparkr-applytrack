@@ -6,10 +6,11 @@ import { FitScoreCard } from '@/components/cv/FitScoreCard'
 import { CvTailorCard } from '@/components/cv/CvTailorCard'
 import { RequiredDocumentsCard } from '@/components/cv/RequiredDocumentsCard'
 import { AIChatPanel } from '@/components/chat/AIChatPanel'
+import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { InterviewDateField } from '@/components/applications/InterviewDateField'
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
-import type { Application, AiMessage, RequiredDocument } from '@/lib/types'
+import type { Application, AiMessage, MockInterview, RequiredDocument } from '@/lib/types'
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -29,6 +30,12 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
     .select('*')
     .eq('application_id', params.id)
     .order('created_at', { ascending: true })
+
+  const { data: mockInterviewSessions } = await supabase
+    .from('mock_interviews')
+    .select('*')
+    .eq('application_id', params.id)
+    .order('created_at', { ascending: false })
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -63,6 +70,11 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
           applicationId={app.id}
           initialScore={app.tailored_fit_score}
           hasTailoredCv={Boolean(app.tailored_cv_text)}
+        />
+
+        <MockInterviewCard
+          applicationId={app.id}
+          sessions={(mockInterviewSessions ?? []) as MockInterview[]}
         />
       </div>
 

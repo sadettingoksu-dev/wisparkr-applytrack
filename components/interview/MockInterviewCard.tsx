@@ -1,0 +1,108 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Sparkles } from 'lucide-react'
+import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Badge } from '@/components/ui/Badge'
+import { Spinner } from '@/components/ui/Spinner'
+import { getInterviewReadiness } from '@/utils/constants'
+import type { MockInterview } from '@/lib/types'
+
+interface MockInterviewCardProps {
+  applicationId: string
+  sessions: MockInterview[]
+}
+
+export function MockInterviewCard({ applicationId, sessions }: MockInterviewCardProps) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleStart() {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/mock-interview/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ application_id: applicationId }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setError(json.error?.message ?? 'Bir hata oluştu.')
+        return
+      }
+      router.push(`/applications/${applicationId}/mock-interview/${json.data.interview_id}`)
+    } catch {
+      setError('Bağlantı hatası.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Card className="space-y-4">
+      <h3 className="text-sm font-semibold text-slate-800">Mock Mülakat Provası</h3>
+
+      <p className="text-sm text-slate-500">
+        AI, bu pozisyon ve CV&apos;ne göre seninle {' '}
+        <strong>6 soruluk</strong> bir mülakat provası yapar; sonunda kategori bazlı bir geri
+        bildirim raporu alırsın.
+      </p>
+
+      {error && <p className="text-xs text-red-500">{error}</p>}
+
+      <Button onClick={handleStart} disabled={loading} variant="secondary">
+        {loading ? (
+          <Spinner />
+        ) : (
+          <>
+            <Sparkles className="h-4 w-4" />
+            Yeni Mülakat Provası Başlat
+          </>
+        )}
+      </Button>
+
+      {sessions.length > 0 && (
+        <div className="space-y-2 border-t border-slate-100 pt-3">
+          <p className="text-xs font-medium text-slate-500">Geçmiş Oturumlar</p>
+          {sessions.map((session) => {
+            const readiness =
+              session.status === 'completed' && session.overall_score !== null
+                ? getInterviewReadiness(session.overall_score)
+                : null
+            return (
+              <Link
+                key={session.id}
+                href={`/applications/${applicationId}/mock-interview/${session.id}`}
+                className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"
+              >
+                <span className="text-slate-600">
+                  {new Date(session.created_at).toLocaleDateString('tr-TR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })}
+                </span>
+                {session.status === 'completed' ? (
+                  session.overall_score !== null && readiness ? (
+                    <Badge className={`bg-slate-50 ${readiness.className}`}>
+                      %{session.overall_score} · {readiness.label}
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-slate-50 text-slate-500">Rapor bekliyor</Badge>
+                  )
+                ) : (
+                  <Badge className="bg-purple-50 text-purple-600">Devam ediyor</Badge>
+                )}
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </Card>
+  )
+}

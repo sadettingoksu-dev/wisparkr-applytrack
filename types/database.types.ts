@@ -111,6 +111,7 @@ export interface Database {
           ai_questions_used: number
           fit_scores_used: number
           cv_tailors_used: number
+          mock_interviews_used: number
           created_at: string
           updated_at: string
         }
@@ -156,6 +157,43 @@ export interface Database {
           message: string
         }
         Update: Partial<Database['public']['Tables']['notifications']['Row']>
+        Relationships: []
+      }
+      mock_interviews: {
+        Row: {
+          id: string
+          user_id: string
+          application_id: string
+          status: 'in_progress' | 'completed'
+          question_count: number
+          overall_score: number | null
+          feedback: Json | null
+          created_at: string
+          completed_at: string | null
+        }
+        Insert: Partial<Database['public']['Tables']['mock_interviews']['Row']> & {
+          user_id: string
+          application_id: string
+        }
+        Update: Partial<Database['public']['Tables']['mock_interviews']['Row']>
+        Relationships: []
+      }
+      mock_interview_messages: {
+        Row: {
+          id: string
+          mock_interview_id: string
+          user_id: string
+          role: 'interviewer' | 'candidate'
+          content: string
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['mock_interview_messages']['Row']> & {
+          mock_interview_id: string
+          user_id: string
+          role: 'interviewer' | 'candidate'
+          content: string
+        }
+        Update: Partial<Database['public']['Tables']['mock_interview_messages']['Row']>
         Relationships: []
       }
     }

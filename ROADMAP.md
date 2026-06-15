@@ -94,8 +94,34 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   indirme butonunun gerçek dosya ile çalışması) henüz manuel test
   edilmedi** — bir sonraki oturumda `/applications/[id]` sayfasında uçtan
   uca denenmeli.
-- ❓ Sıradaki adım: tarayıcıda uçtan uca manuel test → sonra Faz 4 (mock
-  mülakat simülasyonu).
+- ✅ **Faz 4 — Mock Mülakat Simülasyonu (yazılı, AI destekli) kod tarafı
+  tamamlandı** (2026-06-15): `lib/anthropic.ts` → `generateMockInterviewTurn()`
+  (çok turlu, soru-cevap akışı, son turda kapanış mesajı + `is_final:true`) ve
+  `generateMockInterviewFeedback()` (özet, güçlü/geliştirilecek yönler,
+  kategori bazlı 0-100 skorlar, genel skor). 4 yeni route:
+  `POST /api/mock-interview/start`, `POST /api/mock-interview/[id]/message`,
+  `POST /api/mock-interview/[id]/finish`, `POST /api/mock-interview/[id]/
+  retry-feedback` (hepsi Pro/Career Coach plan gate'i + aylık AI limitine dahil
+  — `ai_usage.mock_interviews_used`). Başvuru detayında `MockInterviewCard`
+  (yeni prova başlat + geçmiş oturumlar listesi) ve
+  `/applications/[id]/mock-interview/[interviewId]` sayfasında `MockInterviewChat`
+  (6 soruluk sohbet, ilerleme göstergesi, "Mülakatı Bitir" butonu) +
+  tamamlanınca `InterviewFeedbackReport` (genel skor, kategori skorları,
+  güçlü/geliştirilecek yönler). Migration `0008_mock_interview.sql`
+  (`mock_interviews`, `mock_interview_messages` tabloları + RLS,
+  `ai_usage.mock_interviews_used`) — **Supabase'de henüz ÇALIŞTIRILMADI,
+  kullanıcı tarafında bekleyen adım** (migration çalıştırılmadan bu özellik
+  500 döner). `npx tsc --noEmit`, `npx eslint .` ve `npm run build` temiz
+  geçti; tüm yeni route'lar auth olmadan 401 dönüyor. AI promptları gerçek
+  Anthropic API ile 6 soruluk tam akış + geri bildirim raporu uçtan uca test
+  edildi (7. turda `is_final:true` + kapanış mesajı, feedback şeması
+  doğrulandı).
+  **Kapsam dışı / sonraki adım**: sesli mod (mikrofon ile cevap, AI
+  sorularının sesli okunması — STT/TTS) ve geçmiş mülakat oturumlarının
+  silinmesi, bu fazda yapılmadı.
+- ❓ Sıradaki adım: migration `0008` Supabase'de çalıştırılıp tarayıcıda
+  uçtan uca mock mülakat akışı test edilmeli (önceki bekleyen migration
+  `0006` ile birlikte).
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard
 *Yeni dış servis gerektirmez, mevcut altyapı üzerine kurulur.*

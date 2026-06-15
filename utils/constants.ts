@@ -37,3 +37,16 @@ export function getApplyReadiness(score: number): { label: string; className: st
   }
   return { label: 'Henüz hazır değil, tekrar optimize edin', className: 'text-amber-600' }
 }
+
+/** Number of interviewer questions in a mock interview session. */
+export const MOCK_INTERVIEW_QUESTION_COUNT = 6
+
+export function getInterviewReadiness(score: number): { label: string; className: string } {
+  if (score >= 85) {
+    return { label: 'Mülakata hazırsın', className: 'text-emerald-700' }
+  }
+  if (score >= 60) {
+    return { label: 'Birkaç noktayı geliştir', className: 'text-amber-600' }
+  }
+  return { label: 'Daha fazla pratiğe ihtiyacın var', className: 'text-red-500' }
+}

@@ -24,13 +24,14 @@ const USAGE_COLUMNS = {
   ai_question: 'ai_questions_used',
   fit_score: 'fit_scores_used',
   cv_tailor: 'cv_tailors_used',
+  mock_interview: 'mock_interviews_used',
 } as const
 
 export async function checkAndIncrementUsage(
   admin: AdminClient,
   userId: string,
   planId: string | null | undefined,
-  type: 'ai_question' | 'fit_score' | 'cv_tailor'
+  type: 'ai_question' | 'fit_score' | 'cv_tailor' | 'mock_interview'
 ): Promise<UsageCheckResult> {
   const plan = getPlan(planId)
   const limit = plan.limits.aiQuestionsPerMonth

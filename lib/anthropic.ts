@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import type { EmailClassification } from '@/lib/types'
+import { MOCK_INTERVIEW_QUESTION_COUNT } from '@/utils/constants'
 
 export const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001'
 
@@ -230,3 +231,196 @@ export async function classifyInboundEmail(
     return fallback
   }
 }
+
+const mockInterviewTurnSchema = z.object({
+  message: z.string().min(1),
+  is_final: z.boolean(),
+})
+
+export interface MockInterviewTurnResult {
+  message: string
+  is_final: boolean
+}
+
+export interface MockInterviewHistoryEntry {
+  role: 'interviewer' | 'candidate'
+  content: string
+}
+
+/**
+ * Generates the next turn of a mock interview: either the next interview
+ * question, or (once questionNumber exceeds totalQuestions) a short closing
+ * remark with is_final: true.
+ */
+export async function generateMockInterviewTurn(
+  anthropic: Anthropic,
+  params: {
+    job: { company_name: string; position_title: string; job_description: string | null }
+    cvText: string | null
+    requiredDocuments: RequiredDocument[]
+    history: MockInterviewHistoryEntry[]
+    questionNumber: number
+    totalQuestions: number
+  }
+): Promise<MockInterviewTurnResult> {
+  const { job, cvText, requiredDocuments, history, questionNumber, totalQuestions } = params
+
+  const documentLines = requiredDocuments.map((doc) => {
+    const status = doc.has === true ? 'VAR' : doc.has === false ? 'YOK' : 'BELİRTİLMEDİ'
+    return `- ${doc.name} (önem: ${doc.importance}, durum: ${status})`
+  })
+
+  const isFinalTurn = questionNumber > totalQuestions
+
+  const systemPrompt = [
+    `Sen ${job.company_name} firmasında ${job.position_title} pozisyonu için mülakat`,
+    'yapan deneyimli bir İK/teknik mülakat uzmanısın. Adayın CV\'si, ilan açıklaması ve',
+    'sektöre özel beklenen belgeler aşağıda.',
+    `Toplam ${totalQuestions} sorudan oluşan bir mülakat yapıyorsun, şu an`,
+    `${Math.min(questionNumber, totalQuestions)}. sorudasın.`,
+    '',
+    isFinalTurn
+      ? 'Tüm sorular soruldu. Soru SORMA; adaya kısa, sıcak bir kapanış/teşekkür mesajı yaz' +
+        ' ve mülakatın bittiğini belirt.'
+      : [
+          'Sırada olduğun soru numarasına göre uygun bir mülakat sorusu sor:',
+          '- 1. soru: kısa bir tanışma/icebreaker sorusu (örn. "Kendinizden ve bu pozisyona',
+          '  neden başvurduğunuzdan bahseder misiniz?").',
+          `- Ortadaki sorular (2 - ${Math.max(totalQuestions - 1, 2)}): davranışsal (STAR`,
+          '  yöntemiyle cevaplanabilecek) ve ilan açıklamasına, CV\'ye ve sektöre özel',
+          '  belgelere göre role özel teknik/durumsal sorular.',
+          `- Son soru (${totalQuestions}. soru): şirket/motivasyon odaklı bir soru veya`,
+          '  adaya "sizin de bize sormak istediğiniz bir şey var mı?" gibi bir kapanış sorusu.',
+          '',
+          'Önceki sorularla konu tekrarı yapma; aşağıdaki geçmişi kontrol et.',
+          'SADECE bir soru sor, başka açıklama ekleme.',
+        ].join('\n'),
+    '',
+    'CV:',
+    (cvText || 'CV yüklenmemiş.').slice(0, 4000),
+    '',
+    'İlan açıklaması:',
+    (job.job_description || 'Açıklama yok').slice(0, 4000),
+    '',
+    'Sektöre özel beklenen belgeler:',
+    documentLines.length > 0 ? documentLines.join('\n') : '(bu ilan için ek belge belirtilmemiş)',
+    '',
+    TURKISH_WRITING_RULE,
+    '',
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    `{"message": "<soru veya kapanış mesajı>", "is_final": ${isFinalTurn ? 'true' : 'false'}}`,
+  ].join('\n')
+
+  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: 'Mülakatı başlat.' }]
+  for (const entry of history) {
+    messages.push({
+      role: entry.role === 'interviewer' ? 'assistant' : 'user',
+      content: entry.content,
+    })
+  }
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 1024,
+    system: systemPrompt,
+    messages,
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = mockInterviewTurnSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
+const mockInterviewFeedbackSchema = z.object({
+  summary: z.string().min(1),
+  strengths: z.array(z.string()).min(1).max(5),
+  improvements: z.array(z.string()).min(1).max(5),
+  category_scores: z
+    .array(
+      z.object({
+        category: z.string().min(1),
+        score: z.number().min(0).max(100),
+        comment: z.string().min(1),
+      })
+    )
+    .min(1)
+    .max(6),
+  overall_score: z.number().min(0).max(100),
+})
+
+export interface MockInterviewFeedback {
+  summary: string
+  strengths: string[]
+  improvements: string[]
+  category_scores: { category: string; score: number; comment: string }[]
+  overall_score: number
+}
+
+/**
+ * Evaluates a completed (or partially completed) mock interview transcript
+ * and returns structured feedback: an overall score, category breakdowns,
+ * strengths and areas to improve.
+ */
+export async function generateMockInterviewFeedback(
+  anthropic: Anthropic,
+  params: {
+    job: { company_name: string; position_title: string; job_description: string | null }
+    cvText: string | null
+    transcript: MockInterviewHistoryEntry[]
+  }
+): Promise<MockInterviewFeedback> {
+  const { job, cvText, transcript } = params
+
+  const transcriptLines = transcript.map((entry) =>
+    entry.role === 'interviewer' ? `Mülakatçı: ${entry.content}` : `Aday: ${entry.content}`
+  )
+
+  const prompt = [
+    `Aşağıda ${job.company_name} firmasında ${job.position_title} pozisyonu için yapılan`,
+    'bir mock mülakatın dökümü var. Adayın performansını değerlendir.',
+    '',
+    'Şu kategorileri kullanarak değerlendir (4-6 kategori arası seçebilirsin, önerilenler):',
+    '- "İletişim & Açıklık"',
+    '- "Yapılandırma (STAR yöntemi)"',
+    '- "Teknik/Role Özel Bilgi"',
+    '- "Motivasyon & Şirket Uyumu"',
+    'Her kategori için 0-100 arası bir puan ve kısa bir yorum ver.',
+    '',
+    'Ayrıca genel bir mülakat performans skoru (0-100), 3-5 güçlü nokta,',
+    '3-5 geliştirilmesi gereken nokta ve genel bir değerlendirme özeti yaz.',
+    '',
+    TURKISH_WRITING_RULE,
+    '',
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    '{"summary": "...", "strengths": ["...","..."], "improvements": ["...","..."],',
+    '"category_scores": [{"category":"...","score":<0-100>,"comment":"..."}],',
+    '"overall_score": <0-100 arası sayı>}',
+    '',
+    'CV:',
+    (cvText || 'CV yüklenmemiş.').slice(0, 4000),
+    '',
+    'İlan açıklaması:',
+    (job.job_description || 'Açıklama yok').slice(0, 4000),
+    '',
+    'Mülakat dökümü:',
+    transcriptLines.join('\n'),
+  ].join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 2048,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = mockInterviewFeedbackSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
+export { MOCK_INTERVIEW_QUESTION_COUNT }

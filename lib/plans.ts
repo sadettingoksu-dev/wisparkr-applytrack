@@ -19,6 +19,7 @@ export interface PlanConfig {
     salaryNegotiationCoach: boolean
     competitorAnalysis: boolean
     unlimitedAi: boolean
+    mockInterview: boolean
   }
 }
 
@@ -37,6 +38,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       salaryNegotiationCoach: false,
       competitorAnalysis: false,
       unlimitedAi: false,
+      mockInterview: false,
     },
   },
   pro: {
@@ -53,6 +55,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       salaryNegotiationCoach: false,
       competitorAnalysis: false,
       unlimitedAi: false,
+      mockInterview: true,
     },
   },
   career_coach: {
@@ -69,6 +72,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       salaryNegotiationCoach: true,
       competitorAnalysis: true,
       unlimitedAi: true,
+      mockInterview: true,
     },
   },
 }

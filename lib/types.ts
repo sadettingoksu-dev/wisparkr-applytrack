@@ -11,6 +11,8 @@ export type AiUsage = Database['public']['Tables']['ai_usage']['Row']
 export type InboundEmail = Database['public']['Tables']['inbound_emails']['Row']
 export type Notification = Database['public']['Tables']['notifications']['Row']
 export type EmailClassification = InboundEmail['classification']
+export type MockInterview = Database['public']['Tables']['mock_interviews']['Row']
+export type MockInterviewMessage = Database['public']['Tables']['mock_interview_messages']['Row']
 
 export type ApplicationStatus = Application['status']
 export type PlanId = Profile['plan']
@@ -33,6 +35,7 @@ export interface JobParseResult {
 }
 
 export type { RequiredDocument, DocumentImportance } from '@/lib/anthropic'
+export type { MockInterviewFeedback, MockInterviewTurnResult } from '@/lib/anthropic'
 
 export interface FitScoreResult {
   score: number
