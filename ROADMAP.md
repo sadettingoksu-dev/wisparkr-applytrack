@@ -68,15 +68,34 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   ilanı analiz edip o sektöre özel en fazla 5 belge/sertifika önerir, her
   birine `critical/important/optional` önem derecesi atar.
   `POST /api/ai/required-documents` bu listeyi üretip
-  `applications.required_documents` (jsonb) kolonuna kaydeder. `CvTailorCard`
-  bu listeyi "Var/Yok" toggle'larıyla gösterir; kullanıcının cevapları
-  `tailorCv()`'e iletilir ve skor hesabını etkiler (kritik belge eksikse
-  -15/-25, önemli eksikse -5/-10, opsiyonel eksikse 0/-3; belirtilmemiş
-  belgeler skoru etkilemez). Migration `0007_required_documents.sql`
-  (applications.required_documents jsonb) — **Supabase'de henüz
-  ÇALIŞTIRILMADI, kullanıcı tarafında bekleyen adım**.
-- ❓ Sıradaki adım: migration 0007 Supabase'de çalıştırılınca bu özellik
-  canlıda test edilir → sonra Faz 4 (mock mülakat simülasyonu).
+  `applications.required_documents` (jsonb) kolonuna kaydeder. Kullanıcının
+  cevapları `tailorCv()`'e iletilir ve skor hesabını etkiler (kritik belge
+  eksikse -15/-25, önemli eksikse -5/-10, opsiyonel eksikse 0/-3; belirtilmemiş
+  belgeler skoru etkilemez).
+- ✅ **Belge yükleme + UI sadeleştirme tamamlandı** (2026-06-15, commit
+  `fa4372d`): `RequiredDocumentsCard` — her sektöre özel belge için PDF
+  yükleme alanı (`POST /api/applications/[id]/documents/upload`, metni
+  çıkarıp `tailorCv()` promptuna ekler) ve Var/Yok toggle
+  (`PATCH /api/applications/[id]/documents`). Başvuru detayındaki "İlan
+  Açıklaması" kartı kaldırıldı, yerine bu kart geldi. Mülakat asistanı
+  (chat) paneline örnek soru çipleri + açıklayıcı metin eklendi. Tüm AI
+  metin üretimlerine Türkçe yazım kuralı talimatı (`TURKISH_WRITING_RULE`)
+  eklendi.
+- ✅ **Migration `0007_required_documents.sql` Supabase'de çalıştırıldı**
+  (2026-06-15) — kolon mevcut, doğrulandı.
+- ✅ **Test sonucu (2026-06-15)**: `npm run build` temiz geçti (tek uyarı:
+  `@supabase/supabase-js`'in Edge Runtime uyarısı — bu projeye özel değil,
+  önceden de vardı, sorun değil). Yeni API route'ları (`/api/ai/
+  required-documents`, `/api/applications/[id]/documents`,
+  `/api/applications/[id]/documents/upload`) auth olmadan 401 dönüyor,
+  500/çökme yok. AI promptları gerçek Anthropic API ile test edildi (belge
+  tespiti, skor düşürme, Türkçe metin kalitesi — hepsi doğru çalışıyor).
+  **Tarayıcıda gerçek kullanıcı akışı (dosya yükleme, Var/Yok tıklama, PDF
+  indirme butonunun gerçek dosya ile çalışması) henüz manuel test
+  edilmedi** — bir sonraki oturumda `/applications/[id]` sayfasında uçtan
+  uca denenmeli.
+- ❓ Sıradaki adım: tarayıcıda uçtan uca manuel test → sonra Faz 4 (mock
+  mülakat simülasyonu).
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard
 *Yeni dış servis gerektirmez, mevcut altyapı üzerine kurulur.*
