@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { ForwardingEmailCard } from '@/components/settings/ForwardingEmailCard'
 import type { Profile } from '@/lib/types'
 
 export default async function SettingsPage() {
@@ -35,6 +36,8 @@ export default async function SettingsPage() {
 
         <Button>Kaydet</Button>
       </Card>
+
+      <ForwardingEmailCard userId={data.user!.id} />
     </div>
   )
 }

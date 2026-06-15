@@ -116,6 +116,43 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['ai_usage']['Row']>
         Relationships: []
       }
+      inbound_emails: {
+        Row: {
+          id: string
+          user_id: string
+          application_id: string | null
+          from_address: string
+          subject: string | null
+          body: string | null
+          classification: 'interview_invitation' | 'rejection' | 'info_request' | 'other'
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['inbound_emails']['Row']> & {
+          user_id: string
+          from_address: string
+          classification: 'interview_invitation' | 'rejection' | 'info_request' | 'other'
+        }
+        Update: Partial<Database['public']['Tables']['inbound_emails']['Row']>
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          application_id: string | null
+          title: string
+          message: string
+          read: boolean
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['notifications']['Row']> & {
+          user_id: string
+          title: string
+          message: string
+        }
+        Update: Partial<Database['public']['Tables']['notifications']['Row']>
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

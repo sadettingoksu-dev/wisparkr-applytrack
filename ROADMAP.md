@@ -23,10 +23,19 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   başvuru detayında mülakat tarihi girilebiliyor, `/calendar` sayfasında
   "Yaklaşan Mülakatlar" ve "Takip Hatırlatmaları" listeleniyor, planner görevleri
   mülakat tarihine göre önceliklendiriliyor. **Faz 1 tamamen bitti.**
-- 📌 **Not (Faz 2 için)**: Email bildirimleri (yaklaşan mülakat / takip
-  hatırlatması için kullanıcıya mail gönderme) Faz 2'nin email altyapısıyla
-  birlikte ele alınacak — aynı dış servis (Resend vb.) paylaşılabilir.
-- ❓ Sıradaki adım: Faz 2'ye (email entegrasyonu) başlamak için detaylı plan.
+- 🔄 **Faz 2 kod tarafı yazıldı ama beklemede** (2026-06-15): migration
+  `0004_inbound_email_notifications.sql` (inbound_emails + notifications
+  tabloları, Supabase'de çalıştırıldı), `lib/anthropic.ts` →
+  `classifyInboundEmail()`, webhook `app/api/webhooks/inbound-email/route.ts`
+  (Svix doğrulama), `app/api/notifications/route.ts`, `NotificationBell`
+  component, `/settings`'te forwarding adresi kartı (`user_<id>@inbox.wisparkr.com`
+  + Gmail kurulum rehberi) — hepsi hazır ve type-check geçiyor.
+  **Bekleme sebebi**: Resend Inbound (mail alma) özelliği Pro plana ($20/ay)
+  özel; ücretsiz alternatif (Cloudflare Email Routing + Worker) ek geliştirme
+  gerektiriyor. Kullanıcı şu an bu maliyeti/işi istemiyor — Resend Pro alınınca
+  veya Cloudflare'e karar verilince: domain DNS kaydı + webhook secret
+  (`INBOUND_EMAIL_WEBHOOK_SECRET`) eklenip test edilecek.
+- ❓ Sıradaki adım: başka bir konuya geçildi (bkz. konuşma).
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard
 *Yeni dış servis gerektirmez, mevcut altyapı üzerine kurulur.*
