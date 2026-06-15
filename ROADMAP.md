@@ -116,12 +116,28 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   Anthropic API ile 6 soruluk tam akış + geri bildirim raporu uçtan uca test
   edildi (7. turda `is_final:true` + kapanış mesajı, feedback şeması
   doğrulandı).
-  **Kapsam dışı / sonraki adım**: sesli mod (mikrofon ile cevap, AI
-  sorularının sesli okunması — STT/TTS) ve geçmiş mülakat oturumlarının
-  silinmesi, bu fazda yapılmadı.
-- ❓ Sıradaki adım: migration `0008` Supabase'de çalıştırılıp tarayıcıda
-  uçtan uca mock mülakat akışı test edilmeli (önceki bekleyen migration
-  `0006` ile birlikte).
+  **Migration `0008` Supabase'de çalıştırıldı** (2026-06-15), özellik
+  tarayıcıda test edildi.
+- ✅ **Faz 4 Eki — Sesli mock mülakat modu tamamlandı** (2026-06-15):
+  kullanıcı test sonrası yazılı modun yanına sesli mod istedi. `lib/speech.ts`
+  (Web Speech API `speechSynthesis` ile TTS, `tr-TR`) ve
+  `hooks/useSpeechRecognition.ts` (Web Speech API `SpeechRecognition` ile
+  STT, `tr-TR`) eklendi. `MockInterviewChat`'te: tarayıcı destekliyorsa
+  başlıkta sesli mod aç/kapa düğmesi, açıkken yeni mülakatçı mesajları otomatik
+  sesli okunuyor, her mülakatçı mesajının yanında "sesli oku" düğmesi, input
+  yanında mikrofon düğmesiyle konuşarak cevap input'a dolduruluyor (gönderme
+  akışı değişmedi — kullanıcı gönder butonuna basıyor). Gerçek ses tonu analizi
+  yerine `generateMockInterviewTurn()` prompt'una eklenen talimatla AI, adayın
+  cevap üslubuna (kısa/yüzeysel/kararsız vs. net/detaylı) göre bir sonraki
+  soruyu daha zorlayıcı/derin tutuyor — DB/API şema değişikliği yok.
+  `npx tsc --noEmit`, `npx eslint .` temiz. SpeechRecognition desteklemeyen
+  tarayıcılarda (örn. Firefox) sesli mod düğmesi gizlenir, metin akışı
+  değişmeden çalışır.
+  **Kapsam dışı**: gerçek ses tonu/pitch/tempo analizi, sunucu taraflı
+  transkripsiyon, geçmiş oturum silme.
+- ❓ Sıradaki adım: tarayıcıda (Chrome/Edge) sesli mod uçtan uca test
+  edilmeli — sesli mod aç/kapa, otomatik TTS okuma, mikrofonla cevap, ve
+  kısa/yüzeysel cevaplarla AI'nın takip sorularının ciddileşmesi.
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard
 *Yeni dış servis gerektirmez, mevcut altyapı üzerine kurulur.*

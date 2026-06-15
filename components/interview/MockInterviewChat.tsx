@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { Send } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Send, Mic, MicOff, Volume2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { InterviewFeedbackReport } from '@/components/interview/InterviewFeedbackReport'
 import { MOCK_INTERVIEW_QUESTION_COUNT } from '@/utils/constants'
+import { isSpeechSynthesisSupported, speakText, cancelSpeech } from '@/lib/speech'
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import type { MockInterview, MockInterviewMessage, MockInterviewFeedback } from '@/lib/types'
 
 interface MockInterviewChatProps {
@@ -26,6 +28,47 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
   )
   const [overallScore, setOverallScore] = useState<number | null>(interview.overall_score)
   const [retrying, setRetrying] = useState(false)
+
+  const [voiceMode, setVoiceMode] = useState(false)
+  const [speechSupported, setSpeechSupported] = useState(false)
+  const speech = useSpeechRecognition()
+  const prevMessageCountRef = useRef(initialMessages.length)
+
+  useEffect(() => {
+    setSpeechSupported(isSpeechSynthesisSupported() && speech.isSupported)
+  }, [speech.isSupported])
+
+  useEffect(() => {
+    if (messages.length > prevMessageCountRef.current) {
+      const last = messages[messages.length - 1]
+      if (voiceMode && last.role === 'interviewer') {
+        speakText(last.content)
+      }
+    }
+    prevMessageCountRef.current = messages.length
+  }, [messages, voiceMode])
+
+  useEffect(() => {
+    if (speech.transcript) {
+      setInput(speech.transcript)
+    }
+  }, [speech.transcript])
+
+  useEffect(() => {
+    return () => {
+      cancelSpeech()
+      speech.stop()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function toggleVoiceMode() {
+    if (voiceMode) {
+      cancelSpeech()
+      speech.stop()
+    }
+    setVoiceMode((prev) => !prev)
+  }
 
   async function sendMessage() {
     const content = input.trim()
@@ -127,20 +170,42 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
       <div className="border-b border-slate-100 px-4 py-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-800">Mock Mülakat</h3>
-          <span className="text-xs text-slate-500">
-            {status === 'completed'
-              ? 'Tamamlandı'
-              : `Soru ${Math.min(questionCount, MOCK_INTERVIEW_QUESTION_COUNT)} / ${MOCK_INTERVIEW_QUESTION_COUNT}`}
-          </span>
+          <div className="flex items-center gap-2">
+            {speechSupported && (
+              <Button
+                onClick={toggleVoiceMode}
+                variant="ghost"
+                title={voiceMode ? 'Sesli modu kapat' : 'Sesli modu aç'}
+              >
+                {voiceMode ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+              </Button>
+            )}
+            <span className="text-xs text-slate-500">
+              {status === 'completed'
+                ? 'Tamamlandı'
+                : `Soru ${Math.min(questionCount, MOCK_INTERVIEW_QUESTION_COUNT)} / ${MOCK_INTERVIEW_QUESTION_COUNT}`}
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {messages.map((message, i) => (
           <div key={i} className="space-y-1">
-            <p className="text-xs font-medium text-slate-400">
-              {message.role === 'interviewer' ? 'Mülakatçı' : 'Sen'}
-            </p>
+            <div className="flex items-center gap-1">
+              <p className="text-xs font-medium text-slate-400">
+                {message.role === 'interviewer' ? 'Mülakatçı' : 'Sen'}
+              </p>
+              {message.role === 'interviewer' && speechSupported && (
+                <button
+                  onClick={() => speakText(message.content)}
+                  title="Sesli oku"
+                  className="text-slate-300 hover:text-slate-500"
+                >
+                  <Volume2 className="h-3 w-3" />
+                </button>
+              )}
+            </div>
             <div
               className={`max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${
                 message.role === 'candidate'
@@ -178,9 +243,23 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Cevabını yaz..."
+            placeholder={speech.isListening ? 'Dinleniyor...' : 'Cevabını yaz...'}
             disabled={loading}
           />
+          {voiceMode && (
+            <Button
+              onClick={() => (speech.isListening ? speech.stop() : speech.start())}
+              disabled={loading}
+              variant={speech.isListening ? 'secondary' : 'ghost'}
+              title={speech.isListening ? 'Dinlemeyi durdur' : 'Sesle cevapla'}
+            >
+              {speech.isListening ? (
+                <Mic className="h-4 w-4 animate-pulse text-red-500" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
+          )}
           <Button onClick={sendMessage} disabled={loading}>
             <Send className="h-4 w-4" />
           </Button>
