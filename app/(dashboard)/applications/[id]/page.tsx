@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/Badge'
 import { FitScoreCard } from '@/components/cv/FitScoreCard'
 import { AIChatPanel } from '@/components/chat/AIChatPanel'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
+import { InterviewDateField } from '@/components/applications/InterviewDateField'
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
 import type { Application, AiMessage } from '@/lib/types'
 
@@ -40,6 +41,10 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
             <DeleteApplicationButton applicationId={app.id} />
           </div>
         </div>
+
+        <Card>
+          <InterviewDateField applicationId={app.id} initialDate={app.interview_date} />
+        </Card>
 
         <Card className="space-y-2">
           <h2 className="text-sm font-semibold text-slate-800">İlan Açıklaması</h2>

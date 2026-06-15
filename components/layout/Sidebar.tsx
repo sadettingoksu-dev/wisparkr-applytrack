@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Settings, CreditCard, LogOut } from 'lucide-react'
+import { LayoutDashboard, Kanban, FileText, CalendarDays, Settings, CreditCard, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { APP_NAME } from '@/utils/constants'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/calendar', label: 'Takvim', icon: CalendarDays },
   { href: '/board', label: 'Kanban Board', icon: Kanban },
   { href: '/applications', label: 'Başvurular', icon: FileText },
   { href: '/settings', label: 'Ayarlar', icon: Settings },

@@ -9,6 +9,7 @@ const updateSchema = z.object({
   job_description: z.string().max(10000).nullable().optional(),
   status: z.enum(['pending', 'interview', 'offer', 'rejected']).optional(),
   notes: z.string().max(5000).nullable().optional(),
+  interview_date: z.string().datetime().nullable().optional(),
 })
 
 export async function GET(_request: Request, { params }: { params: { id: string } }) {

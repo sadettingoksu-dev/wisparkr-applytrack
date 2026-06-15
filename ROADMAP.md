@@ -10,18 +10,23 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   policy'leri kuruldu, model `claude-haiku-4-5-20251001` olarak güncellendi.
 - ✅ Faz 1 kodu tamamlandı: Dashboard "Yapılacaklar" listesi (`lib/planner.ts`),
   başvuru silme butonu, Google/GitHub OAuth butonları (login + signup).
-- 🔄 **Devam ediyor — Google OAuth kurulumu**: Google Cloud Console'da
-  `applytrack` projesi oluşturuldu, OAuth consent screen ("Get started" akışı,
-  App information adımı) dolduruluyor. Sıradaki adımlar:
-  1. Consent screen'i tamamla (Audience: External, contact info, finish)
-  2. Clients sekmesinden **OAuth Client ID** oluştur (Web application, redirect URI:
-     `https://vuvemrdnriljghbssqse.supabase.co/auth/v1/callback`)
-  3. Çıkan Client ID/Secret'i Supabase Dashboard → Authentication → Providers →
-     Google'a gir ve enable et
-  4. (Aynı şekilde GitHub OAuth da bekliyor — github.com/settings/developers)
-- ❓ Faz 1 sonrası net bir değişiklik talebi yok — Faz 2'ye (email entegrasyonu)
-  veya "Faz 5 — CV Oluşturucu" fikrine (bkz. konuşma notları) geçilebilir, henüz
-  karar verilmedi.
+- ✅ **Google OAuth kurulumu tamamlandı**: Google Cloud Console'da `applytrack`
+  projesi, OAuth consent screen, Web application Client ID/Secret oluşturuldu;
+  Supabase Authentication > Providers > Google'a girildi ve enable edildi.
+- ✅ **GitHub OAuth kurulumu tamamlandı**: github.com/settings/developers'da
+  ApplyTrack OAuth App oluşturuldu (callback:
+  `https://vuvemrdnriljghbssqse.supabase.co/auth/v1/callback`), Client ID/Secret
+  Supabase'e girildi ve enable edildi.
+- ✅ OAuth test edildi, login akışı çalışıyor.
+- ✅ **Takvim / zaman çizelgesi görünümü tamamlandı** (2026-06-15): `applications`
+  tablosuna `interview_date` eklendi (migration `0003_add_interview_date.sql`),
+  başvuru detayında mülakat tarihi girilebiliyor, `/calendar` sayfasında
+  "Yaklaşan Mülakatlar" ve "Takip Hatırlatmaları" listeleniyor, planner görevleri
+  mülakat tarihine göre önceliklendiriliyor. **Faz 1 tamamen bitti.**
+- 📌 **Not (Faz 2 için)**: Email bildirimleri (yaklaşan mülakat / takip
+  hatırlatması için kullanıcıya mail gönderme) Faz 2'nin email altyapısıyla
+  birlikte ele alınacak — aynı dış servis (Resend vb.) paylaşılabilir.
+- ❓ Sıradaki adım: Faz 2'ye (email entegrasyonu) başlamak için detaylı plan.
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard
 *Yeni dış servis gerektirmez, mevcut altyapı üzerine kurulur.*

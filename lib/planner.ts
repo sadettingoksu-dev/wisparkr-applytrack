@@ -17,28 +17,38 @@ const KIND_PRIORITY: Record<PlannerTaskKind, number> = {
   fit_score: 2,
 }
 
-const FOLLOW_UP_AFTER_DAYS = 7
+export const FOLLOW_UP_AFTER_DAYS = 7
 
 /**
  * Kural tabanlı görev listesi üretir (AI çağrısı yapmaz).
- * - Mülakat aşamasındaki başvurular için hazırlık görevi
+ * - Mülakat aşamasındaki başvurular için hazırlık görevi (mülakat tarihi
+ *   yaklaşıyorsa öncelikli ve kaç gün kaldığı belirtilir)
  * - 7+ gündür yanıt bekleyen başvurular için takip görevi
  * - Henüz uyum skoru hesaplanmamış başvurular için fit-score görevi
  */
 export function generateTasks(apps: Application[]): PlannerTask[] {
-  const tasks: PlannerTask[] = []
+  const tasks: (PlannerTask & { sortKey: number })[] = []
 
   for (const app of apps) {
     const href = `/applications/${app.id}`
 
     if (app.status === 'interview') {
-      tasks.push({
-        id: `${app.id}-interview_prep`,
-        kind: 'interview_prep',
-        label: `${app.company_name} mülakatına AI ile hazırlan`,
-        company: app.company_name,
-        href,
-      })
+      let label = `${app.company_name} mülakatına AI ile hazırlan`
+      let sortKey = KIND_PRIORITY.interview_prep
+
+      if (app.interview_date) {
+        const daysLeft = differenceInDays(new Date(app.interview_date), new Date())
+        if (daysLeft >= 0) {
+          label =
+            daysLeft === 0
+              ? `${app.company_name} mülakatı bugün, AI ile hazırlan`
+              : `${app.company_name} mülakatına ${daysLeft} gün kaldı, AI ile hazırlan`
+          // Yaklaşan mülakatları listenin en üstüne taşı
+          sortKey = KIND_PRIORITY.interview_prep - (1000 - daysLeft)
+        }
+      }
+
+      tasks.push({ id: `${app.id}-interview_prep`, kind: 'interview_prep', label, company: app.company_name, href, sortKey })
     }
 
     if (app.status === 'pending') {
@@ -50,6 +60,7 @@ export function generateTasks(apps: Application[]): PlannerTask[] {
           label: `${app.company_name} için takip maili gönder`,
           company: app.company_name,
           href,
+          sortKey: KIND_PRIORITY.follow_up,
         })
       }
 
@@ -60,12 +71,14 @@ export function generateTasks(apps: Application[]): PlannerTask[] {
           label: `${app.company_name} için CV uyum skorunu hesapla`,
           company: app.company_name,
           href,
+          sortKey: KIND_PRIORITY.fit_score,
         })
       }
     }
   }
 
   return tasks
-    .sort((a, b) => KIND_PRIORITY[a.kind] - KIND_PRIORITY[b.kind])
+    .sort((a, b) => a.sortKey - b.sortKey)
     .slice(0, 5)
+    .map(({ sortKey, ...task }) => task)
 }

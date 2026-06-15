@@ -49,6 +49,7 @@ export interface Database {
           fit_suggestions: Json | null
           notes: string | null
           applied_at: string | null
+          interview_date: string | null
           created_at: string
           updated_at: string
         }
