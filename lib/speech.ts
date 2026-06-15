@@ -9,8 +9,12 @@ export function speakText(text: string, onEnd?: () => void): void {
   utterance.lang = 'tr-TR'
 
   const trVoices = window.speechSynthesis.getVoices().filter((v) => v.lang.startsWith('tr'))
+  // Doğal/online Türkçe sesler (örn. Microsoft Emel) önceliklendirilir
+  const naturalVoice = trVoices.find((v) => /natural|online|emel/i.test(v.name))
   const femaleVoice =
-    trVoices.find((v) => /female|kadın|filiz|yelda|zira/i.test(v.name)) ?? trVoices[0]
+    naturalVoice ??
+    trVoices.find((v) => /female|kadın|filiz|yelda|zira/i.test(v.name)) ??
+    trVoices[0]
   if (femaleVoice) utterance.voice = femaleVoice
 
   // Mülakatçı için daha kalın/ciddi bir ton
