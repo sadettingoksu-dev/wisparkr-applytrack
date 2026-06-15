@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
-import { getAnthropicClient, DEFAULT_MODEL } from '@/lib/anthropic'
+import { getAnthropicClient, DEFAULT_MODEL, TURKISH_WRITING_RULE } from '@/lib/anthropic'
 import { getPlan } from '@/lib/plans'
 import type { Application } from '@/lib/types'
 
@@ -97,6 +97,7 @@ export async function POST(request: Request) {
     'Aşağıda bir adayın CV metni ve başvurduğu iş ilanının açıklaması var.',
     'Adayın bu ilana ne kadar uygun olduğunu 0-100 arası bir skorla değerlendir',
     've adayın CV/başvurusunu güçlendirmesi için tam olarak 3 somut öneri ver.',
+    'Önerileri yazarken ' + TURKISH_WRITING_RULE,
     'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
     '{"score": <0-100 arası sayı>, "suggestions": ["öneri 1", "öneri 2", "öneri 3"]}',
     '',

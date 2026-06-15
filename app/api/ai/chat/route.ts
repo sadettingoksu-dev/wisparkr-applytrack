@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
-import { getAnthropicClient, DEFAULT_MODEL } from '@/lib/anthropic'
+import { getAnthropicClient, DEFAULT_MODEL, TURKISH_WRITING_RULE } from '@/lib/anthropic'
 import type { Application } from '@/lib/types'
 
 const bodySchema = z.object({
@@ -89,7 +89,8 @@ export async function POST(request: Request) {
     application.job_description
       ? `İlan açıklaması: ${application.job_description.slice(0, 4000)}`
       : null,
-    'Cevaplarını Türkçe, kısa ve aksiyon odaklı ver.',
+    'Cevaplarını Türkçe, kısa, anlaşılır ve aksiyon odaklı ver; gerektiğinde madde',
+    'işaretleri kullanarak yapılandır. ' + TURKISH_WRITING_RULE,
   ]
     .filter(Boolean)
     .join('\n')

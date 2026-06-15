@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { FitScoreCard } from '@/components/cv/FitScoreCard'
 import { CvTailorCard } from '@/components/cv/CvTailorCard'
+import { RequiredDocumentsCard } from '@/components/cv/RequiredDocumentsCard'
 import { AIChatPanel } from '@/components/chat/AIChatPanel'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { InterviewDateField } from '@/components/applications/InterviewDateField'
@@ -47,12 +48,10 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
           <InterviewDateField applicationId={app.id} initialDate={app.interview_date} />
         </Card>
 
-        <Card className="space-y-2">
-          <h2 className="text-sm font-semibold text-slate-800">İlan Açıklaması</h2>
-          <p className="whitespace-pre-wrap text-sm text-slate-600">
-            {app.job_description || 'Açıklama eklenmemiş.'}
-          </p>
-        </Card>
+        <RequiredDocumentsCard
+          applicationId={app.id}
+          initialDocuments={app.required_documents as RequiredDocument[] | null}
+        />
 
         <FitScoreCard
           applicationId={app.id}
@@ -64,7 +63,6 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
           applicationId={app.id}
           initialScore={app.tailored_fit_score}
           hasTailoredCv={Boolean(app.tailored_cv_text)}
-          initialDocuments={app.required_documents as RequiredDocument[] | null}
         />
       </div>
 

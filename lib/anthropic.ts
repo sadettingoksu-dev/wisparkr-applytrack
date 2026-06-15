@@ -39,7 +39,14 @@ export interface RequiredDocument {
   name: string
   importance: DocumentImportance
   has: boolean | null
+  filename?: string | null
+  text?: string | null
 }
+
+/** Tüm AI metin çıktılarına eklenen Türkçe yazım kuralı talimatı. */
+export const TURKISH_WRITING_RULE =
+  'Türkçe yazım kurallarına (TDK) dikkat et: noktalama işaretleri, büyük/küçük harf, ' +
+  'bitişik/ayrı yazım ve ek kullanımı doğru olsun; yapay zeka kokan kalıp ifadelerden kaçın.'
 
 /**
  * Analyzes a job posting and returns up to 5 sector-specific
@@ -64,7 +71,8 @@ export async function analyzeRequiredDocuments(
     '- "important": olması büyük avantaj ama olmazsa eleme sebebi değil',
     '- "optional": varsa iyi olur ama etkisi azdır',
     '',
-    'En fazla 5 belge döndür. SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    'En fazla 5 belge döndür. Belge adlarını yazarken ' + TURKISH_WRITING_RULE,
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
     '{"documents": [{"name": "...", "importance": "critical|important|optional"}, ...]}',
     '',
     `İş ilanı (${job.company_name} - ${job.position_title}):`,
@@ -99,7 +107,11 @@ export async function tailorCv(
 ): Promise<TailorCvResult> {
   const documentLines = documents.map((doc) => {
     const status = doc.has === true ? 'VAR' : doc.has === false ? 'YOK' : 'BELİRTİLMEDİ'
-    return `- ${doc.name} (önem: ${doc.importance}, durum: ${status})`
+    const line = `- ${doc.name} (önem: ${doc.importance}, durum: ${status})`
+    if (doc.text) {
+      return `${line}\n  Belge içeriği (özet): ${doc.text.slice(0, 1000)}`
+    }
+    return line
   })
 
   const prompt = [
@@ -122,6 +134,8 @@ export async function tailorCv(
     '',
     'Tam olarak 3 somut öneri ver: eksik kritik/önemli belgeler varsa önce onları',
     'öner, kalan önerileri CV/deneyim için ver.',
+    '',
+    'Yazdığın CV metni ve önerilerde ' + TURKISH_WRITING_RULE,
     'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
     '{"tailored_cv": "<yeniden düzenlenmiş CV metni>", "score": <0-100 arası sayı>, "suggestions": ["öneri 1", "öneri 2", "öneri 3"]}',
     '',
