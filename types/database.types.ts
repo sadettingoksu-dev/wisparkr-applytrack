@@ -48,6 +48,8 @@ export interface Database {
           status: 'pending' | 'interview' | 'offer' | 'rejected'
           fit_score: number | null
           fit_suggestions: Json | null
+          tailored_cv_text: string | null
+          tailored_fit_score: number | null
           notes: string | null
           applied_at: string | null
           interview_date: string | null
@@ -107,6 +109,7 @@ export interface Database {
           period_month: string
           ai_questions_used: number
           fit_scores_used: number
+          cv_tailors_used: number
           created_at: string
           updated_at: string
         }

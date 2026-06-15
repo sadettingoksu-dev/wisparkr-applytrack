@@ -20,17 +20,22 @@ export interface UsageCheckResult {
  * their plan's limit, and if so increments the relevant counter.
  * Uses the admin (service-role) client because ai_usage is read-only for users via RLS.
  */
+const USAGE_COLUMNS = {
+  ai_question: 'ai_questions_used',
+  fit_score: 'fit_scores_used',
+  cv_tailor: 'cv_tailors_used',
+} as const
+
 export async function checkAndIncrementUsage(
   admin: AdminClient,
   userId: string,
   planId: string | null | undefined,
-  type: 'ai_question' | 'fit_score'
+  type: 'ai_question' | 'fit_score' | 'cv_tailor'
 ): Promise<UsageCheckResult> {
   const plan = getPlan(planId)
-  const limit =
-    type === 'ai_question' ? plan.limits.aiQuestionsPerMonth : plan.limits.aiQuestionsPerMonth
+  const limit = plan.limits.aiQuestionsPerMonth
   const period = currentPeriodMonth()
-  const column = type === 'ai_question' ? 'ai_questions_used' : 'fit_scores_used'
+  const column = USAGE_COLUMNS[type]
 
   const { data: existing } = await admin
     .from('ai_usage')

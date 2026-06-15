@@ -24,3 +24,16 @@ export const STATUS_BADGE_CLASSES: Record<ApplicationStatus, string> = {
 }
 
 export const APP_NAME = 'ApplyTrack'
+
+/** Minimum "başvuru hazırlık skoru" required to unlock the tailored CV PDF download. */
+export const MIN_APPLY_SCORE = 75
+
+export function getApplyReadiness(score: number): { label: string; className: string } {
+  if (score >= 90) {
+    return { label: 'Mükemmel, başvurabilirsiniz!', className: 'text-emerald-700' }
+  }
+  if (score >= MIN_APPLY_SCORE) {
+    return { label: 'Hazır, başvurabilirsiniz', className: 'text-emerald-600' }
+  }
+  return { label: 'Henüz hazır değil, tekrar optimize edin', className: 'text-amber-600' }
+}
