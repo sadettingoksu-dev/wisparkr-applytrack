@@ -135,9 +135,43 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   değişmeden çalışır.
   **Kapsam dışı**: gerçek ses tonu/pitch/tempo analizi, sunucu taraflı
   transkripsiyon, geçmiş oturum silme.
-- ❓ Sıradaki adım: tarayıcıda (Chrome/Edge) sesli mod uçtan uca test
-  edilmeli — sesli mod aç/kapa, otomatik TTS okuma, mikrofonla cevap, ve
-  kısa/yüzeysel cevaplarla AI'nın takip sorularının ciddileşmesi.
+- ✅ **Sesli mod test edildi ve ince ayarlar yapıldı** (2026-06-15):
+  - `hooks/useSpeechRecognition.ts`: kullanıcı durdurana kadar dinleme
+    sürsün istendi. `continuous: true` + tarayıcı sessizlikten otomatik
+    kapatırsa (`onend`) kullanıcı durdurmadıysa otomatik yeniden başlatma
+    eklendi; biriken metin (`finalTranscriptRef`) yeniden başlatmalar
+    arasında korunuyor.
+  - `lib/speech.ts`: mülakatçı sesi kadın ve daha kalın/ciddi olsun istendi
+    → Türkçe kadın ses adayları (`female/kadın/filiz/yelda/zira`) +
+    `pitch: 0.75`, `rate: 0.95` eklendi.
+  - Ardından "İngilizce bilen, Türkçeyi ana dili gibi kullanan mülakatçı"
+    isteği üzerine doğal/online Türkçe sesler (`natural/online/emel` —
+    örn. Microsoft Emel) önceliklendirildi, bulunamazsa kadın/varsayılan
+    Türkçe sese düşer.
+  - Tüm değişiklikler `npx tsc --noEmit` + `npx eslint` temiz, commit edildi
+    ve push'landı. Hangi sesin gerçekte kullanılacağı tarayıcı/işletim
+    sisteminin sunduğu seslere bağlı (Edge/Windows'ta Emel varsa seçilir).
+  - **Sesli mod konusu kullanıcı tarafında "şimdilik tamam, gerekirse
+    sonra devam" olarak kapatıldı.**
+
+- ❓ **Sıradaki aşama — Faz 2 (Cloudflare ile e-posta entegrasyonu)**:
+  Kullanıcı Faz 2'ye Cloudflare Email Routing (ücretsiz alternatif) ile
+  devam etmeyi seçti. Bir ekip arkadaşıyla iş bölümü planlanıyor (henüz
+  netleşmedi). Önerilen görev dağılımı:
+  - **Backend/altyapı**: Cloudflare Email Routing kurulumu (domain DNS,
+    MX/TXT kayıtları), gelen maili `/api/webhooks/inbound-email`'e ileten
+    Cloudflare Worker yazımı, mevcut `classifyInboundEmail()` +
+    `inbound_emails`/`notifications` altyapısının (migration `0004`,
+    zaten Supabase'de çalıştırılmış) Cloudflare ile uçtan uca bağlanıp
+    test edilmesi.
+  - **Frontend/UI**: `/settings`'teki forwarding adresi kartının
+    Cloudflare'e göre güncellenmesi (şu an Gmail/Resend odaklı metin),
+    `NotificationBell` bileşeninin UX iyileştirmeleri (okundu işaretleme,
+    liste tasarımı), başvuru kartlarında "AI tarafından güncellendi"
+    görsel vurgusu.
+  - Henüz hangi parçanın kime ait olacağı ve implementasyona başlama
+    kararı **netleşmedi** — yeni oturumda kullanıcıya görev dağılımı
+    sorulup Faz 2 implementasyonuna (Plan Mode ile) başlanabilir.
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard
 *Yeni dış servis gerektirmez, mevcut altyapı üzerine kurulur.*
