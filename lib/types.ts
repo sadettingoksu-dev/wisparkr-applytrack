@@ -32,6 +32,8 @@ export interface JobParseResult {
   source_url: string
 }
 
+export type { RequiredDocument, DocumentImportance } from '@/lib/anthropic'
+
 export interface FitScoreResult {
   score: number
   suggestions: string[]

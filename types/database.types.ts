@@ -50,6 +50,7 @@ export interface Database {
           fit_suggestions: Json | null
           tailored_cv_text: string | null
           tailored_fit_score: number | null
+          required_documents: Json | null
           notes: string | null
           applied_at: string | null
           interview_date: string | null

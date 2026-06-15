@@ -8,7 +8,7 @@ import { AIChatPanel } from '@/components/chat/AIChatPanel'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { InterviewDateField } from '@/components/applications/InterviewDateField'
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
-import type { Application, AiMessage } from '@/lib/types'
+import type { Application, AiMessage, RequiredDocument } from '@/lib/types'
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -64,6 +64,7 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
           applicationId={app.id}
           initialScore={app.tailored_fit_score}
           hasTailoredCv={Boolean(app.tailored_cv_text)}
+          initialDocuments={app.required_documents as RequiredDocument[] | null}
         />
       </div>
 

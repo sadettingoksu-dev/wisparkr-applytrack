@@ -26,24 +26,102 @@ export interface TailorCvResult {
   suggestions: string[]
 }
 
+const documentImportanceSchema = z.enum(['critical', 'important', 'optional'])
+export type DocumentImportance = z.infer<typeof documentImportanceSchema>
+
+const requiredDocumentsSchema = z.object({
+  documents: z
+    .array(z.object({ name: z.string().min(1), importance: documentImportanceSchema }))
+    .max(5),
+})
+
+export interface RequiredDocument {
+  name: string
+  importance: DocumentImportance
+  has: boolean | null
+}
+
+/**
+ * Analyzes a job posting and returns up to 5 sector-specific
+ * documents/certificates candidates are typically expected to have
+ * (e.g. "Kimyasal Güvenlik Sertifikası" for a chemistry role). Returns an
+ * empty list for generic postings that don't call for extra documents.
+ */
+export async function analyzeRequiredDocuments(
+  anthropic: Anthropic,
+  job: { company_name: string; position_title: string; job_description: string | null }
+): Promise<{ name: string; importance: DocumentImportance }[]> {
+  const prompt = [
+    'Aşağıda bir iş ilanı var. Bu ilanın ait olduğu sektör/alan için adayların',
+    'CV\'lerinde genellikle bulunması beklenen, İŞE ÖZEL EK BELGE/SERTİFİKA/EVRAK',
+    'türlerini listele (örnek: kimya mühendisliği ilanı için "Kimyasal Güvenlik/MSDS',
+    'Eğitim Sertifikası", elektrik için "İş Güvenliği Uzmanlığı Belgesi", yazılım için',
+    '"AWS/Cloud Sertifikası" gibi). İlan genel bir pozisyon olup özel bir belge',
+    'gerektirmiyorsa boş liste döndür.',
+    '',
+    'Her belge için önem derecesi belirle:',
+    '- "critical": bu belge olmadan başvuru ciddi şekilde zayıf kalır',
+    '- "important": olması büyük avantaj ama olmazsa eleme sebebi değil',
+    '- "optional": varsa iyi olur ama etkisi azdır',
+    '',
+    'En fazla 5 belge döndür. SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    '{"documents": [{"name": "...", "importance": "critical|important|optional"}, ...]}',
+    '',
+    `İş ilanı (${job.company_name} - ${job.position_title}):`,
+    (job.job_description || 'Açıklama yok').slice(0, 4000),
+  ].join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 1024,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = requiredDocumentsSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data.documents
+}
+
 /**
  * Rewrites a candidate's CV text to better match a specific job posting,
- * and scores how application-ready the tailored CV is (0-100).
+ * and scores how application-ready the tailored CV is (0-100). If
+ * `documents` is provided, missing critical/important sector-specific
+ * documents pull the score down (missing optional ones barely affect it).
  */
 export async function tailorCv(
   anthropic: Anthropic,
   cvText: string,
-  job: { company_name: string; position_title: string; job_description: string | null }
+  job: { company_name: string; position_title: string; job_description: string | null },
+  documents: RequiredDocument[] = []
 ): Promise<TailorCvResult> {
+  const documentLines = documents.map((doc) => {
+    const status = doc.has === true ? 'VAR' : doc.has === false ? 'YOK' : 'BELİRTİLMEDİ'
+    return `- ${doc.name} (önem: ${doc.importance}, durum: ${status})`
+  })
+
   const prompt = [
     'Aşağıda bir adayın CV metni ve başvurduğu iş ilanının açıklaması var.',
     'CV\'yi bu ilana göre yeniden düzenle: ilanla en alakalı deneyim/becerileri öne çıkar,',
     'ilandaki anahtar kelimelere uygun şekilde ifade et, gereksiz/ilgisiz kısımları kısalt.',
     'Adayın gerçekte sahip olmadığı bir beceri veya deneyimi EKLEME, UYDURMA.',
     'CV\'nin genel yapısını (bölümler, kronoloji) koru, sadece içeriği güçlendir.',
+    '',
     'Ardından, yeniden düzenlenmiş CV\'nin bu ilana ne kadar hazır olduğunu 0-100 arası',
-    'bir "başvuru hazırlık skoru" ile değerlendir ve adayın CV dışında yapabileceği',
-    '(örn. eksik bir sertifika, deneyim alanı) tam olarak 3 somut öneri ver.',
+    'bir "başvuru hazırlık skoru" ile değerlendir. Skoru hesaplarken CV-ilan uyumuna',
+    'EK OLARAK şu sektöre özel belge durumunu da dikkate al:',
+    documentLines.length > 0 ? documentLines.join('\n') : '(bu ilan için ek belge gerekmiyor)',
+    '',
+    'Kural: "critical" önemdeki bir belge YOK ise skoru belirgin şekilde düşür',
+    '(yaklaşık 15-25 puan). "important" önemdeki bir belge YOK ise orta düzeyde',
+    'düşür (yaklaşık 5-10 puan). "optional" önemdeki bir belge YOK ise skoru',
+    'çok az etkile (0-3 puan) veya hiç etkileme. "BELİRTİLMEDİ" durumundaki',
+    'belgeleri YOK gibi değerlendirme, dikkate alma.',
+    '',
+    'Tam olarak 3 somut öneri ver: eksik kritik/önemli belgeler varsa önce onları',
+    'öner, kalan önerileri CV/deneyim için ver.',
     'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
     '{"tailored_cv": "<yeniden düzenlenmiş CV metni>", "score": <0-100 arası sayı>, "suggestions": ["öneri 1", "öneri 2", "öneri 3"]}',
     '',

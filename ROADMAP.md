@@ -60,7 +60,22 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   ÇALIŞTIRILMADI, kullanıcı tarafında bekleyen adım**. AI prompt + PDF
   üretimi gerçek Anthropic API ile test edildi (skor 78 döndü, geçerli PDF
   üretildi).
-- ❓ Sıradaki adım: migration 0006 Supabase'de çalıştırılınca bu özellik
+- ✅ **CV yükleme butonu düzeltildi** (2026-06-15): Ayarlar sayfasındaki CV
+  yükleme alanı statik HTML'di, hiçbir işlevi yoktu. `CvUploadCard` client
+  component eklendi, mevcut `/api/cv/upload` endpoint'ine bağlandı.
+- ✅ **Sektöre özel belge kontrol listesi (cvAutoTailoring genişletmesi)
+  tamamlandı** (2026-06-15): `lib/anthropic.ts` → `analyzeRequiredDocuments()`
+  ilanı analiz edip o sektöre özel en fazla 5 belge/sertifika önerir, her
+  birine `critical/important/optional` önem derecesi atar.
+  `POST /api/ai/required-documents` bu listeyi üretip
+  `applications.required_documents` (jsonb) kolonuna kaydeder. `CvTailorCard`
+  bu listeyi "Var/Yok" toggle'larıyla gösterir; kullanıcının cevapları
+  `tailorCv()`'e iletilir ve skor hesabını etkiler (kritik belge eksikse
+  -15/-25, önemli eksikse -5/-10, opsiyonel eksikse 0/-3; belirtilmemiş
+  belgeler skoru etkilemez). Migration `0007_required_documents.sql`
+  (applications.required_documents jsonb) — **Supabase'de henüz
+  ÇALIŞTIRILMADI, kullanıcı tarafında bekleyen adım**.
+- ❓ Sıradaki adım: migration 0007 Supabase'de çalıştırılınca bu özellik
   canlıda test edilir → sonra Faz 4 (mock mülakat simülasyonu).
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard

@@ -5,10 +5,19 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
 import { getAnthropicClient, tailorCv } from '@/lib/anthropic'
 import { getPlan } from '@/lib/plans'
-import type { Application } from '@/lib/types'
+import type { Application, RequiredDocument } from '@/lib/types'
 
 const bodySchema = z.object({
   application_id: z.string().uuid(),
+  documents: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        importance: z.enum(['critical', 'important', 'optional']),
+        has: z.boolean().nullable(),
+      })
+    )
+    .optional(),
 })
 
 export async function POST(request: Request) {
@@ -50,7 +59,7 @@ export async function POST(request: Request) {
       { status: 400 }
     )
   }
-  const { application_id } = parsed.data
+  const { application_id, documents } = parsed.data
 
   if (!profile.cv_text) {
     return NextResponse.json(
@@ -88,13 +97,23 @@ export async function POST(request: Request) {
     )
   }
 
+  const existingDocuments = Array.isArray(application.required_documents)
+    ? (application.required_documents as unknown as RequiredDocument[])
+    : []
+  const effectiveDocuments: RequiredDocument[] = documents ?? existingDocuments
+
   let result
   try {
-    result = await tailorCv(anthropic, profile.cv_text, {
-      company_name: application.company_name,
-      position_title: application.position_title,
-      job_description: application.job_description,
-    })
+    result = await tailorCv(
+      anthropic,
+      profile.cv_text,
+      {
+        company_name: application.company_name,
+        position_title: application.position_title,
+        job_description: application.job_description,
+      },
+      effectiveDocuments
+    )
   } catch {
     return NextResponse.json(
       { error: { code: 'AI_REQUEST_FAILED', message: 'CV optimize edilemedi.' } },
@@ -107,11 +126,17 @@ export async function POST(request: Request) {
     .update({
       tailored_cv_text: result.tailored_cv,
       tailored_fit_score: result.score,
+      required_documents: effectiveDocuments as never,
     } as never)
     .eq('id', application_id)
     .eq('user_id', userId)
 
   return NextResponse.json({
-    data: { tailored_cv: result.tailored_cv, score: result.score, suggestions: result.suggestions },
+    data: {
+      tailored_cv: result.tailored_cv,
+      score: result.score,
+      suggestions: result.suggestions,
+      documents: effectiveDocuments,
+    },
   })
 }
