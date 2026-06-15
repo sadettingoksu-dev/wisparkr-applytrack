@@ -44,11 +44,24 @@ kanban/AI altyapısı üzerine kurularak bu hedefe ilerler.
   `ExtensionTokenCard`, ve `extension/` klasöründe MV3 tarayıcı eklentisi
   (LinkedIn `/jobs/view/*` ve Indeed `viewjob` sayfalarında "ApplyTrack'e
   Kaydet" düğmesi, popup'tan site adresi + kişisel anahtar girilir).
-  **Bekleyen adım**: migration `0005`'i Supabase SQL Editor'de çalıştırmak
-  (kullanıcı tarafında) + eklentiyi `chrome://extensions` üzerinden
-  paketlenmemiş yükleyip gerçek LinkedIn/Indeed sayfalarında test etmek
-  (bkz. `extension/README.md`).
-- ❓ Sıradaki adım: Faz 3 testi sonrası Faz 4 (mock mülakat simülasyonu).
+  **Migration 0005 Supabase'de çalıştırıldı, eklenti yüklendi ve gerçek
+  LinkedIn ilanından kayıt başarıyla test edildi (2026-06-15). Faz 3
+  TAMAMLANDI.**
+- ✅ **CV otomatik optimizasyon + PDF (cvAutoTailoring) tamamlandı**
+  (2026-06-15, commit `95944c0`): `lib/anthropic.ts` → `tailorCv()` —
+  kullanıcının CV'sini seçili ilana göre yeniden düzenler, 0-100 arası
+  "başvuru hazırlık skoru" + 3 öneri döner. `POST /api/ai/tailor-cv`
+  (Pro/Career Coach, aylık AI limitine dahil — `ai_usage.cv_tailors_used`),
+  `GET /api/applications/[id]/cv-pdf` (pdfkit ile optimize edilmiş CV'yi PDF
+  olarak indirir). Başvuru detayında `CvTailorCard`: skor < 75 ise
+  "Henüz hazır değil", >= 75 ise PDF indirme butonu açılır, >= 90 "Mükemmel"
+  etiketi. Migration `0006_cv_tailoring.sql` (applications.tailored_cv_text/
+  tailored_fit_score, ai_usage.cv_tailors_used) — **Supabase'de henüz
+  ÇALIŞTIRILMADI, kullanıcı tarafında bekleyen adım**. AI prompt + PDF
+  üretimi gerçek Anthropic API ile test edildi (skor 78 döndü, geçerli PDF
+  üretildi).
+- ❓ Sıradaki adım: migration 0006 Supabase'de çalıştırılınca bu özellik
+  canlıda test edilir → sonra Faz 4 (mock mülakat simülasyonu).
 
 ## Faz 1 — Planlayıcı / Proaktif Dashboard
 *Yeni dış servis gerektirmez, mevcut altyapı üzerine kurulur.*
