@@ -4,7 +4,7 @@ import { PricingCard } from '@/components/pricing/PricingCard'
 import { PLANS, PLAN_ORDER } from '@/lib/plans'
 
 const FEATURE_LISTS: Record<string, string[]> = {
-  free: ['10 başvuru', '10 AI soru/ay', 'Temel kanban board'],
+  free: ['5 başvuru', '10 AI soru/ay', 'Temel kanban board'],
   pro: ['Sınırsız başvuru', '200 AI soru/ay', 'CV uyum skoru', 'CV otomatik uyarlama'],
   career_coach: [
     'Pro\'daki her şey',
