@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles } from 'lucide-react'
 import { AppDemo } from '@/components/landing/AppDemo'
-import { useEffect, useRef } from 'react'
 
 const FEATURES = [
   {
@@ -24,48 +23,16 @@ const FEATURES = [
   },
 ]
 
-function Bubbles() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    canvas.width = canvas.offsetWidth
-    canvas.height = canvas.offsetHeight
-
-    const bubbles = Array.from({ length: 18 }, () => ({
-      x: Math.random() * canvas.width * 0.5,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 6 + 2,
-      speedX: -(Math.random() * 0.4 + 0.1),
-      speedY: -(Math.random() * 0.3 + 0.1),
-      opacity: Math.random() * 0.3 + 0.05,
-    }))
-
-    let animId: number
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      bubbles.forEach((b) => {
-        ctx.beginPath()
-        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(168,85,247,${b.opacity})`
-        ctx.fill()
-        b.x += b.speedX
-        b.y += b.speedY
-        if (b.x < -10) b.x = canvas.width * 0.5
-        if (b.y < -10) b.y = canvas.height + 10
-      })
-      animId = requestAnimationFrame(draw)
-    }
-    draw()
-    return () => cancelAnimationFrame(animId)
-  }, [])
-
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
-}
+// Baloncuklar demo panelinin sol kenarından çıkıp sola/yukarı akar
+const BUBBLE_DEFS = [
+  { size: 10, delay: '0s',   duration: '6s',  offsetY: '70%' },
+  { size: 7,  delay: '1.2s', duration: '7s',  offsetY: '55%' },
+  { size: 14, delay: '2.5s', duration: '8s',  offsetY: '80%' },
+  { size: 6,  delay: '0.6s', duration: '5.5s',offsetY: '40%' },
+  { size: 9,  delay: '3.1s', duration: '6.5s',offsetY: '65%' },
+  { size: 5,  delay: '1.8s', duration: '7.5s',offsetY: '30%' },
+  { size: 12, delay: '4s',   duration: '9s',  offsetY: '85%' },
+]
 
 export default function LandingPage() {
   return (
@@ -101,9 +68,6 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-purple-600/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-32 right-1/4 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
 
-          {/* Sol baloncuklar */}
-          <Bubbles />
-
           <div className="relative mx-auto flex max-w-6xl items-center px-6 py-28">
             {/* Sol — yazılar */}
             <div className="relative z-10 w-full md:w-1/2">
@@ -131,16 +95,31 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Sağ — App Demo */}
+            {/* Sağ — App Demo + baloncuklar */}
             <div className="pointer-events-none hidden md:flex md:w-1/2 justify-center items-center relative">
-              <div className="scale-125 origin-center relative">
+              {/* Baloncuklar — panelin sol kenarından çıkıp sola/yukarı akar */}
+              <div className="absolute inset-0 overflow-hidden">
+                {BUBBLE_DEFS.map((b, i) => (
+                  <div
+                    key={i}
+                    className="absolute rounded-full border border-purple-400/40 bg-purple-500/10"
+                    style={{
+                      width: b.size,
+                      height: b.size,
+                      top: b.offsetY,
+                      left: '50%', // panelin sol kenarı yaklaşık burası
+                      transform: 'translate(-50%, -50%)',
+                      animation: `bubbleFloat ${b.duration} ${b.delay} infinite ease-in`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="scale-125 origin-center relative z-10">
                 <AppDemo />
-                {/* Demo kenar vignette — orta net, kenarlar sönük */}
                 <div
                   className="absolute inset-0 pointer-events-none rounded-2xl"
-                  style={{
-                    boxShadow: 'inset 0 0 60px 30px rgba(15,12,41,0.9)',
-                  }}
+                  style={{ boxShadow: 'inset 0 0 60px 30px rgba(15,12,41,0.9)' }}
                 />
               </div>
             </div>
