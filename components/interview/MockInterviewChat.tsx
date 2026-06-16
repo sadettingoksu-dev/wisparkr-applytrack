@@ -189,13 +189,21 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
               </div>
             )}
             {speechSupported && (
-              <Button
-                onClick={toggleVoiceMode}
-                variant="ghost"
-                title={voiceMode ? 'Sesli modu kapat' : 'Sesli modu aç'}
-              >
-                {voiceMode ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-              </Button>
+              <div className="relative group">
+                <Button
+                  onClick={toggleVoiceMode}
+                  variant="ghost"
+                  title={voiceMode ? 'Sesli modu kapat' : 'Sesli modu aç'}
+                >
+                  {voiceMode ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+                </Button>
+                <div className="pointer-events-none absolute right-0 top-full mt-2 z-50 w-56 rounded-lg bg-slate-800 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                  {voiceMode
+                    ? 'Sesli mod açık — mülakatçı sorularını sesli okur, mikrofon ile cevap verebilirsin. Kapatmak için tıkla.'
+                    : 'Sesli modu aç — mülakatçı sorularını sesli okusun ve mikrofon ile cevap verebilesin.'}
+                  <div className="absolute -top-1.5 right-3 h-3 w-3 rotate-45 bg-slate-800" />
+                </div>
+              </div>
             )}
             <span className="text-xs text-slate-500">
               {status === 'completed'
