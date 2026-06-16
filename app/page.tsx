@@ -43,11 +43,6 @@ export default function LandingPage() {
             <Link href="/login" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
               Giriş Yap
             </Link>
-            <Link href="/signup">
-              <button className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/40">
-                Ücretsiz Başla
-              </button>
-            </Link>
           </div>
         </div>
       </header>
