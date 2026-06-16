@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -20,6 +20,8 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [sessionsOpen, setSessionsOpen] = useState(false)
+  const [showAll, setShowAll] = useState(false)
 
   async function handleStart() {
     setLoading(true)
@@ -67,40 +69,60 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
       </Button>
 
       {sessions.length > 0 && (
-        <div className="space-y-2 border-t border-slate-100 pt-3">
-          <p className="text-xs font-medium text-slate-500">Geçmiş Oturumlar</p>
-          {sessions.map((session) => {
-            const readiness =
-              session.status === 'completed' && session.overall_score !== null
-                ? getInterviewReadiness(session.overall_score)
-                : null
-            return (
-              <Link
-                key={session.id}
-                href={`/applications/${applicationId}/mock-interview/${session.id}`}
-                className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"
-              >
-                <span className="text-slate-600">
-                  {new Date(session.created_at).toLocaleDateString('tr-TR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                  })}
-                </span>
-                {session.status === 'completed' ? (
-                  session.overall_score !== null && readiness ? (
-                    <Badge className={`bg-slate-50 ${readiness.className}`}>
-                      %{session.overall_score} · {readiness.label}
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-slate-50 text-slate-500">Rapor bekliyor</Badge>
-                  )
-                ) : (
-                  <Badge className="bg-purple-50 text-purple-600">Devam ediyor</Badge>
-                )}
-              </Link>
-            )
-          })}
+        <div className="border-t border-slate-100 pt-3">
+          <button
+            onClick={() => setSessionsOpen((prev) => !prev)}
+            className="flex w-full items-center justify-between text-xs font-medium text-slate-500 hover:text-slate-700"
+          >
+            <span>Geçmiş Oturumlar ({sessions.length})</span>
+            {sessionsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+
+          {sessionsOpen && (
+            <div className="mt-2 space-y-2">
+              {(showAll ? sessions : sessions.slice(0, 3)).map((session) => {
+                const readiness =
+                  session.status === 'completed' && session.overall_score !== null
+                    ? getInterviewReadiness(session.overall_score)
+                    : null
+                return (
+                  <Link
+                    key={session.id}
+                    href={`/applications/${applicationId}/mock-interview/${session.id}`}
+                    className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"
+                  >
+                    <span className="text-slate-600">
+                      {new Date(session.created_at).toLocaleDateString('tr-TR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                      })}
+                    </span>
+                    {session.status === 'completed' ? (
+                      session.overall_score !== null && readiness ? (
+                        <Badge className={`bg-slate-50 ${readiness.className}`}>
+                          %{session.overall_score} · {readiness.label}
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-slate-50 text-slate-500">Rapor bekliyor</Badge>
+                      )
+                    ) : (
+                      <Badge className="bg-purple-50 text-purple-600">Devam ediyor</Badge>
+                    )}
+                  </Link>
+                )
+              })}
+
+              {sessions.length > 3 && (
+                <button
+                  onClick={() => setShowAll((prev) => !prev)}
+                  className="w-full pt-1 text-xs text-purple-600 hover:text-purple-800"
+                >
+                  {showAll ? 'Daha az göster' : `Daha fazla göster (${sessions.length - 3} oturum daha)`}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
     </Card>
