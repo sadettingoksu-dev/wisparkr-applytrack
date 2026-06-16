@@ -1,32 +1,42 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { MessageSquareText, FileSearch, LayoutDashboard, Star } from 'lucide-react'
 
 const STEPS = [
-  {
-    label: 'Başvurularını kanban board ile takip et',
-    cursor: { x: 62, y: 48 },
-    screen: 'kanban',
-  },
-  {
-    label: "CV'ni yükle, AI analiz etsin",
-    cursor: { x: 50, y: 60 },
-    screen: 'cv',
-  },
-  {
-    label: 'İlana uyum skorunu anında gör',
-    cursor: { x: 72, y: 52 },
-    screen: 'score',
-  },
-  {
-    label: 'Kariyer koçunla mülakata hazırlan',
-    cursor: { x: 55, y: 65 },
-    screen: 'coach',
-  },
+  { label: 'Başvurularını kanban board ile takip et', screen: 'kanban', navIndex: 0 },
+  { label: "CV'ni yükle, AI analiz etsin", screen: 'cv', navIndex: 1 },
+  { label: 'İlana uyum skorunu anında gör', screen: 'score', navIndex: 2 },
+  { label: 'Kariyer koçunla mülakata hazırlan', screen: 'coach', navIndex: 3 },
 ]
 
-const STEP_DURATION = 2800
+// Nav ikonlarının koordinatları (sol nav içinde, px cinsinden)
+const NAV_ICON_POS = [
+  { x: 16, y: 28 },
+  { x: 16, y: 56 },
+  { x: 16, y: 84 },
+  { x: 16, y: 112 },
+]
+
+// Her ekran için imleç hareket noktaları
+const IDLE_PATHS: Record<string, { x: number; y: number }[]> = {
+  kanban: [
+    { x: 80, y: 50 }, { x: 140, y: 80 }, { x: 200, y: 60 },
+    { x: 160, y: 100 }, { x: 100, y: 90 }, { x: 180, y: 130 },
+  ],
+  cv: [
+    { x: 120, y: 80 }, { x: 150, y: 100 }, { x: 130, y: 130 },
+    { x: 160, y: 150 }, { x: 110, y: 160 },
+  ],
+  score: [
+    { x: 140, y: 60 }, { x: 100, y: 100 }, { x: 170, y: 120 },
+    { x: 120, y: 150 }, { x: 150, y: 80 },
+  ],
+  coach: [
+    { x: 80, y: 70 }, { x: 160, y: 90 }, { x: 100, y: 120 },
+    { x: 180, y: 140 }, { x: 130, y: 160 },
+  ],
+}
 
 function KanbanScreen() {
   const cols = [
@@ -38,13 +48,9 @@ function KanbanScreen() {
     <div className="flex gap-2 p-3 h-full">
       {cols.map((col) => (
         <div key={col.label} className="flex-1 flex flex-col gap-1.5">
-          <div className={`rounded-md border px-2 py-1 text-[9px] font-bold text-white/70 ${col.color}`}>
-            {col.label}
-          </div>
+          <div className={`rounded-md border px-2 py-1 text-[9px] font-bold text-white/70 ${col.color}`}>{col.label}</div>
           {col.cards.map((c) => (
-            <div key={c} className="rounded-md bg-white/10 border border-white/10 px-2 py-1.5 text-[8px] text-white/80">
-              {c}
-            </div>
+            <div key={c} className="rounded-md bg-white/10 border border-white/10 px-2 py-1.5 text-[8px] text-white/80">{c}</div>
           ))}
         </div>
       ))}
@@ -76,13 +82,8 @@ function ScoreScreen() {
       <div className="relative flex h-24 w-24 items-center justify-center">
         <svg className="absolute inset-0" viewBox="0 0 36 36">
           <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
-          <circle
-            cx="18" cy="18" r="15" fill="none"
-            stroke="url(#grad)" strokeWidth="3"
-            strokeDasharray="78 94"
-            strokeLinecap="round"
-            transform="rotate(-90 18 18)"
-          />
+          <circle cx="18" cy="18" r="15" fill="none" stroke="url(#grad)" strokeWidth="3"
+            strokeDasharray="78 94" strokeLinecap="round" transform="rotate(-90 18 18)" />
           <defs>
             <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#a855f7" />
@@ -127,26 +128,18 @@ function CoachScreen() {
           Google mülakatı için hazırlanıyorum
         </div>
         <div className="self-start rounded-xl rounded-tl-none bg-white/10 px-2.5 py-1.5 text-[8px] text-white/80 max-w-[80%]">
-          Harika! Sistem tasarımı ve algoritma sorularına odaklanalım...
+          Harika! Algoritma sorularına odaklanalım...
         </div>
       </div>
       <div className="flex gap-1.5 items-center border-t border-white/10 pt-2">
-        <div className="flex-1 rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-[7px] text-white/30">
-          Soru sor...
-        </div>
+        <div className="flex-1 rounded-lg bg-white/5 border border-white/10 px-2 py-1 text-[7px] text-white/30">Soru sor...</div>
         <div className="rounded-lg bg-purple-600 px-2 py-1 text-[7px] text-white font-bold">↑</div>
       </div>
     </div>
   )
 }
 
-const SCREEN_MAP = {
-  kanban: KanbanScreen,
-  cv: CvScreen,
-  score: ScoreScreen,
-  coach: CoachScreen,
-}
-
+const SCREEN_MAP = { kanban: KanbanScreen, cv: CvScreen, score: ScoreScreen, coach: CoachScreen }
 const NAV_ICONS = [
   { icon: LayoutDashboard, screen: 'kanban' },
   { icon: FileSearch, screen: 'cv' },
@@ -156,17 +149,68 @@ const NAV_ICONS = [
 
 export function AppDemo() {
   const [step, setStep] = useState(0)
-  const [visible, setVisible] = useState(true)
+  const [labelVisible, setLabelVisible] = useState(true)
+  const [clicking, setClicking] = useState(false)
+
+  // İmleç pozisyonu
+  const [cursor, setCursor] = useState({ x: NAV_ICON_POS[0].x, y: NAV_ICON_POS[0].y })
+  const idleIndexRef = useRef(0)
+  const phaseRef = useRef<'move-to-nav' | 'click' | 'idle'>('idle')
+  const nextStepRef = useRef(1)
+  const stepRef = useRef(0)
+
+  useEffect(() => { stepRef.current = step }, [step])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setVisible(false)
-      setTimeout(() => {
-        setStep((s) => (s + 1) % STEPS.length)
-        setVisible(true)
-      }, 300)
-    }, STEP_DURATION)
-    return () => clearInterval(interval)
+    let timeout: ReturnType<typeof setTimeout>
+
+    const goToNav = () => {
+      // İmleci bir sonraki nav ikonuna götür
+      const next = (stepRef.current + 1) % STEPS.length
+      nextStepRef.current = next
+      phaseRef.current = 'move-to-nav'
+      setCursor({ x: NAV_ICON_POS[next].x, y: NAV_ICON_POS[next].y })
+
+      timeout = setTimeout(() => {
+        // Tıklama efekti
+        setClicking(true)
+        timeout = setTimeout(() => {
+          setClicking(false)
+          // Ekran geçişi
+          setLabelVisible(false)
+          timeout = setTimeout(() => {
+            setStep(next)
+            setLabelVisible(true)
+            phaseRef.current = 'idle'
+            idleIndexRef.current = 0
+            doIdle()
+          }, 300)
+        }, 250)
+      }, 700) // imleç ikon üzerine gelme süresi
+    }
+
+    const doIdle = () => {
+      const screen = STEPS[nextStepRef.current].screen
+      const path = IDLE_PATHS[screen]
+      const idx = idleIndexRef.current % path.length
+      const target = path[idx]
+      // Nav sol kenarına offset ekle (nav genişliği ~36px)
+      setCursor({ x: target.x + 36, y: target.y })
+      idleIndexRef.current++
+
+      if (idleIndexRef.current < path.length) {
+        timeout = setTimeout(doIdle, 500)
+      } else {
+        // Yeterince idle hareket yaptı, sonraki adıma geç
+        timeout = setTimeout(goToNav, 600)
+      }
+    }
+
+    // Başlangıç: mevcut ekranda idle hareketler
+    doIdle()
+
+    return () => clearTimeout(timeout)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const current = STEPS[step]
@@ -177,68 +221,87 @@ export function AppDemo() {
       {/* Açıklama yazısı */}
       <div
         className="text-center text-lg font-bold text-white transition-opacity duration-300 min-h-[28px]"
-        style={{ opacity: visible ? 1 : 0 }}
+        style={{ opacity: labelVisible ? 1 : 0 }}
       >
         {current.label}
       </div>
 
-      {/* Mock ekran */}
-      <div className="relative w-72 rounded-2xl border border-white/15 bg-[#1a1730] shadow-2xl shadow-purple-900/30 overflow-hidden"
-        style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.3s' }}
+      {/* Mock ekran — kenarlarda vignette */}
+      <div className="relative w-72 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/40"
+        style={{ opacity: labelVisible ? 1 : 0.7, transition: 'opacity 0.3s' }}
       >
-        {/* Tarayıcı üst bar */}
-        <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/5 px-3 py-2">
-          <div className="h-2 w-2 rounded-full bg-red-500/60" />
-          <div className="h-2 w-2 rounded-full bg-yellow-500/60" />
-          <div className="h-2 w-2 rounded-full bg-green-500/60" />
-          <div className="ml-2 flex-1 rounded bg-white/5 px-2 py-0.5 text-[8px] text-white/30">
-            wisparkr.com
+        {/* Gerçek içerik */}
+        <div className="rounded-2xl border border-white/15 bg-[#1a1730] overflow-hidden">
+          {/* Tarayıcı bar */}
+          <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/5 px-3 py-2">
+            <div className="h-2 w-2 rounded-full bg-red-500/60" />
+            <div className="h-2 w-2 rounded-full bg-yellow-500/60" />
+            <div className="h-2 w-2 rounded-full bg-green-500/60" />
+            <div className="ml-2 flex-1 rounded bg-white/5 px-2 py-0.5 text-[8px] text-white/30">wisparkr.com</div>
           </div>
-        </div>
 
-        {/* App içi layout */}
-        <div className="flex" style={{ height: 200 }}>
-          {/* Sol nav */}
-          <div className="flex flex-col items-center gap-3 border-r border-white/10 bg-white/3 px-2 py-3">
-            {NAV_ICONS.map(({ icon: Icon, screen }) => (
+          <div className="flex" style={{ height: 200 }}>
+            {/* Sol nav */}
+            <div className="flex flex-col items-center gap-3 border-r border-white/10 bg-white/3 px-2 py-3 relative" style={{ width: 36 }}>
+              {NAV_ICONS.map(({ icon: Icon, screen }, i) => (
+                <div
+                  key={screen}
+                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                    current.screen === screen ? 'bg-purple-600 text-white' : 'text-white/30'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {/* Tıklama ripple */}
+                  {clicking && nextStepRef.current === (i) && (
+                    <span className="absolute inset-0 rounded-lg animate-ping bg-purple-500/40" />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* İçerik */}
+            <div className="flex-1 relative overflow-hidden">
+              <ScreenComponent />
+
+              {/* İmleç */}
               <div
-                key={screen}
-                className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
-                  current.screen === screen ? 'bg-purple-600 text-white' : 'text-white/30'
-                }`}
+                className="pointer-events-none absolute"
+                style={{
+                  left: cursor.x - 36, // nav offset çıkar
+                  top: cursor.y,
+                  transition: 'left 0.5s cubic-bezier(0.4,0,0.2,1), top 0.5s cubic-bezier(0.4,0,0.2,1)',
+                  zIndex: 10,
+                }}
               >
-                <Icon className="h-3.5 w-3.5" />
+                <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
+                  <path d="M0 0L0 13L3.5 9.5L5.5 15L7.5 14L5.5 8.5L10 8.5Z" fill="white" stroke="#6b21a8" strokeWidth="0.8" />
+                </svg>
+                {clicking && (
+                  <span className="absolute -top-1 -left-1 h-4 w-4 rounded-full bg-white/30 animate-ping" />
+                )}
               </div>
-            ))}
-          </div>
-
-          {/* İçerik */}
-          <div className="flex-1 relative">
-            <ScreenComponent />
-
-            {/* Fare imleci */}
-            <div
-              className="pointer-events-none absolute transition-all duration-700"
-              style={{ left: `${current.cursor.x}%`, top: `${current.cursor.y}%` }}
-            >
-              <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
-                <path d="M0 0L0 14L4 10L6.5 16L8.5 15L6 9L11 9Z" fill="white" stroke="#6b21a8" strokeWidth="1" />
-              </svg>
             </div>
           </div>
+
+          {/* Adım indikatörü */}
+          <div className="flex justify-center gap-1.5 py-2 border-t border-white/10">
+            {STEPS.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  i === step ? 'w-4 bg-purple-400' : 'w-1 bg-white/20'
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Alt adım göstergesi */}
-        <div className="flex justify-center gap-1.5 py-2 border-t border-white/10">
-          {STEPS.map((_, i) => (
-            <div
-              key={i}
-              className={`h-1 rounded-full transition-all duration-300 ${
-                i === step ? 'w-4 bg-purple-400' : 'w-1 bg-white/20'
-              }`}
-            />
-          ))}
-        </div>
+        {/* Kenar vignette — içine işlenmiş efekt */}
+        <div className="pointer-events-none absolute inset-0 rounded-2xl"
+          style={{
+            boxShadow: 'inset 0 0 40px 15px rgba(15,12,41,0.85)',
+          }}
+        />
       </div>
     </div>
   )
