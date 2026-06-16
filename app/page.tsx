@@ -1,11 +1,8 @@
-'use client'
-
 import Link from 'next/link'
-import { Link as LinkIcon, FileSearch, MessageSquareText, Mail, X, Sparkles } from 'lucide-react'
+import { Link as LinkIcon, FileSearch, MessageSquareText } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/Button'
-import { useEffect, useState } from 'react'
 
 const FEATURES = [
   {
@@ -26,64 +23,6 @@ const FEATURES = [
   },
 ]
 
-function RejectionAnimation() {
-  const [phase, setPhase] = useState<'envelope' | 'stamp' | 'sparkle'>('envelope')
-
-  useEffect(() => {
-    let t1: ReturnType<typeof setTimeout>
-    let t2: ReturnType<typeof setTimeout>
-    let t3: ReturnType<typeof setTimeout>
-    const run = () => {
-      setPhase('envelope')
-      t1 = setTimeout(() => setPhase('stamp'), 1200)
-      t2 = setTimeout(() => setPhase('sparkle'), 2600)
-      t3 = setTimeout(run, 4800)
-    }
-    run()
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
-  }, [])
-
-  return (
-    <div className="relative flex h-48 w-64 items-center justify-center">
-      {/* Zarf */}
-      <div
-        className={`relative transition-all duration-700 ${
-          phase === 'envelope' ? 'translate-y-0 opacity-100 scale-100' : 'opacity-100 scale-100'
-        }`}
-      >
-        <div className="relative flex h-28 w-48 flex-col items-center justify-center rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-sm shadow-2xl">
-          <Mail className="h-10 w-10 text-white/70" />
-          <p className="mt-2 text-xs text-white/50 font-medium">CV Başvurusu</p>
-
-          {/* Reddedildi damgası */}
-          <div
-            className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
-              phase === 'stamp' ? 'opacity-100 scale-100 rotate-[-8deg]' : 'opacity-0 scale-150 rotate-[-8deg]'
-            }`}
-          >
-            <div className="rounded-lg border-4 border-red-500 px-3 py-1">
-              <div className="flex items-center gap-1">
-                <X className="h-4 w-4 text-red-500" />
-                <span className="text-base font-black uppercase tracking-widest text-red-500">
-                  Reddedildi
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Wisparkr devreye giriyor */}
-          {phase === 'sparkle' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-purple-600/90 backdrop-blur-sm animate-[fadeIn_0.4s_ease]">
-              <Sparkles className="h-8 w-8 text-yellow-300 animate-pulse" />
-              <p className="mt-1 text-xs font-bold text-white">Wisparkr devrede</p>
-              <p className="text-[10px] text-purple-200">Artık sen kontrol et</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function LandingPage() {
   return (
@@ -156,10 +95,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Animasyon */}
-            <div className="flex flex-1 justify-center">
-              <RejectionAnimation />
-            </div>
           </div>
         </section>
 
