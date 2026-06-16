@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { InterviewFeedbackReport } from '@/components/interview/InterviewFeedbackReport'
 import { MOCK_INTERVIEW_QUESTION_COUNT } from '@/utils/constants'
-import { isSpeechSynthesisSupported, speakText, cancelSpeech } from '@/lib/speech'
+import { isSpeechSynthesisSupported, speakText, cancelSpeech, type VoiceGender } from '@/lib/speech'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import type { MockInterview, MockInterviewMessage, MockInterviewFeedback } from '@/lib/types'
 
@@ -30,6 +30,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
   const [retrying, setRetrying] = useState(false)
 
   const [voiceMode, setVoiceMode] = useState(false)
+  const [voiceGender, setVoiceGender] = useState<VoiceGender>('female')
   const [speechSupported, setSpeechSupported] = useState(false)
   const speech = useSpeechRecognition()
   const prevMessageCountRef = useRef(initialMessages.length)
@@ -42,7 +43,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
     if (messages.length > prevMessageCountRef.current) {
       const last = messages[messages.length - 1]
       if (voiceMode && last.role === 'interviewer') {
-        speakText(last.content)
+        speakText(last.content, voiceGender)
       }
     }
     prevMessageCountRef.current = messages.length
@@ -171,6 +172,22 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-800">Mock Mülakat</h3>
           <div className="flex items-center gap-2">
+            {speechSupported && voiceMode && (
+              <div className="flex overflow-hidden rounded-md border border-slate-200 text-xs">
+                <button
+                  onClick={() => setVoiceGender('female')}
+                  className={`px-2 py-1 ${voiceGender === 'female' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                >
+                  ♀ Kadın
+                </button>
+                <button
+                  onClick={() => setVoiceGender('male')}
+                  className={`px-2 py-1 ${voiceGender === 'male' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                >
+                  ♂ Erkek
+                </button>
+              </div>
+            )}
             {speechSupported && (
               <Button
                 onClick={toggleVoiceMode}
@@ -198,7 +215,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
               </p>
               {message.role === 'interviewer' && speechSupported && (
                 <button
-                  onClick={() => speakText(message.content)}
+                  onClick={() => speakText(message.content, voiceGender)}
                   title="Sesli oku"
                   className="text-slate-300 hover:text-slate-500"
                 >
