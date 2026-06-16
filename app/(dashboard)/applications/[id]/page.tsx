@@ -9,6 +9,7 @@ import { AIChatPanel } from '@/components/chat/AIChatPanel'
 import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { InterviewDateField } from '@/components/applications/InterviewDateField'
+import { NotesCard } from '@/components/applications/NotesCard'
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
 import type { Application, AiMessage, MockInterview, RequiredDocument } from '@/lib/types'
 
@@ -76,6 +77,8 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
           applicationId={app.id}
           sessions={(mockInterviewSessions ?? []) as MockInterview[]}
         />
+
+        <NotesCard applicationId={app.id} initialNotes={app.notes} />
       </div>
 
       <div className="lg:col-span-1">

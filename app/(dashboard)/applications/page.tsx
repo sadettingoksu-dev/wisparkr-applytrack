@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { CompareSelector } from '@/components/applications/CompareSelector'
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
 import { formatDate } from '@/utils/format'
 import type { Application } from '@/lib/types'
@@ -24,12 +25,15 @@ export default async function ApplicationsPage() {
           <h1 className="text-2xl font-bold text-slate-800">Başvurular</h1>
           <p className="text-sm text-slate-500">Tüm başvurularının listesi</p>
         </div>
-        <Link href="/applications/new">
-          <Button>
-            <Plus className="h-4 w-4" />
-            Yeni Başvuru
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {apps.length >= 2 && <CompareSelector apps={apps} />}
+          <Link href="/applications/new">
+            <Button>
+              <Plus className="h-4 w-4" />
+              Yeni Başvuru
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {apps.length === 0 ? (
