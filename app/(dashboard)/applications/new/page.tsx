@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Zap, Lock } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -16,6 +18,21 @@ export default function NewApplicationPage() {
   const [parsing, setParsing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [limitReached, setLimitReached] = useState(false)
+  const [limitInfo, setLimitInfo] = useState<{ used: number; max: number } | null>(null)
+
+  // Sayfa açılırken limit kontrolü yap
+  useEffect(() => {
+    fetch('/api/applications/limit')
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.data) {
+          setLimitInfo({ used: json.data.used, max: json.data.max })
+          if (json.data.reached) setLimitReached(true)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   async function handleParse() {
     if (!url) return
@@ -60,7 +77,11 @@ export default function NewApplicationPage() {
     const json = await res.json()
 
     if (!res.ok) {
-      setError(json.error?.message ?? 'Kaydedilemedi.')
+      if (json.error?.code === 'PLAN_LIMIT_EXCEEDED') {
+        setLimitReached(true)
+      } else {
+        setError(json.error?.message ?? 'Kaydedilemedi.')
+      }
       setSaving(false)
       return
     }
@@ -68,13 +89,68 @@ export default function NewApplicationPage() {
     router.push('/board')
   }
 
+  if (limitReached) {
+    return (
+      <div className="mx-auto max-w-md pt-12 text-center space-y-6">
+        <div className="flex justify-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-100">
+            <Lock className="h-8 w-8 text-purple-600" />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold text-slate-800">Başvuru limitine ulaştın</h1>
+          <p className="text-slate-500">
+            Ücretsiz planda en fazla <strong>{limitInfo?.max ?? 2} başvuru</strong> ekleyebilirsin.
+            {limitInfo && ` (${limitInfo.used}/${limitInfo.max} kullanıldı)`}
+          </p>
+        </div>
+
+        <Card className="text-left space-y-3">
+          <p className="text-sm font-semibold text-slate-700">Pro plana geçerek:</p>
+          <ul className="space-y-2 text-sm text-slate-600">
+            {[
+              'Sınırsız başvuru ekle',
+              '200 AI sorusu/ay kullan',
+              'CV otomatik optimizasyonu al',
+              'Mock mülakat provası yap',
+            ].map((f) => (
+              <li key={f} className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-purple-500 shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <div className="pt-1 flex flex-col gap-2">
+            <Link href="/pricing">
+              <Button className="w-full">
+                <Zap className="h-4 w-4" />
+                Planları Gör ve Yükselt
+              </Button>
+            </Link>
+            <Link href="/applications" className="text-center text-sm text-slate-400 hover:text-slate-600">
+              Mevcut başvurularıma dön
+            </Link>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">Yeni Başvuru</h1>
-        <p className="text-sm text-slate-500">
-          İş ilanı linkini yapıştır, bilgileri otomatik doldurmayı dene.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Yeni Başvuru</h1>
+          <p className="text-sm text-slate-500">
+            İş ilanı linkini yapıştır, bilgileri otomatik doldurmayı dene.
+          </p>
+        </div>
+        {limitInfo && limitInfo.max !== null && (
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+            {limitInfo.used}/{limitInfo.max} başvuru
+          </span>
+        )}
       </div>
 
       <Card className="space-y-3">
@@ -98,20 +174,12 @@ export default function NewApplicationPage() {
 
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">Şirket Adı</label>
-            <Input
-              value={companyName}
-              onChange={(e) => setCompanyName(e.target.value)}
-              required
-            />
+            <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
           </div>
 
           <div className="space-y-1">
             <label className="text-sm font-medium text-slate-700">Pozisyon</label>
-            <Input
-              value={positionTitle}
-              onChange={(e) => setPositionTitle(e.target.value)}
-              required
-            />
+            <Input value={positionTitle} onChange={(e) => setPositionTitle(e.target.value)} required />
           </div>
 
           <div className="space-y-1">

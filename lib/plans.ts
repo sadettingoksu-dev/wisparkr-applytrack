@@ -29,7 +29,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     name: 'Free',
     priceMonthly: 0,
     lemonSqueezyVariantId: null,
-    limits: { maxApplications: 10, aiQuestionsPerMonth: 10 },
+    limits: { maxApplications: 2, aiQuestionsPerMonth: 10 },
     features: {
       kanban: true,
       cvFitScore: false,

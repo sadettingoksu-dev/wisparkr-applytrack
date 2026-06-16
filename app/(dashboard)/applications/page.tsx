@@ -1,6 +1,8 @@
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { getPlan } from '@/lib/plans'
+import type { Profile } from '@/lib/types'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -11,12 +13,17 @@ import type { Application } from '@/lib/types'
 
 export default async function ApplicationsPage() {
   const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user!.id).single()
+  const plan = getPlan((profileData as Profile | null)?.plan)
   const { data: applications } = await supabase
     .from('applications')
     .select('*')
     .order('created_at', { ascending: false })
 
   const apps = (applications ?? []) as Application[]
+  const max = plan.limits.maxApplications
+  const limitReached = max !== null && apps.length >= max
 
   return (
     <div className="space-y-6">
@@ -27,12 +34,22 @@ export default async function ApplicationsPage() {
         </div>
         <div className="flex items-center gap-2">
           {apps.length >= 2 && <CompareSelector apps={apps} />}
-          <Link href="/applications/new">
-            <Button>
-              <Plus className="h-4 w-4" />
-              Yeni Başvuru
-            </Button>
-          </Link>
+          {limitReached ? (
+            <Link href="/pricing">
+              <Button variant="secondary">
+                <Zap className="h-4 w-4" />
+                Limiti Aştın — Yükselt
+              </Button>
+            </Link>
+          ) : (
+            <Link href="/applications/new">
+              <Button>
+                <Plus className="h-4 w-4" />
+                Yeni Başvuru
+                {max !== null && <span className="ml-1 opacity-60 text-xs">({apps.length}/{max})</span>}
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
