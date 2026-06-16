@@ -77,12 +77,7 @@ export default function LandingPage() {
                 yerden yönetmeni sağlar.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4 md:justify-start">
-                <Link href="/signup">
-                  <button className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-900/50 hover:opacity-90 transition-opacity">
-                    Ücretsiz Başla
-                  </button>
-                </Link>
-                <Link href="/pricing">
+<Link href="/pricing">
                   <button className="rounded-xl border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-colors backdrop-blur-sm">
                     Fiyatlandırmayı Gör
                   </button>
