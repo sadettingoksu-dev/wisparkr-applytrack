@@ -23,7 +23,7 @@ export const STATUS_BADGE_CLASSES: Record<ApplicationStatus, string> = {
   rejected: 'bg-red-100 text-red-500',
 }
 
-export const APP_NAME = 'ApplyTrack'
+export const APP_NAME = 'Wisparkr'
 
 /** Minimum "başvuru hazırlık skoru" required to unlock the tailored CV PDF download. */
 export const MIN_APPLY_SCORE = 75

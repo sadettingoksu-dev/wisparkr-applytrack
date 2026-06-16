@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ApplyTrack - İlan Kaydet",
+  "name": "Wisparkr - İlan Kaydet",
   "version": "1.1.0",
-  "description": "LinkedIn ve Indeed ilanlarını tek tıkla ApplyTrack'e kaydet. Başvuru formlarını otomatik doldur.",
+  "description": "LinkedIn ve Indeed ilanlarını tek tıkla Wisparkr'e kaydet. Başvuru formlarını otomatik doldur.",
   "permissions": ["storage"],
   "host_permissions": ["<all_urls>"],
   "background": {

@@ -2,9 +2,12 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'ApplyTrack — AI Destekli İş Başvuru Yönetimi',
+  title: 'Wisparkr — AI Destekli İş Başvuru Yönetimi',
   description:
     'İş başvurularını takip et, AI ile CV uyum skoru al, mülakatlara AI desteğiyle hazırlan.',
+  icons: {
+    icon: '/favicon.png',
+  },
 }
 
 export default function RootLayout({

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import clsx from 'clsx'
 import { LayoutDashboard, Kanban, FileText, CalendarDays, Settings, CreditCard, LogOut, BarChart2 } from 'lucide-react'
@@ -30,8 +31,9 @@ export function Sidebar({ email }: { email?: string }) {
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-slate-100 bg-white">
       <div className="border-b border-slate-100 px-6 py-5">
-        <Link href="/" className="text-xl font-bold text-purple-600">
-          {APP_NAME}
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.png" alt="Wisparkr" width={28} height={28} className="rounded-lg" />
+          <span className="text-xl font-bold text-purple-600">{APP_NAME}</span>
         </Link>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">

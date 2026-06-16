@@ -3,7 +3,7 @@ function applytrackCreateButton(getJobData) {
 
   const btn = document.createElement('button')
   btn.id = 'applytrack-save-btn'
-  btn.textContent = "ApplyTrack'e Kaydet"
+  btn.textContent = "Wisparkr'e Kaydet"
   document.body.appendChild(btn)
 
   btn.addEventListener('click', () => {
@@ -13,7 +13,7 @@ function applytrackCreateButton(getJobData) {
       btn.textContent = 'İlan bilgisi bulunamadı'
       setTimeout(() => {
         btn.dataset.state = ''
-        btn.textContent = "ApplyTrack'e Kaydet"
+        btn.textContent = "Wisparkr'e Kaydet"
       }, 2500)
       return
     }
@@ -32,7 +32,7 @@ function applytrackCreateButton(getJobData) {
 
       setTimeout(() => {
         btn.dataset.state = ''
-        btn.textContent = "ApplyTrack'e Kaydet"
+        btn.textContent = "Wisparkr'e Kaydet"
       }, 2500)
     })
   })

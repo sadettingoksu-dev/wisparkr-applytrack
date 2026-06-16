@@ -49,7 +49,7 @@ export function OnboardingBanner({ hasApplications, hasCv }: { hasApplications: 
     <div className="rounded-xl border border-purple-100 bg-gradient-to-r from-purple-50 to-white p-5">
       <div className="mb-4 flex items-start justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-slate-800">ApplyTrack&apos;e Hoş Geldin! 👋</h2>
+          <h2 className="text-sm font-semibold text-slate-800">Wisparkr&apos;e Hoş Geldin! 👋</h2>
           <p className="text-xs text-slate-500 mt-0.5">Başlamak için şu adımları tamamla</p>
         </div>
         <button onClick={() => setDismissed(true)} className="text-slate-400 hover:text-slate-600">

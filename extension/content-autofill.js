@@ -33,7 +33,7 @@ function applytrackInjectAutofill(profile) {
 
   const btn = document.createElement('button')
   btn.id = 'applytrack-autofill-btn'
-  btn.textContent = '⚡ ApplyTrack Doldur'
+  btn.textContent = '⚡ Wisparkr Doldur'
   btn.style.cssText = `
     position: fixed; bottom: 80px; right: 20px; z-index: 2147483647;
     background: #7c3aed; color: white; border: none; border-radius: 8px;
@@ -77,7 +77,7 @@ function applytrackInjectAutofill(profile) {
     btn.textContent = filled > 0 ? `✓ ${filled} alan dolduruldu` : '⚠ Doldurulacak alan yok'
     btn.style.background = filled > 0 ? '#16a34a' : '#dc2626'
     setTimeout(() => {
-      btn.textContent = '⚡ ApplyTrack Doldur'
+      btn.textContent = '⚡ Wisparkr Doldur'
       btn.style.background = '#7c3aed'
     }, 3000)
   })

@@ -35,8 +35,8 @@ export function ExtensionTokenCard({ initialToken }: { initialToken: string }) {
     <Card className="space-y-2">
       <h2 className="text-sm font-semibold text-slate-800">Tarayıcı Eklentisi</h2>
       <p className="text-sm text-slate-500">
-        ApplyTrack tarayıcı eklentisini LinkedIn ve Indeed&apos;deki ilan sayfalarında
-        &quot;ApplyTrack&apos;e Kaydet&quot; düğmesiyle kullanmak için aşağıdaki kişisel
+        Wisparkr tarayıcı eklentisini LinkedIn ve Indeed&apos;deki ilan sayfalarında
+        &quot;Wisparkr&apos;e Kaydet&quot; düğmesiyle kullanmak için aşağıdaki kişisel
         anahtarı eklentiye yapıştır. Bu anahtarı kimseyle paylaşma.
       </p>
       <div className="flex items-center gap-2">

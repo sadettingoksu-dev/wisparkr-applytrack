@@ -34,7 +34,7 @@ export default function LandingPage() {
             İş başvurularını <span className="text-purple-600">AI desteğiyle</span> yönet
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-500">
-            &ldquo;Başvurdum, ne oldu?&rdquo; sorusuna son. ApplyTrack tüm başvuru sürecini tek bir yerden
+            &ldquo;Başvurdum, ne oldu?&rdquo; sorusuna son. Wisparkr tüm başvuru sürecini tek bir yerden
             yönetmeni sağlar.
           </p>
           <div className="mt-8 flex justify-center gap-4">
