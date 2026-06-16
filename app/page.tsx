@@ -60,18 +60,9 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-purple-600/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-32 right-1/4 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
 
-          {/* App Demo — tam arka plan, sağdan sola sönük */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-end opacity-60 scale-150 origin-right">
-            <AppDemo />
-          </div>
-          {/* Soldan sağa gradient — yazıyı okunaklı tutar */}
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{ background: 'linear-gradient(to right, #0f0c29 25%, #0f0c2988 60%, transparent 100%)' }}
-          />
-
-          <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 py-28 text-center md:flex-row md:text-left">
-            <div className="flex-1">
+          <div className="relative mx-auto flex max-w-6xl items-center gap-0 px-6 py-28">
+            {/* Sol — yazılar */}
+            <div className="relative z-10 w-full md:w-1/2">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm text-purple-300">
                 <Sparkles className="h-3.5 w-3.5" />
                 AI destekli iş başvuru yönetimi
@@ -87,12 +78,19 @@ export default function LandingPage() {
                 &ldquo;Başvurdum, ne oldu?&rdquo; sorusuna son. Wisparkr tüm başvuru sürecini tek bir
                 yerden yönetmeni sağlar.
               </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-4 md:justify-start">
+              <div className="mt-8 flex flex-wrap gap-4">
                 <Link href="/pricing">
                   <button className="rounded-xl border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-colors backdrop-blur-sm">
                     Fiyatlandırmayı Gör
                   </button>
                 </Link>
+              </div>
+            </div>
+
+            {/* Sağ — App Demo */}
+            <div className="pointer-events-none hidden md:flex md:w-1/2 justify-center items-center">
+              <div className="opacity-70 scale-125 origin-center">
+                <AppDemo />
               </div>
             </div>
           </div>
