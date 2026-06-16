@@ -60,7 +60,17 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-purple-600/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-32 right-1/4 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
 
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 py-28 text-center md:flex-row md:text-left">
+          {/* App Demo — tam arka plan, sağdan sola sönük */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-end pr-8 opacity-40">
+            <AppDemo />
+          </div>
+          {/* Soldan sağa gradient — yazıyı okunaklı tutar */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{ background: 'linear-gradient(to right, #0f0c29 25%, #0f0c2988 60%, transparent 100%)' }}
+          />
+
+          <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 py-28 text-center md:flex-row md:text-left">
             <div className="flex-1">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm text-purple-300">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -78,17 +88,12 @@ export default function LandingPage() {
                 yerden yönetmeni sağlar.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4 md:justify-start">
-<Link href="/pricing">
+                <Link href="/pricing">
                   <button className="rounded-xl border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-colors backdrop-blur-sm">
                     Fiyatlandırmayı Gör
                   </button>
                 </Link>
               </div>
-            </div>
-
-            {/* App Demo Animasyonu */}
-            <div className="flex flex-1 justify-center items-center">
-              <AppDemo />
             </div>
           </div>
         </section>

@@ -189,7 +189,7 @@ export function AppDemo() {
       </div>
 
       {/* Mock ekran */}
-      <div className="relative w-72 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/40">
+      <div className="relative w-96 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/40">
         <div className="rounded-2xl border border-white/15 bg-[#1a1730] overflow-hidden">
           {/* Tarayıcı bar */}
           <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/5 px-3 py-2">
