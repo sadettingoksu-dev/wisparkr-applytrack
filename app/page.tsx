@@ -1,9 +1,11 @@
+'use client'
+
 import Link from 'next/link'
-import { Link as LinkIcon, FileSearch, MessageSquareText } from 'lucide-react'
+import { Link as LinkIcon, FileSearch, MessageSquareText, Mail, X, Sparkles } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
-import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { useEffect, useState } from 'react'
 
 const FEATURES = [
   {
@@ -15,55 +17,183 @@ const FEATURES = [
   {
     icon: FileSearch,
     title: 'AI ile CV uyum skoru',
-    description: 'CV\'ni yükle, AI ilana uyum oranını hesaplasın ve seni güçlendirecek önerileri sunsun.',
+    description: "CV'ni yükle, AI ilana uyum oranını hesaplasın ve seni güçlendirecek önerileri sunsun.",
   },
   {
     icon: MessageSquareText,
     title: 'Mülakat hazırlık asistanı',
-    description: 'Mülakat öncesi AI\'a sorularını sor, şirkete özel hazırlık tüyoları al.',
+    description: "Mülakat öncesi AI'a sorularını sor, şirkete özel hazırlık tüyoları al.",
   },
 ]
 
+function RejectionAnimation() {
+  const [phase, setPhase] = useState<'envelope' | 'stamp' | 'sparkle'>('envelope')
+
+  useEffect(() => {
+    let t1: ReturnType<typeof setTimeout>
+    let t2: ReturnType<typeof setTimeout>
+    let t3: ReturnType<typeof setTimeout>
+    const run = () => {
+      setPhase('envelope')
+      t1 = setTimeout(() => setPhase('stamp'), 1200)
+      t2 = setTimeout(() => setPhase('sparkle'), 2600)
+      t3 = setTimeout(run, 4800)
+    }
+    run()
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  }, [])
+
+  return (
+    <div className="relative flex h-48 w-64 items-center justify-center">
+      {/* Zarf */}
+      <div
+        className={`relative transition-all duration-700 ${
+          phase === 'envelope' ? 'translate-y-0 opacity-100 scale-100' : 'opacity-100 scale-100'
+        }`}
+      >
+        <div className="relative flex h-28 w-48 flex-col items-center justify-center rounded-xl border-2 border-white/20 bg-white/10 backdrop-blur-sm shadow-2xl">
+          <Mail className="h-10 w-10 text-white/70" />
+          <p className="mt-2 text-xs text-white/50 font-medium">CV Başvurusu</p>
+
+          {/* Reddedildi damgası */}
+          <div
+            className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
+              phase === 'stamp' ? 'opacity-100 scale-100 rotate-[-8deg]' : 'opacity-0 scale-150 rotate-[-8deg]'
+            }`}
+          >
+            <div className="rounded-lg border-4 border-red-500 px-3 py-1">
+              <div className="flex items-center gap-1">
+                <X className="h-4 w-4 text-red-500" />
+                <span className="text-base font-black uppercase tracking-widest text-red-500">
+                  Reddedildi
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Wisparkr devreye giriyor */}
+          {phase === 'sparkle' && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-purple-600/90 backdrop-blur-sm animate-[fadeIn_0.4s_ease]">
+              <Sparkles className="h-8 w-8 text-yellow-300 animate-pulse" />
+              <p className="mt-1 text-xs font-bold text-white">Wisparkr devrede</p>
+              <p className="text-[10px] text-purple-200">Artık sen kontrol et</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <main className="flex-1">
-        <section className="mx-auto max-w-6xl px-6 py-24 text-center">
-          <h1 className="text-4xl font-bold text-slate-800 sm:text-5xl">
-            İş başvurularını <span className="text-purple-600">AI desteğiyle</span> yönet
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-500">
-            &ldquo;Başvurdum, ne oldu?&rdquo; sorusuna son. Wisparkr tüm başvuru sürecini tek bir yerden
-            yönetmeni sağlar.
-          </p>
-          <div className="mt-8 flex justify-center gap-4">
+    <div className="flex min-h-screen flex-col bg-[#0f0c29]">
+      {/* Navbar — koyu tema */}
+      <header className="border-b border-white/10 bg-white/5 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <Link href="/" className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Wisparkr" width={32} height={32} className="rounded-lg" />
+            <span className="text-xl font-bold text-white">Wisparkr</span>
+          </Link>
+          <nav className="hidden items-center gap-6 text-sm text-white/60 md:flex">
+            <Link href="/#features" className="hover:text-white transition-colors">Özellikler</Link>
+            <Link href="/pricing" className="hover:text-white transition-colors">Fiyatlandırma</Link>
+          </nav>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+              Giriş Yap
+            </Link>
             <Link href="/signup">
-              <Button className="px-6 py-3 text-base">Ücretsiz Başla</Button>
+              <button className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/40">
+                Ücretsiz Başla
+              </button>
             </Link>
-            <Link href="/pricing">
-              <Button variant="secondary" className="px-6 py-3 text-base">
-                Fiyatlandırmayı Gör
-              </Button>
-            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1">
+        {/* Hero */}
+        <section
+          className="relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+          }}
+        >
+          {/* Işık efektleri */}
+          <div className="pointer-events-none absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-purple-600/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-32 right-1/4 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
+
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-12 px-6 py-28 text-center md:flex-row md:text-left">
+            <div className="flex-1">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-sm text-purple-300">
+                <Sparkles className="h-3.5 w-3.5" />
+                AI destekli iş başvuru yönetimi
+              </div>
+              <h1 className="text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
+                İş başvurularını{' '}
+                <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  AI desteğiyle
+                </span>{' '}
+                yönet
+              </h1>
+              <p className="mt-5 max-w-xl text-lg text-white/60">
+                &ldquo;Başvurdum, ne oldu?&rdquo; sorusuna son. Wisparkr tüm başvuru sürecini tek bir
+                yerden yönetmeni sağlar.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-4 md:justify-start">
+                <Link href="/signup">
+                  <button className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-7 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-900/50 hover:opacity-90 transition-opacity">
+                    Ücretsiz Başla
+                  </button>
+                </Link>
+                <Link href="/pricing">
+                  <button className="rounded-xl border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-colors backdrop-blur-sm">
+                    Fiyatlandırmayı Gör
+                  </button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Animasyon */}
+            <div className="flex flex-1 justify-center">
+              <RejectionAnimation />
+            </div>
           </div>
         </section>
 
-        <section id="features" className="mx-auto max-w-6xl px-6 py-16">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {FEATURES.map((feature) => (
-              <Card key={feature.title} className="space-y-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
-                  <feature.icon className="h-6 w-6" />
+        {/* Features */}
+        <section
+          id="features"
+          className="py-24"
+          style={{ background: 'linear-gradient(180deg, #24243e 0%, #0f0c29 100%)' }}
+        >
+          <div className="mx-auto max-w-6xl px-6">
+            <h2 className="mb-12 text-center text-3xl font-bold text-white">
+              Tüm ihtiyacın tek yerde
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {FEATURES.map((feature) => (
+                <div
+                  key={feature.title}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:border-purple-500/40 hover:bg-white/10 hover:shadow-xl hover:shadow-purple-900/20"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-600/20 text-purple-400">
+                    <feature.icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-white">{feature.title}</h3>
+                  <p className="text-sm leading-relaxed text-white/50">{feature.description}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-800">{feature.title}</h3>
-                <p className="text-sm text-slate-500">{feature.description}</p>
-              </Card>
-            ))}
+              ))}
+            </div>
           </div>
         </section>
       </main>
-      <Footer />
+
+      <footer className="border-t border-white/10 bg-[#0f0c29] py-8 text-center text-sm text-white/30">
+        © {new Date().getFullYear()} Wisparkr. Tüm hakları saklıdır.
+      </footer>
     </div>
   )
 }
