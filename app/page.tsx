@@ -70,9 +70,9 @@ export default function LandingPage() {
               <h1 className="text-4xl font-extrabold leading-tight text-white sm:text-5xl lg:text-6xl">
                 İş başvurularını{' '}
                 <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  AI desteğiyle
+                  Wisparkr
                 </span>{' '}
-                yönet
+                ile yönet
               </h1>
               <p className="mt-5 max-w-xl text-lg text-white/60">
                 &ldquo;Başvurdum, ne oldu?&rdquo; sorusuna son. Wisparkr tüm başvuru sürecini tek bir
