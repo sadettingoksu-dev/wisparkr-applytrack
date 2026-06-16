@@ -10,33 +10,8 @@ const STEPS = [
   { label: 'Kariyer koçunla mülakata hazırlan', screen: 'coach', navIndex: 3 },
 ]
 
-// Nav ikonlarının koordinatları (sol nav içinde, px cinsinden)
-const NAV_ICON_POS = [
-  { x: 16, y: 28 },
-  { x: 16, y: 56 },
-  { x: 16, y: 84 },
-  { x: 16, y: 112 },
-]
-
-// Her ekran için imleç hareket noktaları
-const IDLE_PATHS: Record<string, { x: number; y: number }[]> = {
-  kanban: [
-    { x: 80, y: 50 }, { x: 140, y: 80 }, { x: 200, y: 60 },
-    { x: 160, y: 100 }, { x: 100, y: 90 }, { x: 180, y: 130 },
-  ],
-  cv: [
-    { x: 120, y: 80 }, { x: 150, y: 100 }, { x: 130, y: 130 },
-    { x: 160, y: 150 }, { x: 110, y: 160 },
-  ],
-  score: [
-    { x: 140, y: 60 }, { x: 100, y: 100 }, { x: 170, y: 120 },
-    { x: 120, y: 150 }, { x: 150, y: 80 },
-  ],
-  coach: [
-    { x: 80, y: 70 }, { x: 160, y: 90 }, { x: 100, y: 120 },
-    { x: 180, y: 140 }, { x: 130, y: 160 },
-  ],
-}
+// Nav ikonlarının ekran içindeki y pozisyonu
+const NAV_Y = [20, 48, 76, 104]
 
 function KanbanScreen() {
   const cols = [
@@ -147,74 +122,61 @@ const NAV_ICONS = [
   { icon: MessageSquareText, screen: 'coach' },
 ]
 
+// Faz: 'move' → imleç ikona gidiyor | 'click' → tıklama | 'hidden' → imleç yok, ekran geçişi | 'wait' → yeni ekranda bekleme
+type Phase = 'move' | 'click' | 'hidden' | 'wait'
+
 export function AppDemo() {
   const [step, setStep] = useState(0)
   const [labelVisible, setLabelVisible] = useState(true)
-  const [clicking, setClicking] = useState(false)
-
-  // İmleç pozisyonu
-  const [cursor, setCursor] = useState({ x: NAV_ICON_POS[0].x, y: NAV_ICON_POS[0].y })
-  const idleIndexRef = useRef(0)
-  const phaseRef = useRef<'move-to-nav' | 'click' | 'idle'>('idle')
-  const nextStepRef = useRef(1)
+  const [phase, setPhase] = useState<Phase>('wait')
+  const [cursorPos, setCursorPos] = useState({ x: 8, y: NAV_Y[1] })
   const stepRef = useRef(0)
 
   useEffect(() => { stepRef.current = step }, [step])
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>
+    let t: ReturnType<typeof setTimeout>
 
-    const goToNav = () => {
-      // İmleci bir sonraki nav ikonuna götür
-      const next = (stepRef.current + 1) % STEPS.length
-      nextStepRef.current = next
-      phaseRef.current = 'move-to-nav'
-      setCursor({ x: NAV_ICON_POS[next].x, y: NAV_ICON_POS[next].y })
+    const runCycle = () => {
+      const nextStep = (stepRef.current + 1) % STEPS.length
+      const targetY = NAV_Y[nextStep]
 
-      timeout = setTimeout(() => {
-        // Tıklama efekti
-        setClicking(true)
-        timeout = setTimeout(() => {
-          setClicking(false)
-          // Ekran geçişi
+      // 1. İmleci ikona taşı
+      setPhase('move')
+      setCursorPos({ x: 8, y: targetY })
+
+      // 2. Tıklama efekti
+      t = setTimeout(() => {
+        setPhase('click')
+
+        // 3. İmleci gizle, ekran değiştir
+        t = setTimeout(() => {
+          setPhase('hidden')
           setLabelVisible(false)
-          timeout = setTimeout(() => {
-            setStep(next)
+
+          t = setTimeout(() => {
+            setStep(nextStep)
             setLabelVisible(true)
-            phaseRef.current = 'idle'
-            idleIndexRef.current = 0
-            doIdle()
-          }, 300)
-        }, 250)
-      }, 700) // imleç ikon üzerine gelme süresi
+
+            // 4. Yeni ekranda biraz bekle, sonra tekrar
+            t = setTimeout(() => {
+              setPhase('wait')
+              t = setTimeout(runCycle, 1200)
+            }, 200)
+          }, 350)
+        }, 300)
+      }, 600) // move süresi
     }
 
-    const doIdle = () => {
-      const screen = STEPS[nextStepRef.current].screen
-      const path = IDLE_PATHS[screen]
-      const idx = idleIndexRef.current % path.length
-      const target = path[idx]
-      // Nav sol kenarına offset ekle (nav genişliği ~36px)
-      setCursor({ x: target.x + 36, y: target.y })
-      idleIndexRef.current++
-
-      if (idleIndexRef.current < path.length) {
-        timeout = setTimeout(doIdle, 500)
-      } else {
-        // Yeterince idle hareket yaptı, sonraki adıma geç
-        timeout = setTimeout(goToNav, 600)
-      }
-    }
-
-    // Başlangıç: mevcut ekranda idle hareketler
-    doIdle()
-
-    return () => clearTimeout(timeout)
+    // Başlangıçta 1.5sn bekle
+    t = setTimeout(runCycle, 1500)
+    return () => clearTimeout(t)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const current = STEPS[step]
   const ScreenComponent = SCREEN_MAP[current.screen as keyof typeof SCREEN_MAP]
+  const cursorVisible = phase === 'move' || phase === 'click'
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -226,11 +188,8 @@ export function AppDemo() {
         {current.label}
       </div>
 
-      {/* Mock ekran — kenarlarda vignette */}
-      <div className="relative w-72 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/40"
-        style={{ opacity: labelVisible ? 1 : 0.7, transition: 'opacity 0.3s' }}
-      >
-        {/* Gerçek içerik */}
+      {/* Mock ekran */}
+      <div className="relative w-72 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/40">
         <div className="rounded-2xl border border-white/15 bg-[#1a1730] overflow-hidden">
           {/* Tarayıcı bar */}
           <div className="flex items-center gap-1.5 border-b border-white/10 bg-white/5 px-3 py-2">
@@ -242,44 +201,44 @@ export function AppDemo() {
 
           <div className="flex" style={{ height: 200 }}>
             {/* Sol nav */}
-            <div className="flex flex-col items-center gap-3 border-r border-white/10 bg-white/3 px-2 py-3 relative" style={{ width: 36 }}>
+            <div className="relative flex flex-col items-center gap-3 border-r border-white/10 bg-black/10 px-2 py-3" style={{ width: 36 }}>
               {NAV_ICONS.map(({ icon: Icon, screen }, i) => (
                 <div
                   key={screen}
-                  className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                  className={`relative flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                     current.screen === screen ? 'bg-purple-600 text-white' : 'text-white/30'
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
                   {/* Tıklama ripple */}
-                  {clicking && nextStepRef.current === (i) && (
-                    <span className="absolute inset-0 rounded-lg animate-ping bg-purple-500/40" />
+                  {phase === 'click' && (stepRef.current + 1) % STEPS.length === i && (
+                    <span className="absolute inset-0 rounded-lg bg-purple-400/50 animate-ping" />
                   )}
                 </div>
               ))}
+
+              {/* İmleç — nav üzerinde */}
+              <div
+                className="pointer-events-none absolute left-0"
+                style={{
+                  top: cursorPos.y,
+                  opacity: cursorVisible ? 1 : 0,
+                  transition: 'top 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.2s',
+                  zIndex: 20,
+                }}
+              >
+                <svg width="13" height="16" viewBox="0 0 13 16" fill="none">
+                  <path d="M0 0L0 12L3 8.5L5 14L7 13L5 7.5L9 7.5Z" fill="white" stroke="#6b21a8" strokeWidth="0.8" />
+                </svg>
+                {phase === 'click' && (
+                  <span className="absolute -top-1 -left-1 h-4 w-4 rounded-full bg-white/30 animate-ping" />
+                )}
+              </div>
             </div>
 
             {/* İçerik */}
             <div className="flex-1 relative overflow-hidden">
               <ScreenComponent />
-
-              {/* İmleç */}
-              <div
-                className="pointer-events-none absolute"
-                style={{
-                  left: cursor.x - 36, // nav offset çıkar
-                  top: cursor.y,
-                  transition: 'left 0.5s cubic-bezier(0.4,0,0.2,1), top 0.5s cubic-bezier(0.4,0,0.2,1)',
-                  zIndex: 10,
-                }}
-              >
-                <svg width="14" height="18" viewBox="0 0 14 18" fill="none">
-                  <path d="M0 0L0 13L3.5 9.5L5.5 15L7.5 14L5.5 8.5L10 8.5Z" fill="white" stroke="#6b21a8" strokeWidth="0.8" />
-                </svg>
-                {clicking && (
-                  <span className="absolute -top-1 -left-1 h-4 w-4 rounded-full bg-white/30 animate-ping" />
-                )}
-              </div>
             </div>
           </div>
 
@@ -296,11 +255,10 @@ export function AppDemo() {
           </div>
         </div>
 
-        {/* Kenar vignette — içine işlenmiş efekt */}
-        <div className="pointer-events-none absolute inset-0 rounded-2xl"
-          style={{
-            boxShadow: 'inset 0 0 40px 15px rgba(15,12,41,0.85)',
-          }}
+        {/* Vignette */}
+        <div
+          className="pointer-events-none absolute inset-0 rounded-2xl"
+          style={{ boxShadow: 'inset 0 0 40px 15px rgba(15,12,41,0.85)' }}
         />
       </div>
     </div>
