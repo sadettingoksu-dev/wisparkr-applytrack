@@ -96,31 +96,29 @@ export default function LandingPage() {
             </div>
 
             {/* Sağ — App Demo + baloncuklar */}
-            <div className="pointer-events-none hidden md:flex md:w-1/2 justify-center items-center relative">
-              {/* Baloncuklar — panelin sol kenarından çıkıp sola/yukarı akar */}
-              <div className="absolute inset-0 overflow-hidden">
+            <div className="pointer-events-none hidden md:flex md:w-1/2 justify-center items-center">
+              <div className="relative scale-125 origin-center">
+                <AppDemo />
+                {/* Vignette */}
+                <div
+                  className="absolute inset-0 pointer-events-none rounded-2xl"
+                  style={{ boxShadow: 'inset 0 0 60px 30px rgba(15,12,41,0.9)' }}
+                />
+                {/* Baloncuklar — panelin tam sol kenarından çıkıp sola/yukarı akar */}
                 {BUBBLE_DEFS.map((b, i) => (
                   <div
                     key={i}
-                    className="absolute rounded-full border border-purple-400/40 bg-purple-500/10"
+                    className="absolute rounded-full border border-purple-400/50 bg-purple-500/15"
                     style={{
                       width: b.size,
                       height: b.size,
                       top: b.offsetY,
-                      left: '50%', // panelin sol kenarı yaklaşık burası
+                      left: 0,
                       transform: 'translate(-50%, -50%)',
                       animation: `bubbleFloat ${b.duration} ${b.delay} infinite ease-in`,
                     }}
                   />
                 ))}
-              </div>
-
-              <div className="scale-125 origin-center relative z-10">
-                <AppDemo />
-                <div
-                  className="absolute inset-0 pointer-events-none rounded-2xl"
-                  style={{ boxShadow: 'inset 0 0 60px 30px rgba(15,12,41,0.9)' }}
-                />
               </div>
             </div>
           </div>
