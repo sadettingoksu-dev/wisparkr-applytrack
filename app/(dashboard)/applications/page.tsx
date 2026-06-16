@@ -1,17 +1,21 @@
 import Link from 'next/link'
-import { Plus, Zap } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getPlan } from '@/lib/plans'
-import type { Profile } from '@/lib/types'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { CompareSelector } from '@/components/applications/CompareSelector'
+import { LimitBanner } from '@/components/applications/LimitBanner'
 import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
 import { formatDate } from '@/utils/format'
-import type { Application } from '@/lib/types'
+import type { Application, Profile } from '@/lib/types'
 
-export default async function ApplicationsPage() {
+export default async function ApplicationsPage({
+  searchParams,
+}: {
+  searchParams: { limit?: string }
+}) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user!.id).single()
@@ -24,9 +28,10 @@ export default async function ApplicationsPage() {
   const apps = (applications ?? []) as Application[]
   const max = plan.limits.maxApplications
   const limitReached = max !== null && apps.length >= max
+  const showBanner = limitReached || searchParams.limit === '1'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Başvurular</h1>
@@ -34,24 +39,21 @@ export default async function ApplicationsPage() {
         </div>
         <div className="flex items-center gap-2">
           {apps.length >= 2 && <CompareSelector apps={apps} />}
-          {limitReached ? (
-            <Link href="/pricing">
-              <Button variant="secondary">
-                <Zap className="h-4 w-4" />
-                Limiti Aştın — Yükselt
-              </Button>
-            </Link>
-          ) : (
+          {!limitReached && (
             <Link href="/applications/new">
               <Button>
                 <Plus className="h-4 w-4" />
                 Yeni Başvuru
-                {max !== null && <span className="ml-1 opacity-60 text-xs">({apps.length}/{max})</span>}
+                {max !== null && (
+                  <span className="ml-1 text-xs opacity-60">({apps.length}/{max})</span>
+                )}
               </Button>
             </Link>
           )}
         </div>
       </div>
+
+      {showBanner && <LimitBanner used={apps.length} max={max ?? 2} />}
 
       {apps.length === 0 ? (
         <Card>
