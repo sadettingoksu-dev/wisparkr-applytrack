@@ -61,7 +61,7 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute -bottom-32 right-1/4 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
 
           {/* App Demo — tam arka plan, sağdan sola sönük */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-end pr-8 opacity-40">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-end opacity-60 scale-150 origin-right">
             <AppDemo />
           </div>
           {/* Soldan sağa gradient — yazıyı okunaklı tutar */}

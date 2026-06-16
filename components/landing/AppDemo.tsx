@@ -180,14 +180,6 @@ export function AppDemo() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* Açıklama yazısı */}
-      <div
-        className="text-center text-lg font-bold text-white transition-opacity duration-300 min-h-[28px]"
-        style={{ opacity: labelVisible ? 1 : 0 }}
-      >
-        {current.label}
-      </div>
-
       {/* Mock ekran */}
       <div className="relative w-96 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/40">
         <div className="rounded-2xl border border-white/15 bg-[#1a1730] overflow-hidden">
