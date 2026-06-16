@@ -129,7 +129,7 @@ export function AppDemo() {
   const [step, setStep] = useState(0)
   const [labelVisible, setLabelVisible] = useState(true)
   const [phase, setPhase] = useState<Phase>('wait')
-  const [cursorPos, setCursorPos] = useState({ x: 8, y: NAV_Y[1] })
+  const [cursorPos, setCursorPos] = useState({ x: 18, y: NAV_Y[1] })
   const stepRef = useRef(0)
 
   useEffect(() => { stepRef.current = step }, [step])
@@ -143,7 +143,7 @@ export function AppDemo() {
 
       // 1. İmleci ikona taşı
       setPhase('move')
-      setCursorPos({ x: 8, y: targetY })
+      setCursorPos({ x: 18, y: targetY })
 
       // 2. Tıklama efekti
       t = setTimeout(() => {
