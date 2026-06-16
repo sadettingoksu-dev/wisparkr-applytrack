@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Link as LinkIcon, FileSearch, MessageSquareText } from 'lucide-react'
+import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/Button'
