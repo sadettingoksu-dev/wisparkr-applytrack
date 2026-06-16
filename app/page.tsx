@@ -3,6 +3,7 @@ import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles } from 'lucid
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/Button'
+import { AppDemo } from '@/components/landing/AppDemo'
 
 const FEATURES = [
   {
@@ -85,6 +86,10 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* App Demo Animasyonu */}
+            <div className="flex flex-1 justify-center items-center">
+              <AppDemo />
+            </div>
           </div>
         </section>
 
