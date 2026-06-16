@@ -65,8 +65,27 @@ export function NotificationBell() {
 
       {open && (
         <div className="absolute right-0 z-10 mt-2 w-80 rounded-lg border border-slate-100 bg-white shadow-lg">
-          <div className="border-b border-slate-100 px-4 py-3">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <p className="text-sm font-semibold text-slate-800">Bildirimler</p>
+            {unreadCount > 0 && (
+              <button
+                onClick={async () => {
+                  await Promise.all(
+                    notifications.filter((n) => !n.read).map((n) =>
+                      fetch('/api/notifications', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: n.id }),
+                      })
+                    )
+                  )
+                  setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+                }}
+                className="text-xs text-purple-600 hover:underline"
+              >
+                Tümünü okundu işaretle
+              </button>
+            )}
           </div>
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (

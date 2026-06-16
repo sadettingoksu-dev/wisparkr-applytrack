@@ -2,7 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { getPlan, PLANS, PLAN_ORDER } from '@/lib/plans'
 import { formatDate } from '@/utils/format'
-import { CheckCircle2, XCircle, Zap } from 'lucide-react'
+import { CheckCircle2, XCircle } from 'lucide-react'
+import { UpgradeButton } from '@/components/billing/UpgradeButton'
 import type { Profile, Subscription, AiUsage } from '@/lib/types'
 
 function FeatureRow({ label, enabled }: { label: string; enabled: boolean }) {
@@ -89,13 +90,7 @@ export default async function BillingPage() {
         </div>
 
         {plan.id !== 'career_coach' && (
-          <a
-            href="/pricing"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700"
-          >
-            <Zap className="h-3.5 w-3.5" />
-            Planı Yükselt
-          </a>
+          <UpgradeButton planId={plan.id === 'free' ? 'pro' : 'career_coach'} />
         )}
       </Card>
 

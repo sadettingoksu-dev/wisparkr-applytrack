@@ -1,7 +1,10 @@
+'use client'
+
 import { Check } from 'lucide-react'
 import clsx from 'clsx'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { UpgradeButton } from '@/components/billing/UpgradeButton'
 import type { PlanConfig } from '@/lib/plans'
 
 interface PricingCardProps {
@@ -13,12 +16,7 @@ interface PricingCardProps {
 
 export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup' }: PricingCardProps) {
   return (
-    <Card
-      className={clsx(
-        'flex flex-col gap-4',
-        highlighted && 'border-2 border-purple-600'
-      )}
-    >
+    <Card className={clsx('flex flex-col gap-4', highlighted && 'border-2 border-purple-600')}>
       {highlighted && (
         <span className="self-start rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-600">
           En Popüler
@@ -39,11 +37,16 @@ export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup
           </li>
         ))}
       </ul>
-      <a href={ctaHref}>
-        <Button variant={highlighted ? 'primary' : 'secondary'} className="w-full">
-          {plan.priceMonthly === 0 ? 'Ücretsiz Başla' : 'Plana Geç'}
-        </Button>
-      </a>
+      {plan.priceMonthly === 0 ? (
+        <a href={ctaHref}>
+          <Button variant="secondary" className="w-full">Ücretsiz Başla</Button>
+        </a>
+      ) : (
+        <UpgradeButton
+          planId={plan.id as 'pro' | 'career_coach'}
+          label="Plana Geç"
+        />
+      )}
     </Card>
   )
 }

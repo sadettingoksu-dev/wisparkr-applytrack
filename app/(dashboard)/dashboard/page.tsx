@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Briefcase, MessageSquare, Trophy, TrendingUp, Send, ListChecks, ArrowRight, BarChart2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { MetricCard } from '@/components/dashboard/MetricCard'
+import { OnboardingBanner } from '@/components/dashboard/OnboardingBanner'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { generateTasks, type PlannerTaskKind } from '@/lib/planner'
@@ -16,6 +17,8 @@ const TASK_ICONS: Record<PlannerTaskKind, typeof Send> = {
 
 export default async function DashboardPage() {
   const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user!.id).single()
   const { data: applications } = await supabase
     .from('applications')
     .select('*')
@@ -48,6 +51,8 @@ export default async function DashboardPage() {
           Analitik
         </Link>
       </div>
+
+      <OnboardingBanner hasApplications={apps.length > 0} hasCv={!!(profileData as { cv_text?: string } | null)?.cv_text} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Toplam Başvuru" value={total} icon={Briefcase} />

@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { FitScoreCard } from '@/components/cv/FitScoreCard'
 import { CvTailorCard } from '@/components/cv/CvTailorCard'
 import { RequiredDocumentsCard } from '@/components/cv/RequiredDocumentsCard'
@@ -10,7 +9,7 @@ import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { InterviewDateField } from '@/components/applications/InterviewDateField'
 import { NotesCard } from '@/components/applications/NotesCard'
-import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { StatusSelector } from '@/components/applications/StatusSelector'
 import type { Application, AiMessage, MockInterview, RequiredDocument } from '@/lib/types'
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
@@ -47,7 +46,7 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
             <p className="text-sm text-slate-500">{app.company_name}</p>
           </div>
           <div className="flex items-center gap-3">
-            <Badge className={STATUS_BADGE_CLASSES[app.status]}>{STATUS_LABELS[app.status]}</Badge>
+            <StatusSelector applicationId={app.id} initialStatus={app.status} />
             <DeleteApplicationButton applicationId={app.id} />
           </div>
         </div>
