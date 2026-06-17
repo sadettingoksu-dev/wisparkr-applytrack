@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, User, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
@@ -34,6 +35,7 @@ function PasswordStrength({ password }: { password: string }) {
 }
 
 export default function SignupPage() {
+  const router = useRouter()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -42,6 +44,10 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [otp, setOtp] = useState('')
+  const [otpError, setOtpError] = useState<string | null>(null)
+  const [otpLoading, setOtpLoading] = useState(false)
+  const [resendMessage, setResendMessage] = useState<string | null>(null)
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -85,23 +91,90 @@ export default function SignupPage() {
     })
   }
 
+  async function handleVerifyOtp(e: React.FormEvent) {
+    e.preventDefault()
+    setOtpError(null)
+    setOtpLoading(true)
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: otp,
+      type: 'signup',
+    })
+
+    if (error) {
+      setOtpError(error.message)
+      setOtpLoading(false)
+      return
+    }
+
+    router.push('/dashboard')
+  }
+
+  async function handleResendOtp() {
+    setOtpError(null)
+    setResendMessage(null)
+    const supabase = createClient()
+    const { error } = await supabase.auth.resend({ type: 'signup', email })
+    if (error) {
+      setOtpError(error.message)
+      return
+    }
+    setResendMessage('Yeni kod gönderildi.')
+  }
+
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-6" style={{ background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)' }}>
-        <div className="w-full max-w-sm text-center space-y-6">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-purple-600/20 border border-purple-500/30">
-            <Mail className="h-8 w-8 text-purple-400" />
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-6">
+        <div className="pointer-events-none absolute -bottom-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-amber-500/20 blur-3xl" />
+        <div className="relative w-full max-w-sm text-center space-y-6">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-600/20 border border-amber-500/30">
+            <Mail className="h-8 w-8 text-amber-400" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white">E-postanı doğrula</h2>
             <p className="mt-2 text-white/50 text-sm">
-              <span className="text-purple-300 font-medium">{email}</span> adresine doğrulama bağlantısı gönderdik. Gelen kutunu kontrol et.
+              <span className="text-amber-300 font-medium">{email}</span> adresine 6 haneli bir kod gönderdik. Kodu aşağıya gir.
             </p>
           </div>
+
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="000000"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+              required
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center text-2xl tracking-[0.5em] text-white placeholder-white/20 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
+            />
+
+            {otpError && (
+              <p className="rounded-lg bg-red-500/10 border border-red-500/20 px-3 py-2 text-xs text-red-400">{otpError}</p>
+            )}
+            {resendMessage && (
+              <p className="rounded-lg bg-green-500/10 border border-green-500/20 px-3 py-2 text-xs text-green-400">{resendMessage}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={otpLoading || otp.length !== 6}
+              className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 py-3 text-sm font-semibold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {otpLoading ? 'Doğrulanıyor...' : 'Kodu Doğrula'}
+            </button>
+          </form>
+
           <p className="text-xs text-white/30">
-            Bulamadın mı? Spam klasörünü de kontrol et.
+            Kodu bulamadın mı? Spam klasörünü kontrol et veya{' '}
+            <button onClick={handleResendOtp} className="text-amber-400 hover:text-amber-300 transition-colors">
+              yeniden gönder
+            </button>
+            .
           </p>
-          <Link href="/login" className="block text-sm text-purple-400 hover:text-purple-300 transition-colors">
+          <Link href="/login" className="block text-sm text-amber-400 hover:text-amber-300 transition-colors">
             Giriş sayfasına dön →
           </Link>
         </div>
@@ -110,8 +183,9 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-12" style={{ background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)' }}>
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-6 py-12">
+      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-amber-500/20 blur-3xl" />
+      <div className="relative w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
@@ -147,7 +221,7 @@ export default function SignupPage() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/30 transition-colors"
+              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
             />
           </div>
 
@@ -160,7 +234,7 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/30 transition-colors"
+              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
             />
           </div>
 
@@ -173,7 +247,7 @@ export default function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-10 py-3 text-sm text-white placeholder-white/30 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/30 transition-colors"
+              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-10 py-3 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
             />
             <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
               {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -191,7 +265,7 @@ export default function SignupPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/30 transition-colors"
+              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
             />
           </div>
 
@@ -202,7 +276,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 py-3 text-sm font-semibold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {loading ? 'Hesap oluşturuluyor...' : 'Hesap Oluştur'}
           </button>
@@ -210,15 +284,15 @@ export default function SignupPage() {
 
         <p className="mt-6 text-center text-xs text-white/30">
           Kayıt olarak{' '}
-          <Link href="/pricing" className="text-purple-400 hover:text-purple-300">Kullanım Şartları</Link>
+          <Link href="/pricing" className="text-amber-400 hover:text-amber-300">Kullanım Şartları</Link>
           {' '}ve{' '}
-          <span className="text-purple-400">Gizlilik Politikası</span>
+          <span className="text-amber-400">Gizlilik Politikası</span>
           {`'nı`} kabul etmiş olursun.
         </p>
 
         <p className="mt-4 text-center text-sm text-white/40">
           Zaten hesabın var mı?{' '}
-          <Link href="/login" className="font-medium text-purple-400 hover:text-purple-300 transition-colors">
+          <Link href="/login" className="font-medium text-amber-400 hover:text-amber-300 transition-colors">
             Giriş yap
           </Link>
         </p>
