@@ -67,7 +67,7 @@ export default function SignupPage() {
 
     setLoading(true)
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -78,6 +78,12 @@ export default function SignupPage() {
 
     if (error) {
       setError(error.message)
+      setLoading(false)
+      return
+    }
+
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      setError('Bu e-posta adresiyle zaten bir hesabın var. Google ile kayıt olduysan giriş sayfasından "Google ile devam et" ile giriş yapabilirsin.')
       setLoading(false)
       return
     }
