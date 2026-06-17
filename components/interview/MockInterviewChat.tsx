@@ -167,22 +167,22 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
   }
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-slate-100 bg-white">
-      <div className="border-b border-slate-100 px-4 py-3">
+    <div className="flex h-full flex-col rounded-lg border border-white/10 bg-white/5">
+      <div className="border-b border-white/10 px-4 py-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-800">Mock Mülakat</h3>
+          <h3 className="text-sm font-semibold text-white">Mock Mülakat</h3>
           <div className="flex items-center gap-2">
             {speechSupported && voiceMode && (
-              <div className="flex overflow-hidden rounded-md border border-slate-200 text-xs">
+              <div className="flex overflow-hidden rounded-md border border-white/10 text-xs">
                 <button
                   onClick={() => setVoiceGender('female')}
-                  className={`px-2 py-1 ${voiceGender === 'female' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                  className={`px-2 py-1 ${voiceGender === 'female' ? 'bg-amber-500 text-white' : 'text-white/50 hover:bg-white/5'}`}
                 >
                   ♀ Kadın
                 </button>
                 <button
                   onClick={() => setVoiceGender('male')}
-                  className={`px-2 py-1 ${voiceGender === 'male' ? 'bg-purple-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                  className={`px-2 py-1 ${voiceGender === 'male' ? 'bg-amber-500 text-white' : 'text-white/50 hover:bg-white/5'}`}
                 >
                   ♂ Erkek
                 </button>
@@ -205,7 +205,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
                 </div>
               </div>
             )}
-            <span className="text-xs text-slate-500">
+            <span className="text-xs text-white/50">
               {status === 'completed'
                 ? 'Tamamlandı'
                 : `Soru ${Math.min(questionCount, MOCK_INTERVIEW_QUESTION_COUNT)} / ${MOCK_INTERVIEW_QUESTION_COUNT}`}
@@ -218,14 +218,14 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
         {messages.map((message, i) => (
           <div key={i} className="space-y-1">
             <div className="flex items-center gap-1">
-              <p className="text-xs font-medium text-slate-400">
+              <p className="text-xs font-medium text-white/40">
                 {message.role === 'interviewer' ? 'Mülakatçı' : 'Sen'}
               </p>
               {message.role === 'interviewer' && speechSupported && (
                 <button
                   onClick={() => speakText(message.content, voiceGender)}
                   title="Sesli oku"
-                  className="text-slate-300 hover:text-slate-500"
+                  className="text-white/30 hover:text-white/50"
                 >
                   <Volume2 className="h-3 w-3" />
                 </button>
@@ -234,8 +234,8 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
             <div
               className={`max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${
                 message.role === 'candidate'
-                  ? 'ml-auto bg-purple-600 text-white'
-                  : 'bg-slate-100 text-slate-800'
+                  ? 'ml-auto bg-amber-500 text-white'
+                  : 'bg-white/10 text-white'
               }`}
             >
               {message.content}
@@ -249,7 +249,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
             {feedback ? (
               <InterviewFeedbackReport feedback={feedback} overallScore={overallScore ?? 0} />
             ) : (
-              <div className="space-y-2 rounded-lg border border-amber-100 bg-amber-50 p-4 text-sm text-amber-700">
+              <div className="space-y-2 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-300">
                 <p>Geri bildirim raporu oluşturulamadı.</p>
                 <Button onClick={retryFeedback} disabled={retrying} variant="secondary">
                   {retrying ? <Spinner /> : 'Tekrar Dene'}
@@ -263,7 +263,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
       {error && <p className="px-4 pb-2 text-xs text-red-500">{error}</p>}
 
       {status === 'in_progress' && (
-        <div className="flex gap-2 border-t border-slate-100 p-3">
+        <div className="flex gap-2 border-t border-white/10 p-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}

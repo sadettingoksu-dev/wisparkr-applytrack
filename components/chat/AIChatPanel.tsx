@@ -58,10 +58,10 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
   }
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-slate-100 bg-white">
-      <div className="border-b border-slate-100 px-4 py-3">
-        <h3 className="text-sm font-semibold text-slate-800">Mülakat Hazırlık Asistanı</h3>
-        <p className="text-xs text-slate-500">
+    <div className="flex h-full flex-col rounded-lg border border-white/10 bg-white/5">
+      <div className="border-b border-white/10 px-4 py-3">
+        <h3 className="text-sm font-semibold text-white">Mülakat Hazırlık Asistanı</h3>
+        <p className="text-xs text-white/50">
           Bu şirket ve pozisyona özel mülakat sorularını, şirket hakkında araştırılması
           gerekenleri ve CV&apos;ndeki hangi noktaları öne çıkarman gerektiğini sorabilirsin.
         </p>
@@ -69,7 +69,7 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {messages.length === 0 && (
           <div className="space-y-2">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-white/40">
               Nereden başlayacağını bilmiyorsan aşağıdaki sorulardan birini deneyebilirsin:
             </p>
             {SUGGESTED_QUESTIONS.map((q) => (
@@ -78,7 +78,7 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
                 type="button"
                 onClick={() => sendMessage(q)}
                 disabled={loading}
-                className="block w-full rounded-lg border border-slate-200 px-3 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="block w-full rounded-lg border border-white/10 px-3 py-2 text-left text-sm text-white/70 hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {q}
               </button>
@@ -90,8 +90,8 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
             key={i}
             className={`max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${
               message.role === 'user'
-                ? 'ml-auto bg-purple-600 text-white'
-                : 'bg-slate-100 text-slate-800'
+                ? 'ml-auto bg-amber-500 text-white'
+                : 'bg-white/10 text-white'
             }`}
           >
             {message.content}
@@ -100,7 +100,7 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
         {loading && <Spinner />}
       </div>
       {error && <p className="px-4 pb-2 text-xs text-red-500">{error}</p>}
-      <div className="flex gap-2 border-t border-slate-100 p-3">
+      <div className="flex gap-2 border-t border-white/10 p-3">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}

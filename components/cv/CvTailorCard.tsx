@@ -50,13 +50,13 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">Başvuru Hazırlık Skoru</h3>
+        <h3 className="text-sm font-semibold text-white">Başvuru Hazırlık Skoru</h3>
         {score !== null && (
-          <span className="text-2xl font-bold text-purple-600">%{score}</span>
+          <span className="text-2xl font-bold text-amber-500">%{score}</span>
         )}
       </div>
 
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-white/50">
         AI, CV&apos;ni bu ilana göre yeniden düzenler ve başvuruya ne kadar hazır olduğunu
         puanlar. Yukarıdaki &quot;Sektöre Özel Belgeler&quot; bölümünde işaretlediğin
         belgeler de bu skoru etkiler. Skor en az <strong>{MIN_APPLY_SCORE}</strong> olduğunda
@@ -68,7 +68,7 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
       {suggestions && suggestions.length > 0 && (
         <ul className="space-y-2">
           {suggestions.map((s, i) => (
-            <li key={i} className="flex gap-2 text-sm text-slate-600">
+            <li key={i} className="flex gap-2 text-sm text-white/70">
               <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" />
               {s}
             </li>

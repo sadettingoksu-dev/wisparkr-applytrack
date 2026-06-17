@@ -16,23 +16,23 @@ interface PricingCardProps {
 
 export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup' }: PricingCardProps) {
   return (
-    <Card className={clsx('flex flex-col gap-4', highlighted && 'border-2 border-purple-600')}>
+    <Card className={clsx('flex flex-col gap-4', highlighted && 'border-2 border-amber-500')}>
       {highlighted && (
-        <span className="self-start rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-600">
+        <span className="self-start rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-500">
           En Popüler
         </span>
       )}
       <div>
-        <h3 className="text-lg font-semibold text-slate-800">{plan.name}</h3>
-        <p className="mt-1 text-3xl font-bold text-slate-800">
+        <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+        <p className="mt-1 text-3xl font-bold text-white">
           ${plan.priceMonthly}
-          <span className="text-sm font-normal text-slate-500">/ay</span>
+          <span className="text-sm font-normal text-white/50">/ay</span>
         </p>
       </div>
       <ul className="flex-1 space-y-2">
         {featureList.map((feature) => (
-          <li key={feature} className="flex items-start gap-2 text-sm text-slate-600">
-            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" />
+          <li key={feature} className="flex items-start gap-2 text-sm text-white/70">
+            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-400" />
             {feature}
           </li>
         ))}

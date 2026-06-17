@@ -30,8 +30,8 @@ export function CompareSelector({ apps }: { apps: Application[] }) {
       </Button>
 
       {open && (
-        <div className="mt-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-3">
-          <p className="text-xs text-slate-500">En fazla 3 başvuru seç ({selected.length}/3)</p>
+        <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm space-y-3">
+          <p className="text-xs text-white/50">En fazla 3 başvuru seç ({selected.length}/3)</p>
           <div className="max-h-64 space-y-2 overflow-y-auto">
             {apps.map((a) => {
               const checked = selected.includes(a.id)
@@ -39,7 +39,7 @@ export function CompareSelector({ apps }: { apps: Application[] }) {
                 <label
                   key={a.id}
                   className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${
-                    checked ? 'border-purple-300 bg-purple-50' : 'border-slate-100 hover:bg-slate-50'
+                    checked ? 'border-amber-400 bg-amber-500/10' : 'border-white/10 hover:bg-white/5'
                   }`}
                 >
                   <input
@@ -47,11 +47,11 @@ export function CompareSelector({ apps }: { apps: Application[] }) {
                     checked={checked}
                     onChange={() => toggle(a.id)}
                     disabled={!checked && selected.length >= 3}
-                    className="accent-purple-600"
+                    className="accent-amber-500"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-700">{a.position_title}</p>
-                    <p className="truncate text-xs text-slate-400">{a.company_name}</p>
+                    <p className="truncate text-sm font-medium text-white/90">{a.position_title}</p>
+                    <p className="truncate text-xs text-white/40">{a.company_name}</p>
                   </div>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[a.status]}`}>
                     {STATUS_LABELS[a.status]}

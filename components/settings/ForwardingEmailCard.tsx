@@ -18,8 +18,8 @@ export function ForwardingEmailCard({ userId }: { userId: string }) {
 
   return (
     <Card className="space-y-2">
-      <h2 className="text-sm font-semibold text-slate-800">Mail Yönlendirme Adresi</h2>
-      <p className="text-sm text-slate-500">
+      <h2 className="text-sm font-semibold text-white">Mail Yönlendirme Adresi</h2>
+      <p className="text-sm text-white/50">
         Şirketlerden gelen mailleri Gmail/Outlook&apos;ta bu adrese yönlendirecek bir filtre
         kurabilirsin. ApplyTrack, gelen mailleri otomatik sınıflandırıp başvuru durumunu günceller.
       </p>
@@ -31,8 +31,8 @@ export function ForwardingEmailCard({ userId }: { userId: string }) {
         </Button>
       </div>
 
-      <div className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
-        <p className="font-medium text-slate-700">Nasıl kurulur? (Gmail örneği)</p>
+      <div className="rounded-lg bg-white/5 p-3 text-sm text-white/70">
+        <p className="font-medium text-white/90">Nasıl kurulur? (Gmail örneği)</p>
         <ol className="mt-2 list-decimal space-y-1 pl-5">
           <li>Gmail&apos;de <strong>Ayarlar (⚙️) → Tüm ayarları gör → İleti Yönlendirme ve POP/IMAP</strong> sekmesine git.</li>
           <li><strong>&quot;Yönlendirme adresi ekle&quot;</strong> ile yukarıdaki adresi ekle ve doğrula.</li>

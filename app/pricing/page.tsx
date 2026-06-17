@@ -21,8 +21,8 @@ export default function PricingPage() {
       <Navbar />
       <main className="flex-1">
         <section className="mx-auto max-w-6xl px-6 py-16 text-center">
-          <h1 className="text-3xl font-bold text-slate-800 sm:text-4xl">Fiyatlandırma</h1>
-          <p className="mt-3 text-slate-500">İhtiyacına uygun planı seç, istediğin zaman değiştir.</p>
+          <h1 className="text-3xl font-bold text-white sm:text-4xl">Fiyatlandırma</h1>
+          <p className="mt-3 text-white/50">İhtiyacına uygun planı seç, istediğin zaman değiştir.</p>
 
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
             {PLAN_ORDER.map((planId) => (

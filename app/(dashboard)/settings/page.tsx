@@ -19,13 +19,13 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Ayarlar</h1>
-        <p className="text-sm text-slate-500">Hesap bilgilerin</p>
+        <h1 className="text-2xl font-bold text-white">Ayarlar</h1>
+        <p className="text-sm text-white/50">Hesap bilgilerin</p>
       </div>
 
       <Card className="space-y-4">
         <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700">E-posta</label>
+          <label className="text-sm font-medium text-white/90">E-posta</label>
           <Input value={profile?.email ?? ''} disabled />
         </div>
 

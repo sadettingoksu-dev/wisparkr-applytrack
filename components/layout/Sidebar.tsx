@@ -29,11 +29,11 @@ export function Sidebar({ email }: { email?: string }) {
   }
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-slate-100 bg-white">
-      <div className="border-b border-slate-100 px-6 py-5">
+    <aside className="flex h-screen w-64 flex-col border-r border-white/10 bg-white/5">
+      <div className="border-b border-white/10 px-6 py-5">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="Wisparkr" width={28} height={28} className="rounded-lg" />
-          <span className="text-xl font-bold text-purple-600">{APP_NAME}</span>
+          <Image src="/logo-dark.png" alt="Wisparkr" width={28} height={28} className="rounded-lg" />
+          <span className="text-xl font-bold text-amber-500">{APP_NAME}</span>
         </Link>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">
@@ -46,8 +46,8 @@ export function Sidebar({ email }: { email?: string }) {
               className={clsx(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 active
-                  ? 'bg-purple-50 text-purple-600'
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                  ? 'bg-amber-500/10 text-amber-500'
+                  : 'text-white/50 hover:bg-white/5 hover:text-white'
               )}
             >
               <Icon className="h-4 w-4" />
@@ -56,11 +56,11 @@ export function Sidebar({ email }: { email?: string }) {
           )
         })}
       </nav>
-      <div className="border-t border-slate-100 px-3 py-4">
-        {email && <p className="mb-2 truncate px-3 text-xs text-slate-400">{email}</p>}
+      <div className="border-t border-white/10 px-3 py-4">
+        {email && <p className="mb-2 truncate px-3 text-xs text-white/40">{email}</p>}
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-red-500"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white/50 hover:bg-white/5 hover:text-red-500"
         >
           <LogOut className="h-4 w-4" />
           Çıkış Yap

@@ -81,18 +81,18 @@ export default function NewApplicationPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Yeni Başvuru</h1>
-          <p className="text-sm text-slate-500">İş ilanı linkini yapıştır, bilgileri otomatik doldurmayı dene.</p>
+          <h1 className="text-2xl font-bold text-white">Yeni Başvuru</h1>
+          <p className="text-sm text-white/50">İş ilanı linkini yapıştır, bilgileri otomatik doldurmayı dene.</p>
         </div>
         {limitInfo?.max !== null && limitInfo && (
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/50">
             {limitInfo.used}/{limitInfo.max} başvuru
           </span>
         )}
       </div>
 
       <Card className="space-y-3">
-        <label className="text-sm font-medium text-slate-700">İlan URL&apos;si</label>
+        <label className="text-sm font-medium text-white/90">İlan URL&apos;si</label>
         <div className="flex gap-2">
           <Input type="url" placeholder="https://www.linkedin.com/jobs/view/..." value={url} onChange={(e) => setUrl(e.target.value)} />
           <Button onClick={handleParse} disabled={parsing || !url} variant="secondary">
@@ -105,17 +105,17 @@ export default function NewApplicationPage() {
         <Card className="space-y-4">
           {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700">Şirket Adı</label>
+            <label className="text-sm font-medium text-white/90">Şirket Adı</label>
             <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700">Pozisyon</label>
+            <label className="text-sm font-medium text-white/90">Pozisyon</label>
             <Input value={positionTitle} onChange={(e) => setPositionTitle(e.target.value)} required />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700">İlan Açıklaması</label>
+            <label className="text-sm font-medium text-white/90">İlan Açıklaması</label>
             <textarea
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+              className="w-full rounded-lg border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               rows={6} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)}
             />
           </div>

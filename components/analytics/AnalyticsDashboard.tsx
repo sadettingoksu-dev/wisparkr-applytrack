@@ -28,11 +28,11 @@ function StatCard({
       onClick={onClick}
       className={`rounded-xl border p-4 space-y-1 transition-all ${
         onClick ? 'cursor-pointer hover:shadow-md' : ''
-      } ${selected ? 'border-purple-400 bg-purple-50 shadow-md' : 'border-slate-100 bg-white'}`}
+      } ${selected ? 'border-amber-400 bg-amber-500/10 shadow-md' : 'border-white/10 bg-white/5'}`}
     >
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className={`text-2xl font-bold ${selected ? 'text-purple-700' : 'text-slate-800'}`}>{value}</p>
-      {sub && <p className="text-xs text-slate-400">{sub}</p>}
+      <p className="text-xs text-white/50">{label}</p>
+      <p className={`text-2xl font-bold ${selected ? 'text-amber-600' : 'text-white'}`}>{value}</p>
+      {sub && <p className="text-xs text-white/40">{sub}</p>}
     </div>
   )
 }
@@ -56,15 +56,15 @@ function MiniBar({
   return (
     <div
       onClick={onClick}
-      className={`space-y-1 rounded-lg p-2 transition-all ${onClick ? 'cursor-pointer hover:bg-slate-50' : ''} ${selected ? 'bg-purple-50' : ''}`}
+      className={`space-y-1 rounded-lg p-2 transition-all ${onClick ? 'cursor-pointer hover:bg-white/5' : ''} ${selected ? 'bg-amber-500/10' : ''}`}
     >
       <div className="flex items-center justify-between text-sm">
-        <span className={`font-medium ${selected ? 'text-purple-700' : 'text-slate-600'}`}>{label}</span>
-        <span className="font-medium text-slate-800">
-          {count} <span className="text-xs text-slate-400">(%{pct})</span>
+        <span className={`font-medium ${selected ? 'text-amber-600' : 'text-white/70'}`}>{label}</span>
+        <span className="font-medium text-white">
+          {count} <span className="text-xs text-white/40">(%{pct})</span>
         </span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
         <div className={`h-2 rounded-full transition-all ${color} ${selected ? 'opacity-100' : 'opacity-70'}`} style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -72,7 +72,7 @@ function MiniBar({
 }
 
 const STATUS_ROWS: { status: ApplicationStatus; label: string; color: string }[] = [
-  { status: 'pending', label: 'Beklemede', color: 'bg-purple-400' },
+  { status: 'pending', label: 'Beklemede', color: 'bg-amber-400' },
   { status: 'interview', label: 'Mülakat', color: 'bg-blue-400' },
   { status: 'offer', label: 'Teklif', color: 'bg-emerald-400' },
   { status: 'rejected', label: 'Reddedildi', color: 'bg-red-300' },
@@ -146,8 +146,8 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Analitik</h1>
-        <p className="text-sm text-slate-500">Bir satıra tıkla, detayları sağ panelde gör</p>
+        <h1 className="text-2xl font-bold text-white">Analitik</h1>
+        <p className="text-sm text-white/50">Bir satıra tıkla, detayları sağ panelde gör</p>
       </div>
 
       {/* Özet metrikler */}
@@ -172,12 +172,12 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
           {/* Durum dağılımı */}
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4 text-purple-600" />
-              <h2 className="text-sm font-semibold text-slate-800">Durum Dağılımı</h2>
-              <span className="text-xs text-slate-400">(tıkla → detay)</span>
+              <BarChart2 className="h-4 w-4 text-amber-500" />
+              <h2 className="text-sm font-semibold text-white">Durum Dağılımı</h2>
+              <span className="text-xs text-white/40">(tıkla → detay)</span>
             </div>
             {total === 0 ? (
-              <p className="text-sm text-slate-400">Henüz başvuru yok.</p>
+              <p className="text-sm text-white/40">Henüz başvuru yok.</p>
             ) : (
               <div className="space-y-1">
                 {STATUS_ROWS.map(({ status, label, color }) => (
@@ -198,24 +198,24 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
           {/* Aylık trend */}
           <Card className="space-y-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-purple-600" />
-              <h2 className="text-sm font-semibold text-slate-800">Aylık Başvuru Trendi</h2>
+              <TrendingUp className="h-4 w-4 text-amber-500" />
+              <h2 className="text-sm font-semibold text-white">Aylık Başvuru Trendi</h2>
             </div>
             {total === 0 ? (
-              <p className="text-sm text-slate-400">Henüz başvuru yok.</p>
+              <p className="text-sm text-white/40">Henüz başvuru yok.</p>
             ) : (
               <div className="flex h-32 items-end gap-2">
                 {months.map((m) => (
                   <div key={m.label} className="flex flex-1 flex-col items-center gap-1">
-                    <span className="text-xs font-medium text-slate-600">{m.count || ''}</span>
+                    <span className="text-xs font-medium text-white/70">{m.count || ''}</span>
                     <div
-                      className="w-full rounded-t-sm bg-purple-400"
+                      className="w-full rounded-t-sm bg-amber-400"
                       style={{
                         height: `${Math.round((m.count / maxMonthCount) * 96)}px`,
                         minHeight: m.count > 0 ? '4px' : '0',
                       }}
                     />
-                    <span className="text-xs text-slate-400">{m.label}</span>
+                    <span className="text-xs text-white/40">{m.label}</span>
                   </div>
                 ))}
               </div>
@@ -225,12 +225,12 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
           {/* Skor dağılımı */}
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-purple-600" />
-              <h2 className="text-sm font-semibold text-slate-800">Uyum Skoru Dağılımı</h2>
-              <span className="text-xs text-slate-400">(tıkla → detay)</span>
+              <Target className="h-4 w-4 text-amber-500" />
+              <h2 className="text-sm font-semibold text-white">Uyum Skoru Dağılımı</h2>
+              <span className="text-xs text-white/40">(tıkla → detay)</span>
             </div>
             {scores.length === 0 ? (
-              <p className="text-sm text-slate-400">Henüz uyum skoru hesaplanmamış.</p>
+              <p className="text-sm text-white/40">Henüz uyum skoru hesaplanmamış.</p>
             ) : (
               <div className="space-y-1">
                 {SCORE_ROWS.map((row) => (
@@ -255,35 +255,35 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
             <Card className="sticky top-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-purple-600" />
-                  <h2 className="text-sm font-semibold text-slate-800">{panelTitle}</h2>
-                  <span className="rounded-full bg-purple-100 px-1.5 py-0.5 text-xs font-medium text-purple-600">
+                  <Award className="h-4 w-4 text-amber-500" />
+                  <h2 className="text-sm font-semibold text-white">{panelTitle}</h2>
+                  <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-xs font-medium text-amber-500">
                     {panelApps.length}
                   </span>
                 </div>
                 <button
                   onClick={() => { setSelectedStatus(null); setSelectedScoreLabel(null) }}
-                  className="text-slate-400 hover:text-slate-600"
+                  className="text-white/40 hover:text-white/70"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
               {panelApps.length === 0 ? (
-                <p className="text-sm text-slate-400">Bu kategoride başvuru yok.</p>
+                <p className="text-sm text-white/40">Bu kategoride başvuru yok.</p>
               ) : (
                 <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
                   {panelApps.map((a) => (
                     <Link
                       key={a.id}
                       href={`/applications/${a.id}`}
-                      className="flex items-start justify-between rounded-lg border border-slate-100 px-3 py-2.5 hover:bg-slate-50"
+                      className="flex items-start justify-between rounded-lg border border-white/10 px-3 py-2.5 hover:bg-white/5"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-700">{a.position_title}</p>
-                        <p className="truncate text-xs text-slate-400">{a.company_name}</p>
+                        <p className="truncate text-sm font-medium text-white/90">{a.position_title}</p>
+                        <p className="truncate text-xs text-white/40">{a.company_name}</p>
                         {a.fit_score !== null && (
-                          <p className="mt-0.5 text-xs text-purple-500">Uyum: %{a.fit_score}</p>
+                          <p className="mt-0.5 text-xs text-amber-400">Uyum: %{a.fit_score}</p>
                         )}
                       </div>
                       <Badge className={`ml-2 mt-0.5 shrink-0 ${STATUS_BADGE_CLASSES[a.status]}`}>

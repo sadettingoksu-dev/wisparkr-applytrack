@@ -12,9 +12,9 @@ function FeatureRow({ label, enabled }: { label: string; enabled: boolean }) {
       {enabled ? (
         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
       ) : (
-        <XCircle className="h-4 w-4 shrink-0 text-slate-300" />
+        <XCircle className="h-4 w-4 shrink-0 text-white/30" />
       )}
-      <span className={enabled ? 'text-slate-700' : 'text-slate-400'}>{label}</span>
+      <span className={enabled ? 'text-white/90' : 'text-white/40'}>{label}</span>
     </div>
   )
 }
@@ -24,12 +24,12 @@ function UsageBar({ label, used, limit }: { label: string; used: number; limit: 
   const color = pct >= 90 ? 'bg-red-400' : pct >= 70 ? 'bg-amber-400' : 'bg-emerald-400'
   return (
     <div className="space-y-1">
-      <div className="flex justify-between text-xs text-slate-500">
+      <div className="flex justify-between text-xs text-white/50">
         <span>{label}</span>
         <span>{limit === null ? `${used} / Sınırsız` : `${used} / ${limit}`}</span>
       </div>
       {limit !== null && (
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
           <div className={`h-1.5 rounded-full ${color}`} style={{ width: `${pct}%` }} />
         </div>
       )}
@@ -69,22 +69,22 @@ export default async function BillingPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Plan & Faturalama</h1>
-        <p className="text-sm text-slate-500">Mevcut planın, kullanım durumun ve özellikler</p>
+        <h1 className="text-2xl font-bold text-white">Plan & Faturalama</h1>
+        <p className="text-sm text-white/50">Mevcut planın, kullanım durumun ve özellikler</p>
       </div>
 
       {/* Aktif plan */}
       <Card className="space-y-3">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs text-slate-500">Mevcut Plan</p>
-            <p className="text-2xl font-bold text-purple-600">{plan.name}</p>
-            <p className="text-sm text-slate-500">${plan.priceMonthly}/ay</p>
+            <p className="text-xs text-white/50">Mevcut Plan</p>
+            <p className="text-2xl font-bold text-amber-500">{plan.name}</p>
+            <p className="text-sm text-white/50">${plan.priceMonthly}/ay</p>
           </div>
           {sub?.renews_at && (
-            <div className="text-right text-xs text-slate-400">
+            <div className="text-right text-xs text-white/40">
               <p>Yenileme</p>
-              <p className="font-medium text-slate-600">{formatDate(sub.renews_at)}</p>
+              <p className="font-medium text-white/70">{formatDate(sub.renews_at)}</p>
             </div>
           )}
         </div>
@@ -96,7 +96,7 @@ export default async function BillingPage() {
 
       {/* Kullanım durumu */}
       <Card className="space-y-4">
-        <h2 className="text-sm font-semibold text-slate-800">Bu Ayki Kullanım</h2>
+        <h2 className="text-sm font-semibold text-white">Bu Ayki Kullanım</h2>
         <UsageBar
           label="Başvuru"
           used={appCount}
@@ -121,7 +121,7 @@ export default async function BillingPage() {
 
       {/* Plan özellikleri */}
       <Card className="space-y-3">
-        <h2 className="text-sm font-semibold text-slate-800">Plan Özellikleri</h2>
+        <h2 className="text-sm font-semibold text-white">Plan Özellikleri</h2>
         <div className="space-y-2">
           {FEATURE_LABELS.map(({ key, label }) => (
             <FeatureRow key={key} label={label} enabled={plan.features[key]} />
@@ -132,7 +132,7 @@ export default async function BillingPage() {
       {/* Diğer planlar karşılaştırma */}
       {plan.id !== 'career_coach' && (
         <Card className="space-y-4">
-          <h2 className="text-sm font-semibold text-slate-800">Planları Karşılaştır</h2>
+          <h2 className="text-sm font-semibold text-white">Planları Karşılaştır</h2>
           <div className="grid grid-cols-3 gap-3">
             {PLAN_ORDER.map((pid) => {
               const p = PLANS[pid]
@@ -140,14 +140,14 @@ export default async function BillingPage() {
               return (
                 <div
                   key={pid}
-                  className={`rounded-lg border p-3 text-center ${isCurrent ? 'border-purple-300 bg-purple-50' : 'border-slate-100'}`}
+                  className={`rounded-lg border p-3 text-center ${isCurrent ? 'border-amber-400 bg-amber-500/10' : 'border-white/10'}`}
                 >
-                  <p className={`text-sm font-semibold ${isCurrent ? 'text-purple-700' : 'text-slate-700'}`}>{p.name}</p>
-                  <p className="text-lg font-bold text-slate-800">${p.priceMonthly}<span className="text-xs font-normal text-slate-400">/ay</span></p>
+                  <p className={`text-sm font-semibold ${isCurrent ? 'text-amber-600' : 'text-white/90'}`}>{p.name}</p>
+                  <p className="text-lg font-bold text-white">${p.priceMonthly}<span className="text-xs font-normal text-white/40">/ay</span></p>
                   {isCurrent ? (
-                    <span className="mt-1 inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-600">Mevcut</span>
+                    <span className="mt-1 inline-block rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-500">Mevcut</span>
                   ) : pid !== 'free' ? (
-                    <a href="/pricing" className="mt-1 inline-block text-xs text-purple-600 hover:underline">Yükselt →</a>
+                    <a href="/pricing" className="mt-1 inline-block text-xs text-amber-500 hover:underline">Yükselt →</a>
                   ) : null}
                 </div>
               )

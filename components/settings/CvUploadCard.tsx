@@ -47,13 +47,13 @@ export function CvUploadCard({ initialFilename }: { initialFilename: string | nu
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-slate-700">CV Dosyası</label>
+      <label className="text-sm font-medium text-white/90">CV Dosyası</label>
       <Input value={filename ?? 'Henüz CV yüklenmedi'} disabled />
       <input
         ref={fileInputRef}
         type="file"
         accept="application/pdf"
-        className="text-sm text-slate-500"
+        className="text-sm text-white/50"
         onChange={() => {
           setError(null)
           setSuccess(false)

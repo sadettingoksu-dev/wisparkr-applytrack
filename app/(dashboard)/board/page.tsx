@@ -16,8 +16,8 @@ export default async function BoardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Kanban Board</h1>
-          <p className="text-sm text-slate-500">Başvurularını sürükleyip durumunu güncelle</p>
+          <h1 className="text-2xl font-bold text-white">Kanban Board</h1>
+          <p className="text-sm text-white/50">Başvurularını sürükleyip durumunu güncelle</p>
         </div>
         <Link href="/applications/new">
           <Button>

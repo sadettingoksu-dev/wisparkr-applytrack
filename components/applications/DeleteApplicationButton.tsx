@@ -41,7 +41,7 @@ export function DeleteApplicationButton({ applicationId }: { applicationId: stri
 
       <Modal open={open} onClose={() => setOpen(false)} title="Başvuruyu sil">
         <div className="space-y-4">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-white/70">
             Bu başvuruyu silmek istediğine emin misin? Bu işlem geri alınamaz.
           </p>
           {error && <p className="text-xs text-red-500">{error}</p>}

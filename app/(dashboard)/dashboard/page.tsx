@@ -40,12 +40,12 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-          <p className="text-sm text-slate-500">Başvurularına genel bakış</p>
+          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+          <p className="text-sm text-white/50">Başvurularına genel bakış</p>
         </div>
         <Link
           href="/analytics"
-          className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+          className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs font-medium text-white/70 hover:bg-white/5"
         >
           <BarChart2 className="h-3.5 w-3.5" />
           Analitik
@@ -69,12 +69,12 @@ export default async function DashboardPage() {
         {/* Yapılacaklar */}
         <div>
           <div className="mb-3 flex items-center gap-2">
-            <ListChecks className="h-5 w-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-slate-800">Yapılacaklar</h2>
+            <ListChecks className="h-5 w-5 text-amber-500" />
+            <h2 className="text-lg font-semibold text-white">Yapılacaklar</h2>
           </div>
           {tasks.length === 0 ? (
             <Card>
-              <p className="text-sm text-slate-500">Harika, bekleyen bir işin yok!</p>
+              <p className="text-sm text-white/50">Harika, bekleyen bir işin yok!</p>
             </Card>
           ) : (
             <div className="space-y-3">
@@ -83,8 +83,8 @@ export default async function DashboardPage() {
                 return (
                   <Link key={task.id} href={task.href}>
                     <Card className="flex items-center gap-3 transition-shadow hover:shadow-lg">
-                      <Icon className="h-5 w-5 flex-shrink-0 text-purple-600" />
-                      <p className="text-sm font-medium text-slate-800">{task.label}</p>
+                      <Icon className="h-5 w-5 flex-shrink-0 text-amber-500" />
+                      <p className="text-sm font-medium text-white">{task.label}</p>
                     </Card>
                   </Link>
                 )
@@ -97,19 +97,19 @@ export default async function DashboardPage() {
         <div>
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-purple-600" />
-              <h2 className="text-lg font-semibold text-slate-800">Son Başvurular</h2>
+              <Briefcase className="h-5 w-5 text-amber-500" />
+              <h2 className="text-lg font-semibold text-white">Son Başvurular</h2>
             </div>
-            <Link href="/applications" className="flex items-center gap-1 text-xs text-purple-600 hover:underline">
+            <Link href="/applications" className="flex items-center gap-1 text-xs text-amber-500 hover:underline">
               Tümü <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           {recentApps.length === 0 ? (
             <Card>
-              <p className="text-sm text-slate-500">Henüz başvuru yok.</p>
+              <p className="text-sm text-white/50">Henüz başvuru yok.</p>
             </Card>
           ) : (
-            <Card className="divide-y divide-slate-50">
+            <Card className="divide-y divide-white/10">
               {recentApps.map((app) => (
                 <Link
                   key={app.id}
@@ -117,8 +117,8 @@ export default async function DashboardPage() {
                   className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:opacity-75"
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-700">{app.position_title}</p>
-                    <p className="truncate text-xs text-slate-400">{app.company_name}</p>
+                    <p className="truncate text-sm font-medium text-white/90">{app.position_title}</p>
+                    <p className="truncate text-xs text-white/40">{app.company_name}</p>
                   </div>
                   <Badge className={`ml-3 shrink-0 ${STATUS_BADGE_CLASSES[app.status]}`}>
                     {STATUS_LABELS[app.status]}

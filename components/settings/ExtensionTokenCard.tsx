@@ -33,8 +33,8 @@ export function ExtensionTokenCard({ initialToken }: { initialToken: string }) {
 
   return (
     <Card className="space-y-2">
-      <h2 className="text-sm font-semibold text-slate-800">Tarayıcı Eklentisi</h2>
-      <p className="text-sm text-slate-500">
+      <h2 className="text-sm font-semibold text-white">Tarayıcı Eklentisi</h2>
+      <p className="text-sm text-white/50">
         Wisparkr tarayıcı eklentisini LinkedIn ve Indeed&apos;deki ilan sayfalarında
         &quot;Wisparkr&apos;e Kaydet&quot; düğmesiyle kullanmak için aşağıdaki kişisel
         anahtarı eklentiye yapıştır. Bu anahtarı kimseyle paylaşma.

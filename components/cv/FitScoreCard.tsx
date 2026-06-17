@@ -48,16 +48,16 @@ export function FitScoreCard({
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-800">CV Uyum Skoru</h3>
+        <h3 className="text-sm font-semibold text-white">CV Uyum Skoru</h3>
         {score !== null && (
-          <span className="text-2xl font-bold text-purple-600">%{score}</span>
+          <span className="text-2xl font-bold text-amber-500">%{score}</span>
         )}
       </div>
 
       {suggestions && suggestions.length > 0 && (
         <ul className="space-y-2">
           {suggestions.map((s, i) => (
-            <li key={i} className="flex gap-2 text-sm text-slate-600">
+            <li key={i} className="flex gap-2 text-sm text-white/70">
               <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" />
               {s}
             </li>

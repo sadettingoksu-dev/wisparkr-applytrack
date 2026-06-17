@@ -34,8 +34,8 @@ export default async function ApplicationsPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Başvurular</h1>
-          <p className="text-sm text-slate-500">Tüm başvurularının listesi</p>
+          <h1 className="text-2xl font-bold text-white">Başvurular</h1>
+          <p className="text-sm text-white/50">Tüm başvurularının listesi</p>
         </div>
         <div className="flex items-center gap-2">
           {apps.length >= 2 && <CompareSelector apps={apps} />}
@@ -57,7 +57,7 @@ export default async function ApplicationsPage({
 
       {apps.length === 0 ? (
         <Card>
-          <p className="text-sm text-slate-500">Henüz başvuru eklemediniz.</p>
+          <p className="text-sm text-white/50">Henüz başvuru eklemediniz.</p>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -65,12 +65,12 @@ export default async function ApplicationsPage({
             <Link key={app.id} href={`/applications/${app.id}`}>
               <Card className="flex items-center justify-between transition-shadow hover:shadow-lg">
                 <div>
-                  <p className="font-semibold text-slate-800">{app.position_title}</p>
-                  <p className="text-sm text-slate-500">{app.company_name}</p>
+                  <p className="font-semibold text-white">{app.position_title}</p>
+                  <p className="text-sm text-white/50">{app.company_name}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {app.applied_at && (
-                    <span className="text-xs text-slate-400">{formatDate(app.applied_at)}</span>
+                    <span className="text-xs text-white/40">{formatDate(app.applied_at)}</span>
                   )}
                   <Badge className={STATUS_BADGE_CLASSES[app.status]}>
                     {STATUS_LABELS[app.status]}

@@ -47,9 +47,9 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
 
   return (
     <Card className="space-y-4">
-      <h3 className="text-sm font-semibold text-slate-800">Mock Mülakat Provası</h3>
+      <h3 className="text-sm font-semibold text-white">Mock Mülakat Provası</h3>
 
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-white/50">
         AI, bu pozisyon ve CV&apos;ne göre seninle {' '}
         <strong>6 soruluk</strong> bir mülakat provası yapar; sonunda kategori bazlı bir geri
         bildirim raporu alırsın.
@@ -69,10 +69,10 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
       </Button>
 
       {sessions.length > 0 && (
-        <div className="border-t border-slate-100 pt-3">
+        <div className="border-t border-white/10 pt-3">
           <button
             onClick={() => setSessionsOpen((prev) => !prev)}
-            className="flex w-full items-center justify-between text-xs font-medium text-slate-500 hover:text-slate-700"
+            className="flex w-full items-center justify-between text-xs font-medium text-white/50 hover:text-white/90"
           >
             <span>Geçmiş Oturumlar ({sessions.length})</span>
             {sessionsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
@@ -89,9 +89,9 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
                   <Link
                     key={session.id}
                     href={`/applications/${applicationId}/mock-interview/${session.id}`}
-                    className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm hover:bg-slate-50"
+                    className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"
                   >
-                    <span className="text-slate-600">
+                    <span className="text-white/70">
                       {new Date(session.created_at).toLocaleDateString('tr-TR', {
                         day: '2-digit',
                         month: '2-digit',
@@ -100,14 +100,14 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
                     </span>
                     {session.status === 'completed' ? (
                       session.overall_score !== null && readiness ? (
-                        <Badge className={`bg-slate-50 ${readiness.className}`}>
+                        <Badge className={`bg-white/5 ${readiness.className}`}>
                           %{session.overall_score} · {readiness.label}
                         </Badge>
                       ) : (
-                        <Badge className="bg-slate-50 text-slate-500">Rapor bekliyor</Badge>
+                        <Badge className="bg-white/5 text-white/50">Rapor bekliyor</Badge>
                       )
                     ) : (
-                      <Badge className="bg-purple-50 text-purple-600">Devam ediyor</Badge>
+                      <Badge className="bg-amber-500/10 text-amber-500">Devam ediyor</Badge>
                     )}
                   </Link>
                 )
@@ -116,7 +116,7 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
               {sessions.length > 3 && (
                 <button
                   onClick={() => setShowAll((prev) => !prev)}
-                  className="w-full pt-1 text-xs text-purple-600 hover:text-purple-800"
+                  className="w-full pt-1 text-xs text-amber-500 hover:text-amber-700"
                 >
                   {showAll ? 'Daha az göster' : `Daha fazla göster (${sessions.length - 3} oturum daha)`}
                 </button>
