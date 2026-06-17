@@ -188,7 +188,7 @@ export default function SignupPage() {
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt={APP_NAME} width={36} height={36} className="rounded-xl" />
+            <img src="/logo-dark.png" alt={APP_NAME} width={36} height={36} className="rounded-xl" />
             <span className="text-xl font-bold text-white">{APP_NAME}</span>
           </Link>
           <p className="mt-3 text-white/50 text-sm">Ücretsiz hesabını oluştur</p>

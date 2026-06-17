@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles } from 'lucide-react'
-import { LandingLogo } from '@/components/landing/LandingLogo'
 
 const FEATURES = [
   {
@@ -30,7 +29,8 @@ export default function LandingPage() {
       <header className="rounded-b-[2rem] bg-neutral-900 shadow-lg shadow-black/60">
         <div className="mx-auto flex max-w-6xl items-center px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <LandingLogo size={32} />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-dark.png" alt="Wisparkr" width={32} height={32} className="rounded-lg" />
             <span className="text-xl font-bold text-white">Wisparkr</span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-white/60 md:flex ml-8">
