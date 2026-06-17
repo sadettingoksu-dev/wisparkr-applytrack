@@ -92,7 +92,7 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col bg-black">
       {/* Navbar */}
       <header className="mx-4 mt-4 rounded-[2rem] bg-neutral-900 shadow-lg shadow-black/60 sm:mx-6">
-        <div className="mx-auto grid max-w-6xl grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
           <Link href="/" className="col-start-1 flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-dark.png" alt="Wisparkr" width={32} height={32} className="rounded-lg" />
