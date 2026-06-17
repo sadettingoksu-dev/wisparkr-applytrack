@@ -137,7 +137,7 @@ export default function SignupPage() {
           <div>
             <h2 className="text-2xl font-bold text-white">E-postanı doğrula</h2>
             <p className="mt-2 text-white/50 text-sm">
-              <span className="text-amber-300 font-medium">{email}</span> adresine 6 haneli bir kod gönderdik. Kodu aşağıya gir.
+              <span className="text-amber-300 font-medium">{email}</span> adresine 8 haneli bir kod gönderdik. Kodu aşağıya gir.
             </p>
           </div>
 
@@ -145,12 +145,12 @@ export default function SignupPage() {
             <input
               type="text"
               inputMode="numeric"
-              maxLength={6}
-              placeholder="000000"
+              maxLength={8}
+              placeholder="00000000"
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
               required
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center text-2xl tracking-[0.5em] text-white placeholder-white/20 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
+              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center text-2xl tracking-[0.35em] text-white placeholder-white/20 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
             />
 
             {otpError && (
@@ -162,7 +162,7 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              disabled={otpLoading || otp.length !== 6}
+              disabled={otpLoading || otp.length !== 8}
               className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 py-3 text-sm font-semibold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {otpLoading ? 'Doğrulanıyor...' : 'Kodu Doğrula'}
