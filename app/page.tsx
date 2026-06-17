@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles } from 'lucide-react'
+import { LandingLogo } from '@/components/landing/LandingLogo'
 
 const FEATURES = [
   {
@@ -26,11 +27,10 @@ export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-black">
       {/* Navbar */}
-      <header className="rounded-b-[2rem] bg-white/5 backdrop-blur-md shadow-lg shadow-black/40">
+      <header className="rounded-b-[2rem] bg-neutral-900 shadow-lg shadow-black/60">
         <div className="mx-auto flex max-w-6xl items-center px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Wisparkr" width={32} height={32} className="rounded-lg" />
+            <LandingLogo size={32} />
             <span className="text-xl font-bold text-white">Wisparkr</span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-white/60 md:flex ml-8">
@@ -49,9 +49,6 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden bg-black">
-          {/* Sol-alt sarımsı glow */}
-          <div className="pointer-events-none absolute -bottom-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-amber-500/20 blur-3xl" />
-
           <div className="relative mx-auto flex max-w-3xl flex-col items-center px-6 py-28 text-center">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-sm text-amber-300">
               <Sparkles className="h-3.5 w-3.5" />

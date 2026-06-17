@@ -42,9 +42,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-6 py-12">
-      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-amber-500/20 blur-3xl" />
-      <div className="relative w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-black px-6 py-12">
+      <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">

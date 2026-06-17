@@ -126,9 +126,8 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-6">
-        <div className="pointer-events-none absolute -bottom-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-amber-500/20 blur-3xl" />
-        <div className="relative w-full max-w-sm text-center space-y-6">
+      <div className="flex min-h-screen items-center justify-center bg-black px-6">
+        <div className="w-full max-w-sm text-center space-y-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-600/20 border border-amber-500/30">
             <Mail className="h-8 w-8 text-amber-400" />
           </div>
@@ -183,9 +182,8 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-6 py-12">
-      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-amber-500/20 blur-3xl" />
-      <div className="relative w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-black px-6 py-12">
+      <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
