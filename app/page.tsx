@@ -1,7 +1,20 @@
 'use client'
 
 import Link from 'next/link'
-import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles } from 'lucide-react'
+import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles, Check } from 'lucide-react'
+import { PLANS, PLAN_ORDER } from '@/lib/plans'
+
+const FEATURE_LISTS: Record<string, string[]> = {
+  free: ['5 başvuru', '10 AI soru/ay', 'Temel kanban board'],
+  pro: ['Sınırsız başvuru', '200 AI soru/ay', 'CV uyum skoru', 'CV otomatik uyarlama'],
+  career_coach: [
+    "Pro'daki her şey",
+    'Sınırsız AI soru',
+    'Şirket içgörüsü',
+    'Maaş müzakere koçu',
+    'Rakip analizi',
+  ],
+}
 
 const FEATURES = [
   {
@@ -35,7 +48,7 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-white/60 md:flex ml-8">
             <Link href="/#features" className="hover:text-white transition-colors">Özellikler</Link>
-            <Link href="/pricing" className="hover:text-white transition-colors">Fiyatlandırma</Link>
+            <Link href="/#pricing" className="hover:text-white transition-colors">Fiyatlandırma</Link>
           </nav>
           {/* Giriş Yap tam sağa */}
           <div className="ml-auto">
@@ -65,13 +78,6 @@ export default function LandingPage() {
               &ldquo;Başvurdum, ne oldu?&rdquo; sorusuna son. Wisparkr tüm başvuru sürecini tek bir
               yerden yönetmeni sağlar.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href="/pricing">
-                <button className="rounded-xl border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white hover:bg-white/10 transition-colors backdrop-blur-sm">
-                  Fiyatlandırmayı Gör
-                </button>
-              </Link>
-            </div>
           </div>
         </section>
 
@@ -94,6 +100,64 @@ export default function LandingPage() {
                   <p className="text-sm leading-relaxed text-white/50">{feature.description}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Fiyatlandırma */}
+        <section id="pricing" className="bg-black py-24">
+          <div className="mx-auto max-w-6xl px-6">
+            <h2 className="mb-3 text-center text-3xl font-bold text-white">
+              İhtiyacına uygun planı seç
+            </h2>
+            <p className="mb-12 text-center text-white/50">İstediğin zaman değiştirebilirsin.</p>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {PLAN_ORDER.map((planId) => {
+                const plan = PLANS[planId]
+                const highlighted = planId === 'pro'
+                return (
+                  <div
+                    key={planId}
+                    className={`flex flex-col gap-4 rounded-2xl border p-6 backdrop-blur-sm ${
+                      highlighted
+                        ? 'border-amber-500/50 bg-amber-500/5'
+                        : 'border-white/10 bg-white/5'
+                    }`}
+                  >
+                    {highlighted && (
+                      <span className="self-start rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-300">
+                        En Popüler
+                      </span>
+                    )}
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
+                      <p className="mt-1 text-3xl font-bold text-white">
+                        ${plan.priceMonthly}
+                        <span className="text-sm font-normal text-white/40">/ay</span>
+                      </p>
+                    </div>
+                    <ul className="flex-1 space-y-2">
+                      {FEATURE_LISTS[planId].map((feature) => (
+                        <li key={feature} className="flex items-start gap-2 text-sm text-white/60">
+                          <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-400" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                    <Link href="/signup">
+                      <button
+                        className={`w-full rounded-xl py-3 text-sm font-semibold transition-opacity hover:opacity-90 ${
+                          highlighted
+                            ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-black'
+                            : 'border border-white/20 bg-white/5 text-white'
+                        }`}
+                      >
+                        {planId === 'free' ? 'Ücretsiz Başla' : 'Plana Geç'}
+                      </button>
+                    </Link>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </section>
