@@ -144,7 +144,7 @@ export default function LandingPage() {
                         </li>
                       ))}
                     </ul>
-                    <Link href="/signup">
+                    <Link href={planId === 'free' ? '/signup' : `/signup?plan=${planId}`}>
                       <button
                         className={`w-full rounded-xl py-3 text-sm font-semibold transition-opacity hover:opacity-90 ${
                           highlighted

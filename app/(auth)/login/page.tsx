@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
 import { createClient } from '@/lib/supabase/client'
@@ -10,6 +10,9 @@ import { APP_NAME } from '@/utils/constants'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan')
+  const postAuthPath = plan === 'pro' || plan === 'career_coach' ? `/checkout?plan=${plan}` : '/dashboard'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
@@ -30,14 +33,14 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.push(postAuthPath)
   }
 
   async function handleGoogleLogin() {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(postAuthPath)}` },
     })
   }
 

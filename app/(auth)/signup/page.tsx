@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, User, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
@@ -36,6 +36,9 @@ function PasswordStrength({ password }: { password: string }) {
 
 export default function SignupPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan')
+  const postAuthPath = plan === 'pro' || plan === 'career_coach' ? `/checkout?plan=${plan}` : '/dashboard'
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -87,7 +90,7 @@ export default function SignupPage() {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(postAuthPath)}` },
     })
   }
 
@@ -109,7 +112,7 @@ export default function SignupPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.push(postAuthPath)
   }
 
   async function handleResendOtp() {
