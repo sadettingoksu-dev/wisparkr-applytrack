@@ -290,6 +290,62 @@ export async function polishCv(
   return validated.data
 }
 
+const skillsGapSchema = z.object({
+  matched: z.array(z.string()).max(20).default([]),
+  missing: z.array(z.string()).max(20).default([]),
+  summary: z.string().min(1),
+})
+
+export interface SkillsGapResult {
+  matched: string[]
+  missing: string[]
+  summary: string
+}
+
+/**
+ * Compares a job posting's required skills against the candidate's CV and
+ * returns which skills are covered (matched) and which are missing, plus a
+ * short summary. Grounded in CV evidence — no invented matches.
+ */
+export async function analyzeSkillsGap(
+  anthropic: Anthropic,
+  cvText: string,
+  job: { company_name: string; position_title: string; job_description: string | null }
+): Promise<SkillsGapResult> {
+  const prompt = [
+    'Aşağıda bir adayın CV metni ve başvurduğu iş ilanı var.',
+    'İlanın gerektirdiği BECERİ/YETKİNLİKLERİ çıkar ve adayın CV\'siyle karşılaştır.',
+    '- "matched": ilanın istediği VE adayın CV\'sinde KANITI olan beceriler.',
+    '- "missing": ilanın istediği AMA CV\'de görünmeyen/eksik beceriler.',
+    '- Beceri adlarını kısa tut (örn. "React", "Proje Yönetimi", "İngilizce (C1)").',
+    '- CV\'de olmayan bir beceriyi "matched" sayma; emin değilsen "missing"e koy.',
+    '- Her listede en fazla 12 madde.',
+    '- "summary": 1-2 cümlelik genel değerlendirme ve kapatılması en kritik eksik.',
+    'Madde adlarında ve özette ' + TURKISH_WRITING_RULE,
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    '{"matched": ["..."], "missing": ["..."], "summary": "..."}',
+    '',
+    `İş ilanı (${job.company_name} - ${job.position_title}):`,
+    (job.job_description || 'Açıklama yok').slice(0, 4000),
+    '',
+    'CV:',
+    cvText.slice(0, 8000),
+  ].join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 1024,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = skillsGapSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
 const classificationSchema = z.object({
   classification: z.enum(['interview_invitation', 'rejection', 'info_request', 'other']),
   application_id: z.string().uuid().nullable(),

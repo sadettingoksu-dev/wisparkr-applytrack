@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card'
 import { FitScoreCard } from '@/components/cv/FitScoreCard'
 import { CvTailorCard } from '@/components/cv/CvTailorCard'
 import { CoverLetterCard } from '@/components/cv/CoverLetterCard'
+import { SkillsGapCard } from '@/components/cv/SkillsGapCard'
 import { RequiredDocumentsCard } from '@/components/cv/RequiredDocumentsCard'
 import { AIChatPanel } from '@/components/chat/AIChatPanel'
 import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
@@ -65,6 +66,13 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
           applicationId={app.id}
           initialScore={app.fit_score}
           initialSuggestions={(app.fit_suggestions as string[] | null) ?? null}
+        />
+
+        <SkillsGapCard
+          applicationId={app.id}
+          initialData={
+            app.skills_gap as { matched: string[]; missing: string[]; summary: string } | null
+          }
         />
 
         <CvTailorCard
