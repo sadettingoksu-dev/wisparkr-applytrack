@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { FileSignature, Sparkles, Copy, Check } from 'lucide-react'
+import { FileSignature, Sparkles, Copy, Check, Download } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 
 interface CoverLetterCardProps {
   applicationId: string
@@ -25,6 +26,9 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [template, setTemplate] = useState<CvTemplate>('classic')
+  // The PDF is rendered from the saved (last generated) version on the server.
+  const [savedText, setSavedText] = useState(initialText ?? '')
 
   async function handleGenerate() {
     setLoading(true)
@@ -41,6 +45,7 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
         return
       }
       setText(json.data.cover_letter)
+      setSavedText(json.data.cover_letter)
     } catch {
       setError('Bağlantı hatası.')
     } finally {
@@ -92,6 +97,8 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
+      {savedText && <TemplatePicker value={template} onChange={setTemplate} />}
+
       <div className="flex flex-wrap gap-2">
         <Button onClick={handleGenerate} disabled={loading} variant="secondary">
           {loading ? (
@@ -109,7 +116,22 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
             {copied ? 'Kopyalandı' : 'Kopyala'}
           </Button>
         )}
+        {savedText && (
+          <a href={`/api/applications/${applicationId}/cv-pdf?type=cover_letter&template=${template}`}>
+            <Button variant="primary">
+              <Download className="h-4 w-4" />
+              PDF İndir
+            </Button>
+          </a>
+        )}
       </div>
+
+      {savedText && text !== savedText && (
+        <p className="text-xs text-amber-400/80">
+          Not: PDF, en son oluşturulan sürümü indirir. Düzenlediğin metni PDF&apos;te görmek için
+          &quot;Yeniden Oluştur&quot;a basman gerekebilir.
+        </p>
+      )}
     </Card>
   )
 }

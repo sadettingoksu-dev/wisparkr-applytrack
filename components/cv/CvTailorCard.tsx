@@ -5,6 +5,7 @@ import { Download, Sparkles, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 import { MIN_APPLY_SCORE, getApplyReadiness } from '@/utils/constants'
 
 interface CvTailorCardProps {
@@ -19,6 +20,7 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
   const [ready, setReady] = useState(hasTailoredCv)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [template, setTemplate] = useState<CvTemplate>('classic')
 
   async function handleTailor() {
     setLoading(true)
@@ -78,6 +80,8 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
+      {ready && canDownload && <TemplatePicker value={template} onChange={setTemplate} />}
+
       <div className="flex flex-wrap gap-2">
         <Button onClick={handleTailor} disabled={loading} variant="secondary">
           {loading ? (
@@ -92,7 +96,7 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
 
         {ready && (
           <a
-            href={canDownload ? `/api/applications/${applicationId}/cv-pdf` : undefined}
+            href={canDownload ? `/api/applications/${applicationId}/cv-pdf?type=cv&template=${template}` : undefined}
             aria-disabled={!canDownload}
             onClick={(e) => {
               if (!canDownload) e.preventDefault()
