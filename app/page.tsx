@@ -1,60 +1,7 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles, Check } from 'lucide-react'
 import { PLANS, PLAN_ORDER } from '@/lib/plans'
-import { createClient } from '@/lib/supabase/client'
-
-interface CurrentUser {
-  name: string
-  avatarUrl: string | null
-}
-
-function NavbarAuth() {
-  const [user, setUser] = useState<CurrentUser | null>(null)
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data }) => {
-      const authUser = data.user
-      if (authUser) {
-        const meta = authUser.user_metadata ?? {}
-        setUser({
-          name: meta.full_name ?? meta.name ?? authUser.email ?? '',
-          avatarUrl: meta.avatar_url ?? meta.picture ?? null,
-        })
-      }
-      setLoaded(true)
-    })
-  }, [])
-
-  if (!loaded) return null
-
-  if (!user) {
-    return (
-      <Link href="/login" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
-        Giriş Yap
-      </Link>
-    )
-  }
-
-  const initial = user.name.trim().charAt(0).toUpperCase() || '?'
-
-  return (
-    <Link href="/dashboard" className="flex items-center gap-2 text-sm font-medium text-white/70 hover:text-white transition-colors">
-      {user.avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={user.avatarUrl} alt={user.name} width={28} height={28} className="rounded-full" />
-      ) : (
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/20 text-xs font-semibold text-amber-300">
-          {initial}
-        </span>
-      )}
-    </Link>
-  )
-}
+import { NavbarAuth } from '@/components/layout/NavbarAuth'
 
 const FEATURE_LISTS: Record<string, string[]> = {
   free: ['5 başvuru', '10 AI soru/ay', 'Temel kanban board'],

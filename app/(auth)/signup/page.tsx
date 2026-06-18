@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, User, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
@@ -51,6 +51,14 @@ export default function SignupPage() {
   const [otpError, setOtpError] = useState<string | null>(null)
   const [otpLoading, setOtpLoading] = useState(false)
   const [resendMessage, setResendMessage] = useState<string | null>(null)
+
+  // Already signed in? Don't show the signup screen again — go to the app.
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) router.replace(postAuthPath)
+    })
+  }, [router, postAuthPath])
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()

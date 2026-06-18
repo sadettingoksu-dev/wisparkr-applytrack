@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, CalendarDays, Settings, CreditCard, LogOut, BarChart2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { LayoutDashboard, Kanban, FileText, CalendarDays, Settings, CreditCard, BarChart2 } from 'lucide-react'
+import { UserMenu } from '@/components/layout/UserMenu'
 import { APP_NAME } from '@/utils/constants'
+import type { PlanId } from '@/lib/plans'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -18,15 +19,15 @@ const NAV_ITEMS = [
   { href: '/settings/billing', label: 'Plan & Faturalama', icon: CreditCard },
 ]
 
-export function Sidebar({ email }: { email?: string }) {
-  const pathname = usePathname()
-  const router = useRouter()
+interface SidebarProps {
+  name?: string
+  email?: string
+  avatarUrl?: string | null
+  plan?: PlanId | string | null
+}
 
-  async function handleSignOut() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+export function Sidebar({ name, email, avatarUrl, plan }: SidebarProps) {
+  const pathname = usePathname()
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-white/10 bg-white/5">
@@ -56,15 +57,14 @@ export function Sidebar({ email }: { email?: string }) {
           )
         })}
       </nav>
-      <div className="border-t border-white/10 px-3 py-4">
-        {email && <p className="mb-2 truncate px-3 text-xs text-white/40">{email}</p>}
-        <button
-          onClick={handleSignOut}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-white/50 hover:bg-white/5 hover:text-red-500"
-        >
-          <LogOut className="h-4 w-4" />
-          Çıkış Yap
-        </button>
+      <div className="border-t border-white/10 p-2">
+        <UserMenu
+          name={name ?? ''}
+          email={email ?? ''}
+          avatarUrl={avatarUrl}
+          plan={plan}
+          variant="sidebar"
+        />
       </div>
     </aside>
   )

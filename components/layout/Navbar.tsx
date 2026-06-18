@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { APP_NAME } from '@/utils/constants'
+import { NavbarAuth } from '@/components/layout/NavbarAuth'
 
 export function Navbar() {
   return (
@@ -15,9 +16,7 @@ export function Navbar() {
           <Link href="/pricing" className="hover:text-white">Fiyatlandırma</Link>
         </nav>
         <div className="col-start-3 flex justify-end">
-          <Link href="/login" className="text-sm font-medium text-white/70 hover:text-white">
-            Giriş Yap
-          </Link>
+          <NavbarAuth />
         </div>
       </div>
     </header>
