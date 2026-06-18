@@ -186,3 +186,36 @@ export function hasCvContent(data: CvData): boolean {
       data.skills.length
   )
 }
+
+// ---------------------------------------------------------------------------
+// Shareable CV link helpers (Faz F monetization).
+// ---------------------------------------------------------------------------
+
+export const SHARE_FREE_TTL_DAYS = 7
+export const CV_TRIAL_DAYS = 7
+
+export interface ShareActivenessInput {
+  expires_at: string | null
+  revoked: boolean
+}
+
+/**
+ * Live activeness check for a shared CV link, evaluated against the owner's
+ * CURRENT plan. Free links expire after SHARE_FREE_TTL_DAYS; upgrading to a
+ * paid plan instantly re-activates every link (no cron needed).
+ */
+export function isShareActive(
+  share: ShareActivenessInput,
+  ownerPlan: string | null | undefined
+): boolean {
+  if (share.revoked) return false
+  if (ownerPlan && ownerPlan !== 'free') return true
+  if (!share.expires_at) return false
+  return new Date(share.expires_at).getTime() >= Date.now()
+}
+
+/** Whether the free 7-day download window (from first CV save) is still open. */
+export function isTrialActive(trialStartedAt: string | null | undefined): boolean {
+  if (!trialStartedAt) return false
+  return Date.now() - new Date(trialStartedAt).getTime() <= CV_TRIAL_DAYS * 86400_000
+}

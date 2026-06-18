@@ -26,6 +26,7 @@ export interface Database {
           cv_text: string | null
           cv_filename: string | null
           cv_data: Json | null
+          cv_trial_started_at: string | null
           plan: 'free' | 'pro' | 'career_coach'
           extension_token: string
           created_at: string
@@ -36,6 +37,28 @@ export interface Database {
           email: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Row']>
+        Relationships: []
+      }
+      cv_shares: {
+        Row: {
+          id: string
+          user_id: string
+          token: string
+          label: string | null
+          cv_snapshot: Json
+          template: string
+          created_at: string
+          expires_at: string | null
+          view_count: number
+          last_viewed_at: string | null
+          revoked: boolean
+        }
+        Insert: Partial<Database['public']['Tables']['cv_shares']['Row']> & {
+          user_id: string
+          token: string
+          cv_snapshot: Json
+        }
+        Update: Partial<Database['public']['Tables']['cv_shares']['Row']>
         Relationships: []
       }
       applications: {

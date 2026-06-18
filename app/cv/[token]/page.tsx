@@ -1,0 +1,79 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { Download } from 'lucide-react'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { parseCvData, isShareActive } from '@/lib/cv'
+import { CvPreview } from '@/components/cv-builder/CvPreview'
+import { ExpiredCv } from '@/components/cv/ExpiredCv'
+
+export const dynamic = 'force-dynamic'
+
+interface CvShareRow {
+  id: string
+  user_id: string
+  cv_snapshot: unknown
+  expires_at: string | null
+  revoked: boolean
+  view_count: number
+}
+
+async function loadShare(token: string) {
+  const admin = createAdminClient()
+  const { data: share } = await admin.from('cv_shares').select('*').eq('token', token).maybeSingle()
+  if (!share) return null
+  const row = share as unknown as CvShareRow
+  const { data: owner } = await admin.from('profiles').select('plan').eq('id', row.user_id).maybeSingle()
+  const ownerPlan = (owner as { plan?: string } | null)?.plan ?? 'free'
+  return { row, ownerPlan }
+}
+
+export async function generateMetadata({ params }: { params: { token: string } }): Promise<Metadata> {
+  const result = await loadShare(params.token)
+  if (!result) return { title: 'CV — Wisparkr' }
+  const cv = parseCvData(result.row.cv_snapshot)
+  const name = cv.personal.fullName || 'CV'
+  return {
+    title: `${name} — CV`,
+    description: cv.personal.headline || 'Wisparkr ile oluşturulmuş CV',
+  }
+}
+
+export default async function PublicCvPage({ params }: { params: { token: string } }) {
+  const result = await loadShare(params.token)
+  if (!result) notFound()
+  const { row, ownerPlan } = result
+
+  if (!isShareActive(row, ownerPlan)) {
+    return <ExpiredCv />
+  }
+
+  // Count the view (best effort).
+  const admin = createAdminClient()
+  await admin
+    .from('cv_shares')
+    .update({ view_count: (row.view_count ?? 0) + 1, last_viewed_at: new Date().toISOString() } as never)
+    .eq('id', row.id)
+
+  const cvData = parseCvData(row.cv_snapshot)
+
+  return (
+    <div className="min-h-screen bg-neutral-100 py-10">
+      <div className="mx-auto max-w-3xl px-4">
+        <CvPreview data={cvData} />
+        <div className="mt-4 flex items-center justify-between px-1">
+          <a
+            href={`/cv/${params.token}/pdf`}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+          >
+            <Download className="h-4 w-4" />
+            PDF indir
+          </a>
+          <Link href="/" className="text-xs text-neutral-400 hover:text-neutral-600">
+            Wisparkr ile oluşturuldu
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}

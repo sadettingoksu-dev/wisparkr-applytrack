@@ -18,6 +18,8 @@ export interface PlanConfig {
     coverLetter: boolean
     cvPolish: boolean
     skillsGap: boolean
+    permanentShareLinks: boolean
+    shareAnalytics: boolean
     companyInsights: boolean
     salaryNegotiationCoach: boolean
     competitorAnalysis: boolean
@@ -40,6 +42,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       coverLetter: false,
       cvPolish: false,
       skillsGap: true,
+      permanentShareLinks: false,
+      shareAnalytics: false,
       companyInsights: false,
       salaryNegotiationCoach: false,
       competitorAnalysis: false,
@@ -60,6 +64,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       coverLetter: true,
       cvPolish: true,
       skillsGap: true,
+      permanentShareLinks: true,
+      shareAnalytics: true,
       companyInsights: false,
       salaryNegotiationCoach: false,
       competitorAnalysis: false,
@@ -80,6 +86,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       coverLetter: true,
       cvPolish: true,
       skillsGap: true,
+      permanentShareLinks: true,
+      shareAnalytics: true,
       companyInsights: true,
       salaryNegotiationCoach: true,
       competitorAnalysis: true,

@@ -17,7 +17,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   const ctx = await requireAuth()
   if (!isAuthedContext(ctx)) return ctx
-  const { supabase, userId } = ctx
+  const { supabase, userId, profile } = ctx
 
   const json = await request.json().catch(() => null)
   const parsed = cvDataSchema.safeParse(json)
@@ -32,9 +32,13 @@ export async function PUT(request: Request) {
   // Derive ATS-friendly text so every existing AI feature keeps working.
   const cvText = flattenCvData(cvData)
 
+  const update: Record<string, unknown> = { cv_data: cvData, cv_text: cvText }
+  // Start the 7-day free download window on first CV save.
+  if (!profile.cv_trial_started_at) update.cv_trial_started_at = new Date().toISOString()
+
   const { error } = await supabase
     .from('profiles')
-    .update({ cv_data: cvData, cv_text: cvText } as never)
+    .update(update as never)
     .eq('id', userId)
 
   if (error) {
