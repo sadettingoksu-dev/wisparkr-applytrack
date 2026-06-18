@@ -12,6 +12,13 @@
 
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
+### Yapılandırılmış CV Oluşturucu + Akıllı Paylaşılabilir Link (Faz A + F)
+- [x] **CV Oluşturucu (Faz A):** `profiles.cv_data` (jsonb) yapılandırılmış CV; `lib/cv.ts` (`CvData` Zod + `flattenCvData`→`cv_text` türetimi, mevcut 7 AI tüketicisi bozulmaz); `/cv-builder` bölüm bölüm form + canlı önizleme (`CvPreview`) + kaydet; `/api/cv/builder` GET/PUT; `/api/cv/pdf` gerçek yerleşimli PDF (3 şablon, `lib/cvPdf.ts`); sidebar "CV Oluştur" + onboarding.
+- [x] **Akıllı Paylaşılabilir Link (Faz F — monetizasyon):** `cv_shares` tablosu (token + dondurulmuş snapshot + expires_at + görüntülenme). Public `/cv/[token]` owner planına **canlı** bakar (cron yok): free **7 gün**, Pro **kalıcı**; Pro'ya geçince tüm linkler **anında canlanır**. Pasif durum profesyonel (`ExpiredCv`, itibar korunur). `/cv/[token]/pdf` public indirme. `/api/cv/share` POST/GET + `[id]` PATCH/DELETE; özel slug Pro+. 7 gün ücretsiz indirme penceresi (`cv_trial_started_at`). `SharePanel` (oluştur + Linklerim). **Google Drive/Dropbox bilinçli eklenmedi** (paywall'ı bypass eder).
+- [x] Commit'ler: c53b943 (Faz A), fb47555 (Faz F)
+- [ ] **⚠️ DB:** `0010_cv_data.sql` + `0011_cv_shares.sql` Supabase'de ÇALIŞTIRILMALI — yoksa builder kaydetme ve link oluşturma hata verir.
+- **Durum: Kod canlıda, migration 0010 + 0011 bekliyor. Backlog: Faz B (builder AI), C (PDF içe aktar), D (ATS skoru).**
+
 ### claude.ai tarzı hesap menüsü + Flowcase'den ilhamla CV/AI paketi (5 faz)
 - [x] **Hesap menüsü (`UserMenu` + `NavbarAuth`):** avatar+isim+plan rozeti; açılır menü (Ayarlar, Planı yükselt, Uygulama & eklentiler, Yardım, **Google ile hesap değiştir**, **Çıkış**). Sidebar altı, landing navbar ve `/pricing` artık oturumu tanıyor. Çıkış → `/` (web'e dönüş). Giriş yapan kullanıcı `/login` & `/signup`'tan dashboard'a yönlendirilir.
 - [x] **AI Ön Yazı (cover letter):** başvuruya özel Türkçe ön yazı (`generateCoverLetter`, `/api/ai/cover-letter`, `CoverLetterCard`). Pro+ özelliği.
@@ -51,7 +58,7 @@
 ## Yapılacaklar (Sıradaki)
 
 ### Öncelikli
-- [ ] **⚠️ Migration `0009_cv_ai_suite.sql` çalıştır** (Supabase SQL editörü) + 0006/0007/0008'in uygulandığını doğrula — yeni AI özellikleri (ön yazı, skills gap, kullanım sayaçları) bu kolonlara bağlı.
+- [ ] **⚠️ Migrationları çalıştır (Supabase SQL editörü):** `0009_cv_ai_suite` (ön yazı/skills gap), `0010_cv_data` (CV builder), `0011_cv_shares` (paylaşım linki). 0006/0007/0008'in de uygulandığını doğrula. Bunlar olmadan ilgili özellikler kaydetmede sessiz/açık hata verir.
 - [ ] **Hesap menüsü + CV/AI özellikleri canlı testi** (migration sonrası): ön yazı üret/indir, CV cila, skills gap, Belgelerim PDF şablonları
 - [ ] **Google OAuth uçtan uca test:** Redirect zinciri doğru görünüyor (Google login sayfasına kadar hatasız gidiyor, test ettik) ama gerçek bir Google hesabıyla tam giriş hiç denenmedi
 - [ ] **NEXT_PUBLIC_APP_URL** Vercel'de wisparkr.com olarak güncelle (şu an localhost olabilir) — LemonSqueezy checkout redirect'i bunu kullanıyor (`lib/lemonsqueezy.ts:30`)
