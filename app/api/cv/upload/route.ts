@@ -66,3 +66,34 @@ export async function POST(request: Request) {
     },
   })
 }
+
+/** Saves edited/polished CV text directly as the master CV (no file upload). */
+export async function PATCH(request: Request) {
+  const ctx = await requireAuth()
+  if (!isAuthedContext(ctx)) return ctx
+  const { supabase, userId } = ctx
+
+  const json = await request.json().catch(() => null)
+  const text = typeof json?.text === 'string' ? json.text.trim() : ''
+
+  if (!text) {
+    return NextResponse.json(
+      { error: { code: 'INVALID_BODY', message: 'CV metni boş olamaz.' } },
+      { status: 400 }
+    )
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ cv_text: text.slice(0, 15000) } as never)
+    .eq('id', userId)
+
+  if (error) {
+    return NextResponse.json(
+      { error: { code: 'DB_ERROR', message: error.message } },
+      { status: 500 }
+    )
+  }
+
+  return NextResponse.json({ data: { saved: true } })
+}

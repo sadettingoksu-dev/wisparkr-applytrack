@@ -226,6 +226,70 @@ export async function generateCoverLetter(
   return validated.data
 }
 
+const polishCvSchema = z.object({
+  result_text: z.string().min(1),
+  notes: z.array(z.string()).max(6).default([]),
+})
+
+export type CvPolishMode = 'translate_en' | 'translate_tr' | 'proofread' | 'shorten'
+
+export interface CvPolishResult {
+  result_text: string
+  notes: string[]
+}
+
+const POLISH_INSTRUCTIONS: Record<CvPolishMode, string> = {
+  translate_en:
+    "CV metnini akıcı, profesyonel İŞ İNGİLİZCESİNE çevir. Anlamı koru; tarih ve biçimleri hedef dile uygun yerelleştir.",
+  translate_tr: 'CV metnini akıcı, profesyonel TÜRKÇEYE çevir. Anlamı ve terimleri koru.',
+  proofread:
+    'CV metnindeki dil bilgisi, yazım, noktalama ve anlatım bozukluklarını düzelt. İÇERİĞİ DEĞİŞTİRME, sadece dili ve akıcılığı iyileştir.',
+  shorten:
+    'CV metnini özünü koruyarak KISALT: gereksiz tekrarları ve dolgu ifadeleri çıkar, madde işaretlerini sıkılaştır, tek sayfaya yakın derle.',
+}
+
+/**
+ * Applies a single "polish" operation to the candidate's master CV text:
+ * translate (EN/TR), proofread, or shorten. Never adds information the CV
+ * doesn't contain; preserves section structure.
+ */
+export async function polishCv(
+  anthropic: Anthropic,
+  cvText: string,
+  mode: CvPolishMode
+): Promise<CvPolishResult> {
+  const languageRule = mode === 'translate_en' ? '' : 'Çıktı dilinde ' + TURKISH_WRITING_RULE
+
+  const prompt = [
+    'Aşağıda bir adayın CV metni var. Görevin:',
+    POLISH_INSTRUCTIONS[mode],
+    "- Adayın sahip olmadığı bilgi/deneyimi EKLEME, UYDURMA.",
+    "- CV'nin bölüm yapısını ve kronolojisini koru.",
+    languageRule,
+    'Ayrıca yaptığın belli başlı değişiklikleri 2-4 kısa madde ile özetle (notes).',
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    '{"result_text": "<işlenmiş CV; satır araları \\n ile>", "notes": ["...", "..."]}',
+    '',
+    'CV:',
+    cvText.slice(0, 10000),
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 4096,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = polishCvSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
 const classificationSchema = z.object({
   classification: z.enum(['interview_invitation', 'rejection', 'info_request', 'other']),
   application_id: z.string().uuid().nullable(),

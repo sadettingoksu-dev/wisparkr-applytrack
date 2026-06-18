@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { CvUploadCard } from '@/components/settings/CvUploadCard'
+import { CvPolishCard } from '@/components/settings/CvPolishCard'
 import { ForwardingEmailCard } from '@/components/settings/ForwardingEmailCard'
 import { ExtensionTokenCard } from '@/components/settings/ExtensionTokenCard'
 import type { Profile } from '@/lib/types'
@@ -31,6 +32,8 @@ export default async function SettingsPage() {
 
         <CvUploadCard initialFilename={profile?.cv_filename ?? null} />
       </Card>
+
+      <CvPolishCard hasCv={Boolean(profile?.cv_text)} />
 
       <ForwardingEmailCard userId={data.user!.id} />
 
