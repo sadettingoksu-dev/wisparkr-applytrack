@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { FitScoreCard } from '@/components/cv/FitScoreCard'
 import { CvTailorCard } from '@/components/cv/CvTailorCard'
+import { CoverLetterCard } from '@/components/cv/CoverLetterCard'
 import { RequiredDocumentsCard } from '@/components/cv/RequiredDocumentsCard'
 import { AIChatPanel } from '@/components/chat/AIChatPanel'
 import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
@@ -71,6 +72,8 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
           initialScore={app.tailored_fit_score}
           hasTailoredCv={Boolean(app.tailored_cv_text)}
         />
+
+        <CoverLetterCard applicationId={app.id} initialText={app.cover_letter_text} />
 
         <MockInterviewCard
           applicationId={app.id}

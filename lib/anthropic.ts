@@ -161,6 +161,71 @@ export async function tailorCv(
   return validated.data
 }
 
+const coverLetterSchema = z.object({
+  cover_letter: z.string().min(1),
+})
+
+export type CoverLetterTone = 'professional' | 'enthusiastic' | 'concise'
+
+export interface CoverLetterResult {
+  cover_letter: string
+}
+
+/**
+ * Writes a Turkish cover letter tailored to a specific job posting, grounded
+ * in the candidate's CV. Never invents experience the CV doesn't support.
+ */
+export async function generateCoverLetter(
+  anthropic: Anthropic,
+  cvText: string,
+  job: { company_name: string; position_title: string; job_description: string | null },
+  opts: { tone?: CoverLetterTone; fullName?: string | null } = {}
+): Promise<CoverLetterResult> {
+  const toneInstruction =
+    opts.tone === 'enthusiastic'
+      ? 'Üslup: istekli ve enerjik ama abartısız.'
+      : opts.tone === 'concise'
+        ? 'Üslup: kısa ve öz, en fazla 3 kısa paragraf.'
+        : 'Üslup: profesyonel, sıcak ve özgüvenli.'
+
+  const prompt = [
+    'Aşağıda bir adayın CV metni ve başvurduğu iş ilanı var. Bu ilana özel,',
+    'Türkçe bir ÖN YAZI (cover letter / niyet mektubu) yaz.',
+    "- Adayın CV'sindeki gerçek deneyim ve becerilere dayan; SAHİP OLMADIĞI bir şeyi UYDURMA.",
+    '- İlandaki en kritik gereksinimlerle adayın en güçlü 2-3 yönünü eşleştir.',
+    '- Yapı: giriş (neden bu pozisyon/şirket), gövde (uygunluk kanıtı), kapanış (teşekkür + görüşme isteği).',
+    '- Klişe ve yapay zeka kokan kalıplardan kaçın; somut örneklerle yaz.',
+    `- ${toneInstruction}`,
+    opts.fullName
+      ? `- Mektubu "${opts.fullName}" adıyla imzala.`
+      : '- İmza satırını "[Adınız Soyadınız]" olarak bırak.',
+    '- "Sayın İlgili," veya şirket adıyla uygun bir hitapla başla.',
+    '',
+    'Yazdığın metinde ' + TURKISH_WRITING_RULE,
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    '{"cover_letter": "<ön yazı metni; paragraf araları \\n ile>"}',
+    '',
+    `İş ilanı (${job.company_name} - ${job.position_title}):`,
+    (job.job_description || 'Açıklama yok').slice(0, 4000),
+    '',
+    'CV:',
+    cvText.slice(0, 8000),
+  ].join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 2048,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = coverLetterSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
 const classificationSchema = z.object({
   classification: z.enum(['interview_invitation', 'rejection', 'info_request', 'other']),
   application_id: z.string().uuid().nullable(),

@@ -51,6 +51,8 @@ export interface Database {
           tailored_cv_text: string | null
           tailored_fit_score: number | null
           required_documents: Json | null
+          cover_letter_text: string | null
+          skills_gap: Json | null
           notes: string | null
           applied_at: string | null
           interview_date: string | null
@@ -112,6 +114,8 @@ export interface Database {
           fit_scores_used: number
           cv_tailors_used: number
           mock_interviews_used: number
+          cover_letters_used: number
+          cv_polish_used: number
           created_at: string
           updated_at: string
         }

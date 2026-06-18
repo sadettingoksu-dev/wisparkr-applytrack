@@ -15,6 +15,9 @@ export interface PlanConfig {
     kanban: boolean
     cvFitScore: boolean
     cvAutoTailoring: boolean
+    coverLetter: boolean
+    cvPolish: boolean
+    skillsGap: boolean
     companyInsights: boolean
     salaryNegotiationCoach: boolean
     competitorAnalysis: boolean
@@ -34,6 +37,9 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       kanban: true,
       cvFitScore: false,
       cvAutoTailoring: false,
+      coverLetter: false,
+      cvPolish: false,
+      skillsGap: true,
       companyInsights: false,
       salaryNegotiationCoach: false,
       competitorAnalysis: false,
@@ -51,6 +57,9 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       kanban: true,
       cvFitScore: true,
       cvAutoTailoring: true,
+      coverLetter: true,
+      cvPolish: true,
+      skillsGap: true,
       companyInsights: false,
       salaryNegotiationCoach: false,
       competitorAnalysis: false,
@@ -68,6 +77,9 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       kanban: true,
       cvFitScore: true,
       cvAutoTailoring: true,
+      coverLetter: true,
+      cvPolish: true,
+      skillsGap: true,
       companyInsights: true,
       salaryNegotiationCoach: true,
       competitorAnalysis: true,
