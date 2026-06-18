@@ -1,0 +1,188 @@
+import { z } from 'zod'
+
+// ---------------------------------------------------------------------------
+// Structured CV ("CV Builder") data model.
+// Stored in profiles.cv_data (jsonb). Every save also derives a flat,
+// ATS-friendly text via flattenCvData() into profiles.cv_text so that all
+// existing AI features (fit-score, tailor-cv, cover-letter, skills-gap,
+// polish-cv, mock-interview) keep working unchanged.
+// ---------------------------------------------------------------------------
+
+export const cvLinkSchema = z.object({
+  label: z.string().default(''),
+  url: z.string().default(''),
+})
+
+export const cvPersonalSchema = z.object({
+  fullName: z.string().default(''),
+  headline: z.string().default(''),
+  email: z.string().default(''),
+  phone: z.string().default(''),
+  location: z.string().default(''),
+  links: z.array(cvLinkSchema).default([]),
+})
+
+export const cvExperienceSchema = z.object({
+  company: z.string().default(''),
+  role: z.string().default(''),
+  location: z.string().default(''),
+  start: z.string().default(''),
+  end: z.string().default(''),
+  current: z.boolean().default(false),
+  bullets: z.array(z.string()).default([]),
+})
+
+export const cvEducationSchema = z.object({
+  school: z.string().default(''),
+  degree: z.string().default(''),
+  field: z.string().default(''),
+  start: z.string().default(''),
+  end: z.string().default(''),
+  note: z.string().default(''),
+})
+
+export const cvProjectSchema = z.object({
+  name: z.string().default(''),
+  description: z.string().default(''),
+  link: z.string().default(''),
+  bullets: z.array(z.string()).default([]),
+})
+
+export const cvLanguageSchema = z.object({
+  name: z.string().default(''),
+  level: z.string().default(''),
+})
+
+export const cvCertificationSchema = z.object({
+  name: z.string().default(''),
+  issuer: z.string().default(''),
+  date: z.string().default(''),
+})
+
+export const cvDataSchema = z.object({
+  personal: cvPersonalSchema.default({}),
+  summary: z.string().default(''),
+  experience: z.array(cvExperienceSchema).default([]),
+  education: z.array(cvEducationSchema).default([]),
+  skills: z.array(z.string()).default([]),
+  projects: z.array(cvProjectSchema).default([]),
+  languages: z.array(cvLanguageSchema).default([]),
+  certifications: z.array(cvCertificationSchema).default([]),
+})
+
+export type CvData = z.infer<typeof cvDataSchema>
+export type CvPersonal = z.infer<typeof cvPersonalSchema>
+export type CvExperience = z.infer<typeof cvExperienceSchema>
+export type CvEducation = z.infer<typeof cvEducationSchema>
+export type CvProject = z.infer<typeof cvProjectSchema>
+export type CvLanguage = z.infer<typeof cvLanguageSchema>
+export type CvCertification = z.infer<typeof cvCertificationSchema>
+
+const CV_TEXT_LIMIT = 15000
+
+/** Builds an empty CV, optionally seeding name/email from the auth profile. */
+export function emptyCvData(seed?: { fullName?: string; email?: string }): CvData {
+  return cvDataSchema.parse({
+    personal: { fullName: seed?.fullName ?? '', email: seed?.email ?? '' },
+  })
+}
+
+/** Coerces an unknown jsonb value into a valid CvData (filling defaults). */
+export function parseCvData(value: unknown): CvData {
+  const result = cvDataSchema.safeParse(value ?? {})
+  return result.success ? result.data : emptyCvData()
+}
+
+function period(start: string, end: string, current?: boolean): string {
+  const right = current ? 'Devam ediyor' : end
+  return [start, right].filter(Boolean).join(' - ')
+}
+
+/**
+ * Flattens structured CV data into ATS-friendly plain text. This is what gets
+ * stored in profiles.cv_text and fed to every existing AI feature.
+ */
+export function flattenCvData(data: CvData): string {
+  const lines: string[] = []
+  const p = data.personal
+
+  if (p.fullName) lines.push(p.fullName + (p.headline ? ` — ${p.headline}` : ''))
+  const contact = [p.email, p.phone, p.location, ...p.links.map((l) => l.url || l.label)]
+    .filter(Boolean)
+    .join(' | ')
+  if (contact) lines.push(contact)
+
+  if (data.summary.trim()) {
+    lines.push('', 'ÖZET', data.summary.trim())
+  }
+
+  if (data.experience.length) {
+    lines.push('', 'DENEYİM')
+    for (const e of data.experience) {
+      const head = [
+        e.role,
+        e.company && `${e.role ? ', ' : ''}${e.company}`,
+        e.location && ` (${e.location})`,
+      ]
+        .filter(Boolean)
+        .join('')
+      const per = period(e.start, e.end, e.current)
+      lines.push(per ? `${head} — ${per}` : head)
+      for (const b of e.bullets) if (b.trim()) lines.push(`- ${b.trim()}`)
+    }
+  }
+
+  if (data.education.length) {
+    lines.push('', 'EĞİTİM')
+    for (const ed of data.education) {
+      const head = [ed.degree, ed.field && ` - ${ed.field}`, ed.school && `, ${ed.school}`]
+        .filter(Boolean)
+        .join('')
+      const per = period(ed.start, ed.end)
+      lines.push(per ? `${head} (${per})` : head)
+      if (ed.note.trim()) lines.push(`- ${ed.note.trim()}`)
+    }
+  }
+
+  if (data.skills.length) {
+    lines.push('', 'BECERİLER', data.skills.filter(Boolean).join(', '))
+  }
+
+  if (data.projects.length) {
+    lines.push('', 'PROJELER')
+    for (const pr of data.projects) {
+      lines.push(pr.link ? `${pr.name} (${pr.link})` : pr.name)
+      if (pr.description.trim()) lines.push(pr.description.trim())
+      for (const b of pr.bullets) if (b.trim()) lines.push(`- ${b.trim()}`)
+    }
+  }
+
+  if (data.languages.length) {
+    lines.push(
+      '',
+      'DİLLER',
+      data.languages.map((l) => (l.level ? `${l.name} (${l.level})` : l.name)).filter(Boolean).join(', ')
+    )
+  }
+
+  if (data.certifications.length) {
+    lines.push('', 'SERTİFİKALAR')
+    for (const c of data.certifications) {
+      lines.push(
+        [c.name, c.issuer && ` - ${c.issuer}`, c.date && ` (${c.date})`].filter(Boolean).join('')
+      )
+    }
+  }
+
+  return lines.join('\n').slice(0, CV_TEXT_LIMIT)
+}
+
+/** True when the CV has enough content to be usable by AI features. */
+export function hasCvContent(data: CvData): boolean {
+  return Boolean(
+    data.summary.trim() ||
+      data.experience.some((e) => e.role || e.company) ||
+      data.education.some((e) => e.school || e.degree) ||
+      data.skills.length
+  )
+}

@@ -7,10 +7,10 @@ import { X, Sparkles, Chrome, FileText, CalendarDays } from 'lucide-react'
 const STEPS = [
   {
     icon: FileText,
-    title: 'CV\'ini yükle',
-    desc: 'Ayarlar sayfasından CV\'ini yükle, AI başvurularını analiz etsin.',
-    href: '/settings',
-    cta: 'Ayarlara Git',
+    title: 'CV\'ini oluştur',
+    desc: 'CV Oluşturucu ile sıfırdan yap veya mevcut PDF\'ini içe aktar.',
+    href: '/cv-builder',
+    cta: 'CV Oluştur',
   },
   {
     icon: Sparkles,

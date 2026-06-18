@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Files, CalendarDays, Settings, CreditCard, BarChart2 } from 'lucide-react'
+import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, BarChart2 } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { APP_NAME } from '@/utils/constants'
 import type { PlanId } from '@/lib/plans'
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { href: '/calendar', label: 'Takvim', icon: CalendarDays },
   { href: '/board', label: 'Kanban Board', icon: Kanban },
   { href: '/applications', label: 'Başvurular', icon: FileText },
+  { href: '/cv-builder', label: 'CV Oluştur', icon: FilePlus },
   { href: '/documents', label: 'Belgelerim', icon: Files },
   { href: '/settings', label: 'Ayarlar', icon: Settings },
   { href: '/settings/billing', label: 'Plan & Faturalama', icon: CreditCard },

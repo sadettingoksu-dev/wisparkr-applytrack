@@ -25,6 +25,7 @@ export interface Database {
           full_name: string | null
           cv_text: string | null
           cv_filename: string | null
+          cv_data: Json | null
           plan: 'free' | 'pro' | 'career_coach'
           extension_token: string
           created_at: string
