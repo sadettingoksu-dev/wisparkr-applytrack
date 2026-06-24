@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, User, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
+import { AuthShowcase } from '@/components/auth/AuthShowcase'
 import { createClient } from '@/lib/supabase/client'
 import { APP_NAME } from '@/utils/constants'
 
@@ -39,6 +40,8 @@ export default function SignupPage() {
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan')
   const postAuthPath = plan === 'pro' || plan === 'career_coach' ? `/checkout?plan=${plan}` : '/dashboard'
+  // Kayıt tamamlanınca kullanıcıyı giriş ekranına geri yönlendir (planı koru).
+  const postSignupPath = plan === 'pro' || plan === 'career_coach' ? `/login?plan=${plan}` : '/login'
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -126,7 +129,10 @@ export default function SignupPage() {
       return
     }
 
-    router.push(postAuthPath)
+    // Kayıt tamamlandı: oturumu kapatıp giriş ekranına geri dön ki kullanıcı
+    // bilgileriyle giriş yapsın.
+    await supabase.auth.signOut()
+    router.push(postSignupPath)
   }
 
   async function handleResendOtp() {
@@ -143,7 +149,9 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black px-6">
+      <div className="grid min-h-screen grid-cols-1 gap-4 bg-black p-4 lg:grid-cols-2">
+        <AuthShowcase />
+        <div className="flex items-center justify-center px-2 py-8 sm:px-6">
         <div className="w-full max-w-sm text-center space-y-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-600/20 border border-amber-500/30">
             <Mail className="h-8 w-8 text-amber-400" />
@@ -194,12 +202,15 @@ export default function SignupPage() {
             Giriş sayfasına dön →
           </Link>
         </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-6 py-12">
+    <div className="grid min-h-screen grid-cols-1 gap-4 bg-black p-4 lg:grid-cols-2">
+      <AuthShowcase />
+      <div className="flex items-center justify-center px-2 py-8 sm:px-6">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
@@ -311,6 +322,7 @@ export default function SignupPage() {
             Giriş yap
           </Link>
         </p>
+      </div>
       </div>
     </div>
   )
