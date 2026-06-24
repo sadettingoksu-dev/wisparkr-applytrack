@@ -6,14 +6,17 @@ import Link from 'next/link'
 import { Mail, Lock, User, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
 import { AuthShowcase } from '@/components/auth/AuthShowcase'
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import { createClient } from '@/lib/supabase/client'
 import { APP_NAME } from '@/utils/constants'
 
 function PasswordStrength({ password }: { password: string }) {
+  const { t } = useI18n()
   const checks = [
-    { label: 'En az 8 karakter', ok: password.length >= 8 },
-    { label: 'Büyük harf', ok: /[A-Z]/.test(password) },
-    { label: 'Sayı', ok: /[0-9]/.test(password) },
+    { label: t.signup.strength.min8, ok: password.length >= 8 },
+    { label: t.signup.strength.upper, ok: /[A-Z]/.test(password) },
+    { label: t.signup.strength.number, ok: /[0-9]/.test(password) },
   ]
   const score = checks.filter((c) => c.ok).length
   const colors = ['bg-red-500', 'bg-yellow-500', 'bg-green-500', 'bg-green-500']
@@ -36,6 +39,7 @@ function PasswordStrength({ password }: { password: string }) {
 }
 
 export default function SignupPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan')
@@ -68,11 +72,11 @@ export default function SignupPage() {
     setError(null)
 
     if (password !== confirmPassword) {
-      setError('Şifreler eşleşmiyor.')
+      setError(t.signup.pwMismatch)
       return
     }
     if (password.length < 8) {
-      setError('Şifre en az 8 karakter olmalıdır.')
+      setError(t.signup.pwTooShort)
       return
     }
 
@@ -94,7 +98,7 @@ export default function SignupPage() {
     }
 
     if (data.user && data.user.identities && data.user.identities.length === 0) {
-      setError('Bu e-posta adresiyle zaten bir hesabın var. Google ile kayıt olduysan giriş sayfasından "Google ile devam et" ile giriş yapabilirsin.')
+      setError(t.signup.existingEmail)
       setLoading(false)
       return
     }
@@ -144,22 +148,25 @@ export default function SignupPage() {
       setOtpError(error.message)
       return
     }
-    setResendMessage('Yeni kod gönderildi.')
+    setResendMessage(t.signup.otp.resentMsg)
   }
 
   if (success) {
     return (
       <div className="grid min-h-screen grid-cols-1 gap-4 bg-black p-4 lg:grid-cols-2">
         <AuthShowcase />
-        <div className="flex items-center justify-center px-2 py-8 sm:px-6">
+        <div className="relative flex items-center justify-center px-2 py-8 sm:px-6">
+        <div className="absolute right-4 top-4">
+          <LanguageSwitcher />
+        </div>
         <div className="w-full max-w-sm text-center space-y-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-amber-600/20 border border-amber-500/30">
             <Mail className="h-8 w-8 text-amber-400" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">E-postanı doğrula</h2>
+            <h2 className="text-2xl font-bold text-white">{t.signup.otp.title}</h2>
             <p className="mt-2 text-white/50 text-sm">
-              <span className="text-amber-300 font-medium">{email}</span> adresine 6 haneli bir kod gönderdik. Kodu aşağıya gir.
+              <span className="text-amber-300 font-medium">{email}</span> {t.signup.otp.sentToA}
             </p>
           </div>
 
@@ -187,19 +194,19 @@ export default function SignupPage() {
               disabled={otpLoading || otp.length !== 6}
               className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 py-3 text-sm font-semibold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {otpLoading ? 'Doğrulanıyor...' : 'Kodu Doğrula'}
+              {otpLoading ? t.signup.otp.verifying : t.signup.otp.verify}
             </button>
           </form>
 
           <p className="text-xs text-white/30">
-            Kodu bulamadın mı? Spam klasörünü kontrol et veya{' '}
+            {t.signup.otp.resentQ}{' '}
             <button onClick={handleResendOtp} className="text-amber-400 hover:text-amber-300 transition-colors">
-              yeniden gönder
+              {t.signup.otp.resend}
             </button>
             .
           </p>
           <Link href="/login" className="block text-sm text-amber-400 hover:text-amber-300 transition-colors">
-            Giriş sayfasına dön →
+            {t.signup.otp.backToLogin}
           </Link>
         </div>
         </div>
@@ -210,7 +217,10 @@ export default function SignupPage() {
   return (
     <div className="grid min-h-screen grid-cols-1 gap-4 bg-black p-4 lg:grid-cols-2">
       <AuthShowcase />
-      <div className="flex items-center justify-center px-2 py-8 sm:px-6">
+      <div className="relative flex items-center justify-center px-2 py-8 sm:px-6">
+      <div className="absolute right-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
@@ -219,7 +229,7 @@ export default function SignupPage() {
             <img src="/logo-dark.png" alt={APP_NAME} width={36} height={36} className="rounded-xl" />
             <span className="text-xl font-bold text-white">{APP_NAME}</span>
           </Link>
-          <p className="mt-3 text-white/50 text-sm">Ücretsiz hesabını oluştur</p>
+          <p className="mt-3 text-white/50 text-sm">{t.signup.subtitle}</p>
         </div>
 
         {/* Google ile kayıt */}
@@ -228,12 +238,12 @@ export default function SignupPage() {
           className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors mb-6"
         >
           <GoogleIcon className="h-4 w-4" />
-          Google ile devam et
+          {t.signup.google}
         </button>
 
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 h-px bg-white/10" />
-          <span className="text-xs text-white/30">veya e-posta ile</span>
+          <span className="text-xs text-white/30">{t.signup.orEmail}</span>
           <div className="flex-1 h-px bg-white/10" />
         </div>
 
@@ -243,7 +253,7 @@ export default function SignupPage() {
             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
             <input
               type="text"
-              placeholder="Ad Soyad"
+              placeholder={t.signup.fullName}
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
@@ -256,7 +266,7 @@ export default function SignupPage() {
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
             <input
               type="email"
-              placeholder="E-posta adresi"
+              placeholder={t.signup.email}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -269,7 +279,7 @@ export default function SignupPage() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
             <input
               type={showPass ? 'text' : 'password'}
-              placeholder="Şifre"
+              placeholder={t.signup.password}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -287,7 +297,7 @@ export default function SignupPage() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
             <input
               type="password"
-              placeholder="Şifre tekrar"
+              placeholder={t.signup.confirm}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -304,22 +314,22 @@ export default function SignupPage() {
             disabled={loading}
             className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 py-3 text-sm font-semibold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {loading ? 'Hesap oluşturuluyor...' : 'Hesap Oluştur'}
+            {loading ? t.signup.submitting : t.signup.submit}
           </button>
         </form>
 
         <p className="mt-6 text-center text-xs text-white/30">
-          Kayıt olarak{' '}
-          <Link href="/pricing" className="text-amber-400 hover:text-amber-300">Kullanım Şartları</Link>
-          {' '}ve{' '}
-          <span className="text-amber-400">Gizlilik Politikası</span>
-          {`'nı`} kabul etmiş olursun.
+          {t.signup.termsPre}{' '}
+          <Link href="/pricing" className="text-amber-400 hover:text-amber-300">{t.signup.terms}</Link>
+          {' '}{t.signup.and}{' '}
+          <span className="text-amber-400">{t.signup.privacy}</span>
+          {t.signup.termsPost}
         </p>
 
         <p className="mt-4 text-center text-sm text-white/40">
-          Zaten hesabın var mı?{' '}
+          {t.signup.haveAccount}{' '}
           <Link href="/login" className="font-medium text-amber-400 hover:text-amber-300 transition-colors">
-            Giriş yap
+            {t.signup.loginLink}
           </Link>
         </p>
       </div>

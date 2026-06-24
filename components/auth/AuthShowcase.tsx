@@ -1,3 +1,5 @@
+'use client'
+
 import {
   FileSearch,
   MessageSquareText,
@@ -7,24 +9,20 @@ import {
   Share2,
   Check,
 } from 'lucide-react'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
-/** Yüzen özellik rozetleri — Wisparkr'ın reklamımsı vitrini. */
+/** Yüzen özellik rozetleri — ikon + konum; etiketler çeviriden gelir. */
 const CHIPS = [
-  { icon: FileSearch, label: 'CV uyum skoru', pos: 'left-[8%] top-[16%]', delay: '0s' },
-  { icon: MessageSquareText, label: 'Mülakat asistanı', pos: 'right-[10%] top-[12%]', delay: '0.8s' },
-  { icon: LayoutGrid, label: 'Kanban takip', pos: 'left-[4%] top-[52%]', delay: '1.6s' },
-  { icon: Sparkles, label: 'AI öneriler', pos: 'right-[6%] top-[46%]', delay: '0.4s' },
-  { icon: FileText, label: 'PDF CV oluştur', pos: 'left-[14%] bottom-[14%]', delay: '1.2s' },
-  { icon: Share2, label: 'Paylaşılabilir CV', pos: 'right-[12%] bottom-[16%]', delay: '2s' },
-]
-
-const TAGLINES = [
-  'CV uyum skoru ile öne çık',
-  'AI mülakat hazırlığı',
-  'Tüm başvuruların tek yerde',
+  { icon: FileSearch, pos: 'left-[8%] top-[16%]', delay: '0s' },
+  { icon: MessageSquareText, pos: 'right-[10%] top-[12%]', delay: '0.8s' },
+  { icon: LayoutGrid, pos: 'left-[4%] top-[52%]', delay: '1.6s' },
+  { icon: Sparkles, pos: 'right-[6%] top-[46%]', delay: '0.4s' },
+  { icon: FileText, pos: 'left-[14%] bottom-[14%]', delay: '1.2s' },
+  { icon: Share2, pos: 'right-[12%] bottom-[16%]', delay: '2s' },
 ]
 
 export function AuthShowcase() {
+  const { t } = useI18n()
   return (
     <div className="relative hidden w-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-neutral-950 via-neutral-900 to-black lg:flex lg:flex-col">
       {/* Amber ışıltı */}
@@ -64,36 +62,36 @@ export function AuthShowcase() {
               Wisparkr
             </h2>
             <p className="mt-3 max-w-xs text-sm text-white/50">
-              Kariyerini hızlandıran AI destekli başvuru asistanı
+              {t.showcase.subtitle}
             </p>
           </div>
         </div>
       </div>
 
       {/* Yüzen özellik rozetleri */}
-      {CHIPS.map((chip) => (
+      {CHIPS.map((chip, i) => (
         <div
-          key={chip.label}
+          key={i}
           className={`wisparkr-float absolute ${chip.pos} flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2.5 shadow-xl shadow-black/40 backdrop-blur-md`}
           style={{ animationDelay: chip.delay }}
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/15 text-amber-400">
             <chip.icon className="h-4 w-4" />
           </span>
-          <span className="whitespace-nowrap text-sm font-medium text-white/80">{chip.label}</span>
+          <span className="whitespace-nowrap text-sm font-medium text-white/80">{t.showcase.chips[i]}</span>
         </div>
       ))}
 
       {/* Alt reklam şeridi */}
       <div className="wisparkr-fade-up absolute inset-x-0 bottom-0 flex flex-col gap-3 p-8">
         <div className="flex flex-wrap gap-2">
-          {TAGLINES.map((t) => (
+          {t.showcase.taglines.map((tag) => (
             <span
-              key={t}
+              key={tag}
               className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200"
             >
               <Check className="h-3 w-3" />
-              {t}
+              {tag}
             </span>
           ))}
         </div>

@@ -1,16 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Wand2, Languages, SpellCheck, Scissors, Copy, Check, Save } from 'lucide-react'
+import { Wand2, SpellCheck, Scissors, Copy, Check, Save } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 
-type Mode = 'translate_en' | 'translate_tr' | 'proofread' | 'shorten'
+type Mode = 'proofread' | 'shorten'
 
 const MODES: { id: Mode; label: string; icon: React.ElementType }[] = [
-  { id: 'translate_en', label: 'İngilizceye çevir', icon: Languages },
-  { id: 'translate_tr', label: 'Türkçeye çevir', icon: Languages },
   { id: 'proofread', label: 'Dil & yazım düzelt', icon: SpellCheck },
   { id: 'shorten', label: 'Kısalt (tek sayfa)', icon: Scissors },
 ]
@@ -85,9 +83,8 @@ export function CvPolishCard({ hasCv }: { hasCv: boolean }) {
         <h2 className="text-sm font-semibold text-white">AI CV Cila Araçları</h2>
       </div>
       <p className="text-sm text-white/50">
-        Master CV&apos;ni tek tıkla başka dile çevir, dil/yazım hatalarını düzelt ya da tek
-        sayfaya sığacak şekilde kısalt. Sonucu düzenleyip kopyalayabilir veya master CV olarak
-        kaydedebilirsin.
+        Master CV&apos;ndeki dil/yazım hatalarını tek tıkla düzelt ya da tek sayfaya sığacak
+        şekilde kısalt. Sonucu düzenleyip kopyalayabilir veya master CV olarak kaydedebilirsin.
       </p>
 
       {!hasCv ? (

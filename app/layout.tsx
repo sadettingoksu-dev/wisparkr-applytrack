@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import './globals.css'
+import { I18nProvider } from '@/components/i18n/I18nProvider'
+import { LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
 
 export const metadata: Metadata = {
   title: 'Wisparkr — AI Destekli İş Başvuru Yönetimi',
@@ -15,10 +18,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const locale = normalizeLocale(cookies().get(LOCALE_COOKIE)?.value)
   return (
-    <html lang="tr">
+    <html lang={locale}>
       <body className="min-h-screen bg-black text-white antialiased">
-        {children}
+        <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>
     </html>
   )

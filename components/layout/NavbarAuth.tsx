@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { UserMenu } from '@/components/layout/UserMenu'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { PlanId } from '@/lib/plans'
 
 interface CurrentUser {
@@ -18,6 +19,7 @@ interface CurrentUser {
  * Shows a "Giriş Yap" link when signed out, or the account dropdown when signed in.
  */
 export function NavbarAuth() {
+  const { t } = useI18n()
   const [user, setUser] = useState<CurrentUser | null>(null)
   const [loaded, setLoaded] = useState(false)
 
@@ -54,7 +56,7 @@ export function NavbarAuth() {
         href="/login"
         className="text-sm font-medium text-white/70 transition-colors hover:text-white"
       >
-        Giriş Yap
+        {t.nav.login}
       </Link>
     )
   }

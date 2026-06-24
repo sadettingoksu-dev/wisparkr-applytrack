@@ -6,10 +6,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
 import { AuthShowcase } from '@/components/auth/AuthShowcase'
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import { createClient } from '@/lib/supabase/client'
 import { APP_NAME } from '@/utils/constants'
 
 export default function LoginPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan')
@@ -37,7 +40,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError('E-posta veya şifre hatalı.')
+      setError(t.login.error)
       setLoading(false)
       return
     }
@@ -59,7 +62,10 @@ export default function LoginPage() {
       <AuthShowcase />
 
       {/* Sağ: giriş formu */}
-      <div className="flex items-center justify-center px-2 py-8 sm:px-6">
+      <div className="relative flex items-center justify-center px-2 py-8 sm:px-6">
+      <div className="absolute right-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
@@ -68,7 +74,7 @@ export default function LoginPage() {
             <img src="/logo-dark.png" alt={APP_NAME} width={36} height={36} className="rounded-xl" />
             <span className="text-xl font-bold text-white">{APP_NAME}</span>
           </Link>
-          <p className="mt-3 text-white/50 text-sm">Hesabına giriş yap</p>
+          <p className="mt-3 text-white/50 text-sm">{t.login.subtitle}</p>
         </div>
 
         {/* Google ile giriş */}
@@ -77,12 +83,12 @@ export default function LoginPage() {
           className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors mb-6"
         >
           <GoogleIcon className="h-4 w-4" />
-          Google ile devam et
+          {t.login.google}
         </button>
 
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 h-px bg-white/10" />
-          <span className="text-xs text-white/30">veya e-posta ile</span>
+          <span className="text-xs text-white/30">{t.login.orEmail}</span>
           <div className="flex-1 h-px bg-white/10" />
         </div>
 
@@ -91,7 +97,7 @@ export default function LoginPage() {
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
             <input
               type="email"
-              placeholder="E-posta adresi"
+              placeholder={t.login.email}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -103,7 +109,7 @@ export default function LoginPage() {
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
             <input
               type={showPass ? 'text' : 'password'}
-              placeholder="Şifre"
+              placeholder={t.login.password}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -123,14 +129,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 py-3 text-sm font-semibold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+            {loading ? t.login.submitting : t.login.submit}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-white/40">
-          Hesabın yok mu?{' '}
+          {t.login.noAccount}{' '}
           <Link href="/signup" className="font-medium text-amber-400 hover:text-amber-300 transition-colors">
-            Kayıt ol
+            {t.login.signupLink}
           </Link>
         </p>
       </div>

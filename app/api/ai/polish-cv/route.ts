@@ -7,7 +7,7 @@ import { getAnthropicClient, polishCv } from '@/lib/anthropic'
 import { getPlan } from '@/lib/plans'
 
 const bodySchema = z.object({
-  mode: z.enum(['translate_en', 'translate_tr', 'proofread', 'shorten']),
+  mode: z.enum(['proofread', 'shorten']),
 })
 
 export async function POST(request: Request) {

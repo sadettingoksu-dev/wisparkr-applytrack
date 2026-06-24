@@ -231,7 +231,7 @@ const polishCvSchema = z.object({
   notes: z.array(z.string()).max(6).default([]),
 })
 
-export type CvPolishMode = 'translate_en' | 'translate_tr' | 'proofread' | 'shorten'
+export type CvPolishMode = 'proofread' | 'shorten'
 
 export interface CvPolishResult {
   result_text: string
@@ -239,9 +239,6 @@ export interface CvPolishResult {
 }
 
 const POLISH_INSTRUCTIONS: Record<CvPolishMode, string> = {
-  translate_en:
-    "CV metnini akıcı, profesyonel İŞ İNGİLİZCESİNE çevir. Anlamı koru; tarih ve biçimleri hedef dile uygun yerelleştir.",
-  translate_tr: 'CV metnini akıcı, profesyonel TÜRKÇEYE çevir. Anlamı ve terimleri koru.',
   proofread:
     'CV metnindeki dil bilgisi, yazım, noktalama ve anlatım bozukluklarını düzelt. İÇERİĞİ DEĞİŞTİRME, sadece dili ve akıcılığı iyileştir.',
   shorten:
@@ -258,7 +255,7 @@ export async function polishCv(
   cvText: string,
   mode: CvPolishMode
 ): Promise<CvPolishResult> {
-  const languageRule = mode === 'translate_en' ? '' : 'Çıktı dilinde ' + TURKISH_WRITING_RULE
+  const languageRule = 'Çıktı dilinde ' + TURKISH_WRITING_RULE
 
   const prompt = [
     'Aşağıda bir adayın CV metni var. Görevin:',
