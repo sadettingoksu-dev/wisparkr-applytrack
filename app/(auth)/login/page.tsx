@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
+import { AuthShowcase } from '@/components/auth/AuthShowcase'
 import { createClient } from '@/lib/supabase/client'
 import { APP_NAME } from '@/utils/constants'
 
@@ -53,7 +54,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-6 py-12">
+    <div className="grid min-h-screen grid-cols-1 gap-4 bg-black p-4 lg:grid-cols-2">
+      {/* Sol: animasyonlu vitrin */}
+      <AuthShowcase />
+
+      {/* Sağ: giriş formu */}
+      <div className="flex items-center justify-center px-2 py-8 sm:px-6">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 text-center">
@@ -127,6 +133,7 @@ export default function LoginPage() {
             Kayıt ol
           </Link>
         </p>
+      </div>
       </div>
     </div>
   )
