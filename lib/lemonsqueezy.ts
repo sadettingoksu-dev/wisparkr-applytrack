@@ -1,4 +1,4 @@
-import { lemonSqueezySetup, createCheckout } from '@lemonsqueezy/lemonsqueezy.js'
+import { lemonSqueezySetup, createCheckout, cancelSubscription as lsCancelSubscription } from '@lemonsqueezy/lemonsqueezy.js'
 
 export function isLemonSqueezyConfigured(): boolean {
   return Boolean(process.env.LEMONSQUEEZY_API_KEY && process.env.LEMONSQUEEZY_STORE_ID)
@@ -36,4 +36,17 @@ export async function createCheckoutUrl(params: {
   }
 
   return data.data.attributes.url
+}
+
+/**
+ * Cancels a Lemon Squeezy subscription at the end of the current billing
+ * period (the user keeps access until `renews_at`). Returns the new period end.
+ */
+export async function cancelSubscription(lsSubscriptionId: string): Promise<string | null> {
+  setup()
+  const { data, error } = await lsCancelSubscription(lsSubscriptionId)
+  if (error) {
+    throw new Error(error.message || 'Lemon Squeezy cancellation failed')
+  }
+  return data?.data.attributes.ends_at ?? null
 }

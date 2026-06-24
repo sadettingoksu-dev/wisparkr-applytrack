@@ -12,24 +12,24 @@ export function LimitBanner({ used, max }: { used: number; max: number }) {
   if (dismissed) return null
 
   return (
-    <div className="flex items-start gap-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
-      <Zap className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+    <div className="flex items-start gap-4 rounded-xl border border-purple-500/20 bg-purple-50 px-4 py-3">
+      <Zap className="mt-0.5 h-4 w-4 shrink-0 text-purple-600" />
       <div className="flex-1 space-y-1">
-        <p className="text-sm font-semibold text-amber-300">
+        <p className="text-sm font-semibold text-purple-700">
           {format(t.limitBanner.title, { used, max })}
         </p>
-        <p className="text-xs text-amber-200/70">
+        <p className="text-xs text-slate-600">
           {t.limitBanner.desc}
         </p>
         <Link
           href="/pricing"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-400 px-3 py-1.5 text-xs font-semibold text-black hover:opacity-90 mt-1"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-500 px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 mt-1"
         >
           <Zap className="h-3 w-3" />
           {t.limitBanner.cta}
         </Link>
       </div>
-      <button onClick={() => setDismissed(true)} className="text-amber-400/60 hover:text-amber-300">
+      <button onClick={() => setDismissed(true)} className="text-purple-600/60 hover:text-purple-700">
         <X className="h-4 w-4" />
       </button>
     </div>

@@ -28,6 +28,8 @@ export interface UserMenuProps {
   plan?: PlanId | string | null
   /** sidebar = opens upward (dashboard chrome); navbar = opens downward (marketing site). */
   variant?: 'sidebar' | 'navbar'
+  /** Collapsed sidebar: show only the avatar trigger. */
+  collapsed?: boolean
 }
 
 function Avatar({ name, avatarUrl, size = 28 }: { name: string; avatarUrl?: string | null; size?: number }) {
@@ -47,7 +49,7 @@ function Avatar({ name, avatarUrl, size = 28 }: { name: string; avatarUrl?: stri
   }
   return (
     <span
-      className="flex shrink-0 items-center justify-center rounded-full bg-amber-500/20 font-semibold text-amber-300"
+      className="flex shrink-0 items-center justify-center rounded-full bg-purple-100 font-semibold text-purple-700"
       style={{ width: size, height: size, fontSize: size * 0.42 }}
     >
       {initial}
@@ -55,7 +57,7 @@ function Avatar({ name, avatarUrl, size = 28 }: { name: string; avatarUrl?: stri
   )
 }
 
-export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: UserMenuProps) {
+export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar', collapsed = false }: UserMenuProps) {
   const { t } = useI18n()
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -108,23 +110,31 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
   return (
     <div ref={containerRef} className="relative">
       {/* Trigger */}
-      {variant === 'sidebar' ? (
+      {variant === 'sidebar' && collapsed ? (
         <button
           onClick={() => setOpen((v) => !v)}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/5"
+          title={displayName}
+          className="flex w-full items-center justify-center rounded-lg px-1 py-2 transition-colors hover:bg-slate-100"
+        >
+          <Avatar name={displayName} avatarUrl={avatarUrl} size={32} />
+        </button>
+      ) : variant === 'sidebar' ? (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-slate-100"
         >
           <Avatar name={displayName} avatarUrl={avatarUrl} size={32} />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium text-white">{displayName}</span>
-            <span className="block truncate text-xs text-white/40">{planConfig.name} {t.userMenu.planSuffix}</span>
+            <span className="block truncate text-sm font-medium text-slate-900">{displayName}</span>
+            <span className="block truncate text-xs text-slate-400">{planConfig.name} {t.userMenu.planSuffix}</span>
           </span>
-          <ChevronsUpDown className="h-4 w-4 shrink-0 text-white/40" />
+          <ChevronsUpDown className="h-4 w-4 shrink-0 text-slate-400" />
         </button>
       ) : (
         <button
           onClick={() => setOpen((v) => !v)}
           aria-label={t.userMenu.accountMenu}
-          className="flex items-center rounded-full ring-2 ring-transparent transition hover:ring-amber-500/40"
+          className="flex items-center rounded-full ring-2 ring-transparent transition hover:ring-purple-300"
         >
           <Avatar name={displayName} avatarUrl={avatarUrl} size={32} />
         </button>
@@ -134,22 +144,22 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
       {open && (
         <div
           className={clsx(
-            'absolute z-50 w-64 overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 shadow-2xl shadow-black/60',
+            'absolute z-50 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-300/50',
             variant === 'sidebar' ? 'bottom-full left-0 mb-2' : 'right-0 mt-2'
           )}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
+          <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
             <Avatar name={displayName} avatarUrl={avatarUrl} size={36} />
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-white">{displayName}</p>
-              <p className="truncate text-xs text-white/40">{email}</p>
+              <p className="truncate text-sm font-medium text-slate-900">{displayName}</p>
+              <p className="truncate text-xs text-slate-400">{email}</p>
             </div>
           </div>
 
           {/* Plan badge */}
-          <div className="border-b border-white/10 px-4 py-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-300">
+          <div className="border-b border-slate-200 px-4 py-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-700">
               <Sparkles className="h-3 w-3" />
               {planConfig.name} {t.userMenu.planSuffix}
             </span>
@@ -187,11 +197,11 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
           </div>
 
           {/* Account actions */}
-          <div className="border-t border-white/10 py-1">
+          <div className="border-t border-slate-200 py-1">
             <button
               onClick={handleSwitchAccount}
               disabled={busy}
-              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50"
+              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50"
             >
               <GoogleIcon className="h-4 w-4" />
               {t.userMenu.switchAccount}
@@ -199,7 +209,7 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
             <button
               onClick={handleSignOut}
               disabled={busy}
-              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-white/70 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
+              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
             >
               <LogOut className="h-4 w-4" />
               {t.userMenu.signOut}
@@ -229,8 +239,8 @@ function MenuLink({
   const className = clsx(
     'flex items-center gap-3 px-4 py-2 text-sm transition-colors',
     accent
-      ? 'text-amber-300 hover:bg-amber-500/10'
-      : 'text-white/70 hover:bg-white/5 hover:text-white'
+      ? 'text-purple-700 hover:bg-purple-50'
+      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
   )
   if (external) {
     return (

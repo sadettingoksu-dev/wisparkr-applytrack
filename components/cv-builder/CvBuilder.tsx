@@ -27,7 +27,7 @@ import type {
 } from '@/lib/cv'
 
 const inputClass =
-  'w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors'
+  'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200 transition-colors'
 
 function moveItem<T>(arr: T[], from: number, to: number): T[] {
   if (to < 0 || to >= arr.length) return arr
@@ -92,15 +92,15 @@ export function CvBuilder({ initial }: { initial: CvData }) {
       {/* Editor */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t.cvBuilder.title}</h1>
-          <p className="text-sm text-white/50">
+          <h1 className="text-2xl font-bold text-slate-900">{t.cvBuilder.title}</h1>
+          <p className="text-sm text-slate-500">
             {t.cvBuilder.subtitle}
           </p>
         </div>
 
         {/* Kişisel */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.personal}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.personal}</h2>
           <input className={inputClass} placeholder={t.cvBuilder.fullName} value={cv.personal.fullName} onChange={(e) => setPersonal({ fullName: e.target.value })} />
           <input className={inputClass} placeholder={t.cvBuilder.headline} value={cv.personal.headline} onChange={(e) => setPersonal({ headline: e.target.value })} />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -113,7 +113,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
               <div key={i} className="flex gap-2">
                 <input className={inputClass} placeholder={t.cvBuilder.linkLabel} value={link.label} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, label: e.target.value } : l)) })} />
                 <input className={inputClass} placeholder="https://..." value={link.url} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, url: e.target.value } : l)) })} />
-                <button onClick={() => setPersonal({ links: cv.personal.links.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-red-400">
+                <button onClick={() => setPersonal({ links: cv.personal.links.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -124,13 +124,13 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
         {/* Özet */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.summary}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.summary}</h2>
           <textarea className={inputClass} rows={4} placeholder={t.cvBuilder.summaryPlaceholder} value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
         </Card>
 
         {/* Deneyim */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.experience}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.experience}</h2>
           {cv.experience.map((exp, i) => (
             <ItemFrame key={i} index={i} total={cv.experience.length} onMove={(to) => patch({ experience: moveItem(cv.experience, i, to) })} onRemove={() => patch({ experience: cv.experience.filter((_, idx) => idx !== i) })}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -142,7 +142,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
                   <input className={inputClass} placeholder={t.cvBuilder.end} value={exp.end} disabled={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
                 </div>
               </div>
-              <label className="flex items-center gap-2 text-xs text-white/60">
+              <label className="flex items-center gap-2 text-xs text-slate-500">
                 <input type="checkbox" checked={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, current: e.target.checked } : x)) })} />
                 {t.cvBuilder.current}
               </label>
@@ -154,7 +154,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
         {/* Eğitim */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.education}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.education}</h2>
           {cv.education.map((ed, i) => (
             <ItemFrame key={i} index={i} total={cv.education.length} onMove={(to) => patch({ education: moveItem(cv.education, i, to) })} onRemove={() => patch({ education: cv.education.filter((_, idx) => idx !== i) })}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -174,12 +174,12 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
         {/* Beceriler */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.skills}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.skills}</h2>
           <div className="flex flex-wrap gap-1.5">
             {cv.skills.map((s, i) => (
-              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs text-amber-200">
+              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-xs text-purple-700">
                 {s}
-                <button onClick={() => patch({ skills: cv.skills.filter((_, idx) => idx !== i) })} className="hover:text-white">
+                <button onClick={() => patch({ skills: cv.skills.filter((_, idx) => idx !== i) })} className="hover:text-slate-900">
                   <X className="h-3 w-3" />
                 </button>
               </span>
@@ -201,7 +201,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
         {/* Projeler */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.projects}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.projects}</h2>
           {cv.projects.map((pr, i) => (
             <ItemFrame key={i} index={i} total={cv.projects.length} onMove={(to) => patch({ projects: moveItem(cv.projects, i, to) })} onRemove={() => patch({ projects: cv.projects.filter((_, idx) => idx !== i) })}>
               <input className={inputClass} placeholder={t.cvBuilder.projectName} value={pr.name} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
@@ -215,12 +215,12 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
         {/* Diller & Sertifikalar */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.languages}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.languages}</h2>
           {cv.languages.map((l, i) => (
             <div key={i} className="flex gap-2">
               <input className={inputClass} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
               <input className={inputClass} placeholder={t.cvBuilder.langLevel} value={l.level} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, level: e.target.value } : x)) })} />
-              <button onClick={() => patch({ languages: cv.languages.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-red-400">
+              <button onClick={() => patch({ languages: cv.languages.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
@@ -229,13 +229,13 @@ export function CvBuilder({ initial }: { initial: CvData }) {
         </Card>
 
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.certifications}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.certifications}</h2>
           {cv.certifications.map((c, i) => (
             <div key={i} className="flex gap-2">
               <input className={inputClass} placeholder={t.cvBuilder.certName} value={c.name} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
               <input className={inputClass} placeholder={t.cvBuilder.certIssuer} value={c.issuer} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, issuer: e.target.value } : x)) })} />
               <input className={`${inputClass} max-w-[90px]`} placeholder={t.cvBuilder.certYear} value={c.date} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, date: e.target.value } : x)) })} />
-              <button onClick={() => patch({ certifications: cv.certifications.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-red-400">
+              <button onClick={() => patch({ certifications: cv.certifications.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
@@ -246,6 +246,8 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
       {/* Preview + actions */}
       <div className="lg:sticky lg:top-4 lg:h-fit space-y-4">
+        <TemplatePicker value={template} onChange={setTemplate} />
+
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={handleSave} disabled={saving} variant="primary">
             {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
@@ -257,10 +259,9 @@ export function CvBuilder({ initial }: { initial: CvData }) {
               {t.cvBuilder.downloadPdf}
             </Button>
           </a>
-          <TemplatePicker value={template} onChange={setTemplate} />
         </div>
         {error && <p className="text-xs text-red-500">{error}</p>}
-        <p className="text-xs text-white/40">{t.cvBuilder.pdfNote}</p>
+        <p className="text-xs text-slate-400">{t.cvBuilder.pdfNote}</p>
 
         <CvPreview data={cv} />
       </div>
@@ -270,7 +271,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
 function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/15 px-3 py-2 text-xs font-medium text-white/60 transition-colors hover:border-amber-500/40 hover:text-amber-300">
+    <button onClick={onClick} className="flex items-center gap-1.5 rounded-lg border border-dashed border-slate-200 px-3 py-2 text-xs font-medium text-slate-500 transition-colors hover:border-purple-500/40 hover:text-purple-700">
       <Plus className="h-3.5 w-3.5" />
       {label}
     </button>
@@ -291,15 +292,15 @@ function ItemFrame({
   children: React.ReactNode
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+    <div className="space-y-2 rounded-xl border border-slate-200 bg-white/[0.03] p-3">
       <div className="flex items-center justify-end gap-1">
-        <button onClick={() => onMove(index - 1)} disabled={index === 0} className="rounded p-1 text-white/40 hover:bg-white/5 hover:text-white disabled:opacity-30">
+        <button onClick={() => onMove(index - 1)} disabled={index === 0} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30">
           <ChevronUp className="h-4 w-4" />
         </button>
-        <button onClick={() => onMove(index + 1)} disabled={index === total - 1} className="rounded p-1 text-white/40 hover:bg-white/5 hover:text-white disabled:opacity-30">
+        <button onClick={() => onMove(index + 1)} disabled={index === total - 1} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30">
           <ChevronDown className="h-4 w-4" />
         </button>
-        <button onClick={onRemove} className="rounded p-1 text-white/40 hover:bg-white/5 hover:text-red-400">
+        <button onClick={onRemove} className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-red-400">
           <Trash2 className="h-4 w-4" />
         </button>
       </div>

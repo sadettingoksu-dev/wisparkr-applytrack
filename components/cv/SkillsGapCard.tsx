@@ -49,22 +49,22 @@ export function SkillsGapCard({ applicationId, initialData }: SkillsGapCardProps
   return (
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
-        <Target className="h-4 w-4 text-amber-500" />
-        <h3 className="text-sm font-semibold text-white">{t.skillsGap.title}</h3>
+        <Target className="h-4 w-4 text-purple-600" />
+        <h3 className="text-sm font-semibold text-slate-900">{t.skillsGap.title}</h3>
       </div>
-      <p className="text-sm text-white/50">
+      <p className="text-sm text-slate-500">
         {t.skillsGap.desc}
       </p>
 
       {data && (
         <div className="space-y-3">
-          {data.summary && <p className="text-sm text-white/70">{data.summary}</p>}
+          {data.summary && <p className="text-sm text-slate-600">{data.summary}</p>}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <p className="text-xs font-medium text-emerald-400">{t.skillsGap.matched}</p>
               <div className="flex flex-wrap gap-1.5">
                 {data.matched.length === 0 ? (
-                  <span className="text-xs text-white/30">—</span>
+                  <span className="text-xs text-slate-400">—</span>
                 ) : (
                   data.matched.map((s) => (
                     <span
@@ -82,7 +82,7 @@ export function SkillsGapCard({ applicationId, initialData }: SkillsGapCardProps
               <p className="text-xs font-medium text-red-400">{t.skillsGap.missing}</p>
               <div className="flex flex-wrap gap-1.5">
                 {data.missing.length === 0 ? (
-                  <span className="text-xs text-white/30">—</span>
+                  <span className="text-xs text-slate-400">—</span>
                 ) : (
                   data.missing.map((s) => (
                     <span

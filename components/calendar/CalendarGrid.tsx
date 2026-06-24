@@ -53,19 +53,19 @@ export function CalendarGrid({ apps }: { apps: Application[] }) {
     <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <button onClick={prev} className="rounded-lg p-1.5 hover:bg-white/10">
-          <ChevronLeft className="h-4 w-4 text-white/70" />
+        <button onClick={prev} className="rounded-lg p-1.5 hover:bg-slate-100">
+          <ChevronLeft className="h-4 w-4 text-slate-600" />
         </button>
-        <p className="text-sm font-semibold text-white capitalize">{monthLabel}</p>
-        <button onClick={next} className="rounded-lg p-1.5 hover:bg-white/10">
-          <ChevronRight className="h-4 w-4 text-white/70" />
+        <p className="text-sm font-semibold text-slate-900 capitalize">{monthLabel}</p>
+        <button onClick={next} className="rounded-lg p-1.5 hover:bg-slate-100">
+          <ChevronRight className="h-4 w-4 text-slate-600" />
         </button>
       </div>
 
       {/* Day labels */}
       <div className="grid grid-cols-7 gap-1">
         {t.calendar.days.map((d) => (
-          <div key={d} className="py-1 text-center text-xs font-medium text-white/40">{d}</div>
+          <div key={d} className="py-1 text-center text-xs font-medium text-slate-400">{d}</div>
         ))}
 
         {/* Cells */}
@@ -76,18 +76,18 @@ export function CalendarGrid({ apps }: { apps: Application[] }) {
             <div
               key={i}
               className={`min-h-[64px] rounded-lg border p-1 text-xs ${
-                day === null ? 'border-transparent' : isToday ? 'border-amber-400 bg-amber-500/10' : 'border-white/10 bg-white/5'
+                day === null ? 'border-transparent' : isToday ? 'border-purple-400 bg-purple-50' : 'border-slate-200 bg-white'
               }`}
             >
               {day !== null && (
                 <>
-                  <p className={`mb-1 text-right font-medium ${isToday ? 'text-amber-500' : 'text-white/50'}`}>{day}</p>
+                  <p className={`mb-1 text-right font-medium ${isToday ? 'text-purple-600' : 'text-slate-500'}`}>{day}</p>
                   <div className="space-y-0.5">
                     {events.map((a) => (
                       <Link
                         key={a.id}
                         href={`/applications/${a.id}`}
-                        className="block truncate rounded bg-amber-500/15 px-1 py-0.5 text-[10px] font-medium text-amber-600 hover:bg-amber-500/20"
+                        className="block truncate rounded bg-purple-100 px-1 py-0.5 text-[10px] font-medium text-purple-700 hover:bg-purple-100"
                         title={`${a.position_title} — ${a.company_name}`}
                       >
                         {a.position_title}

@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectivePlanId } from '@/lib/plans'
 import type { Profile } from '@/lib/types'
+import type { PlanId } from '@/lib/plans'
 
 export interface AuthedContext {
   supabase: ReturnType<typeof createClient>
   userId: string
+  /** Effective plan applied to `profile.plan` (trial → full access). */
   profile: Profile
+  /** The user's *real* plan before trial elevation — use for monetization (link permanence). */
+  realPlanId: PlanId
 }
 
 /**
@@ -37,7 +42,12 @@ export async function requireAuth(): Promise<AuthedContext | NextResponse> {
     )
   }
 
-  return { supabase, userId: data.user.id, profile }
+  // Gate all downstream features on the *effective* plan so an active 5-day
+  // trial grants full access and an expired one falls back to free.
+  const realPlanId = ((profile as Profile).plan as PlanId) ?? 'free'
+  ;(profile as Profile).plan = getEffectivePlanId(profile as Profile)
+
+  return { supabase, userId: data.user.id, profile: profile as Profile, realPlanId }
 }
 
 export function isAuthedContext(ctx: AuthedContext | NextResponse): ctx is AuthedContext {
@@ -74,5 +84,8 @@ export async function requireExtensionAuth(request: Request): Promise<AuthedCont
     )
   }
 
-  return { supabase: admin as unknown as ReturnType<typeof createClient>, userId: profile.id, profile }
+  const realPlanId = ((profile as Profile).plan as PlanId) ?? 'free'
+  ;(profile as Profile).plan = getEffectivePlanId(profile as Profile)
+
+  return { supabase: admin as unknown as ReturnType<typeof createClient>, userId: profile.id, profile: profile as Profile, realPlanId }
 }

@@ -35,8 +35,8 @@ export function ExtensionTokenCard({ initialToken }: { initialToken: string }) {
 
   return (
     <Card className="space-y-2">
-      <h2 className="text-sm font-semibold text-white">{t.settings.extensionTitle}</h2>
-      <p className="text-sm text-white/50">
+      <h2 className="text-sm font-semibold text-slate-900">{t.settings.extensionTitle}</h2>
+      <p className="text-sm text-slate-500">
         {t.settings.extensionDesc}
       </p>
       <div className="flex items-center gap-2">

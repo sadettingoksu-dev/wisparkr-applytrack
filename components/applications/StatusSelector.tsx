@@ -43,12 +43,12 @@ export function StatusSelector({ applicationId, initialStatus }: { applicationId
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-40 rounded-lg border border-white/10 bg-white/5 shadow-lg">
+        <div className="absolute right-0 top-full z-20 mt-1 w-40 rounded-lg border border-slate-200 bg-white shadow-lg">
           {KANBAN_COLUMNS.map((col) => (
             <button
               key={col.id}
               onClick={() => handleSelect(col.id)}
-              className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-white/5 ${col.id === status ? 'font-semibold' : ''}`}
+              className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-slate-100 ${col.id === status ? 'font-semibold' : ''}`}
             >
               <span className={`h-2 w-2 rounded-full ${STATUS_BADGE_CLASSES[col.id].split(' ')[0]}`} />
               {t.status[col.id]}

@@ -43,7 +43,7 @@ export function DeleteApplicationButton({ applicationId }: { applicationId: stri
 
       <Modal open={open} onClose={() => setOpen(false)} title={t.appDetail.deleteTitle}>
         <div className="space-y-4">
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-slate-600">
             {t.appDetail.deleteConfirm}
           </p>
           {error && <p className="text-xs text-red-500">{error}</p>}

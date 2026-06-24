@@ -1,13 +1,9 @@
 import PDFDocument from 'pdfkit'
 import type { CvData } from '@/lib/cv'
+import { CV_TEMPLATE_IDS, normalizeTemplate, type CvTemplate } from '@/lib/cvTemplates'
 
-export type CvPdfTemplate = 'classic' | 'modern' | 'minimal'
-
-export function normalizeTemplate(value: string | null | undefined): CvPdfTemplate {
-  return (['classic', 'modern', 'minimal'] as const).includes(value as CvPdfTemplate)
-    ? (value as CvPdfTemplate)
-    : 'classic'
-}
+export { CV_TEMPLATE_IDS, normalizeTemplate }
+export type CvPdfTemplate = CvTemplate
 
 interface Theme {
   font: string
@@ -21,8 +17,11 @@ interface Theme {
 
 const THEMES: Record<CvPdfTemplate, Theme> = {
   classic: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#111827', sub: '#475569', nameSize: 22, rule: true, center: false },
-  modern: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#d97706', sub: '#92400e', nameSize: 26, rule: true, center: false },
+  modern: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#7c3aed', sub: '#6d28d9', nameSize: 26, rule: true, center: false },
   minimal: { font: 'Times-Roman', bold: 'Times-Bold', accent: '#000000', sub: '#444444', nameSize: 20, rule: false, center: true },
+  elegant: { font: 'Times-Roman', bold: 'Times-Bold', accent: '#6d28d9', sub: '#7c3aed', nameSize: 24, rule: true, center: true },
+  professional: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#1e3a8a', sub: '#475569', nameSize: 22, rule: true, center: false },
+  creative: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#c026d3', sub: '#a21caf', nameSize: 28, rule: false, center: false },
 }
 
 function sectionHeading(doc: PDFKit.PDFDocument, t: Theme, title: string) {

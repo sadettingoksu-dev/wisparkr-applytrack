@@ -19,13 +19,13 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div className="inline-flex items-center rounded-full border border-white/15 bg-white/5 p-0.5 text-xs font-medium">
+    <div className="inline-flex items-center rounded-full border border-slate-200 bg-white p-0.5 text-xs font-medium">
       {LOCALES.map((l) => (
         <button
           key={l}
           onClick={() => setLocale(l)}
           className={`rounded-full px-2.5 py-1 transition-colors ${
-            l === locale ? 'bg-amber-500 text-black' : 'text-white/60 hover:text-white'
+            l === locale ? 'bg-purple-600 text-white' : 'text-slate-500 hover:text-slate-900'
           }`}
           aria-pressed={l === locale}
         >

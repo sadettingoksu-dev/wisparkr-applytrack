@@ -25,7 +25,7 @@ function appOrigin(request: Request): string {
 export async function POST(request: Request) {
   const ctx = await requireAuth()
   if (!isAuthedContext(ctx)) return ctx
-  const { supabase, userId, profile } = ctx
+  const { supabase, userId, profile, realPlanId } = ctx
 
   const cvData = parseCvData(profile.cv_data)
   if (!hasCvContent(cvData)) {
@@ -44,12 +44,15 @@ export async function POST(request: Request) {
     )
   }
   const { label, template, slug } = parsed.data
-  const isPaid = getPlan(profile.plan).id !== 'free'
+  // Feature access (custom slug etc.) follows the effective plan (trial = full).
+  const hasFullAccess = getPlan(profile.plan).id !== 'free'
+  // Link *permanence* follows the REAL paid plan only — trial links die when the trial ends.
+  const isReallyPaid = realPlanId === 'pro' || realPlanId === 'career_coach'
 
   // Custom slug is a Pro perk; otherwise an unguessable random token.
   let token = randomBytes(9).toString('base64url')
   if (slug) {
-    if (!isPaid) {
+    if (!hasFullAccess) {
       return NextResponse.json(
         { error: { code: 'FEATURE_NOT_AVAILABLE', message: 'Özel link adı Pro/Career Coach planında mevcut.' } },
         { status: 403 }
@@ -67,9 +70,11 @@ export async function POST(request: Request) {
     token = slug
   }
 
-  const expiresAt = isPaid
-    ? null
+  // Paid → permanent. Trial → dies exactly when the trial ends (fallback: 5 days).
+  const trialEnd = profile.trial_ends_at
+    ? new Date(profile.trial_ends_at).toISOString()
     : new Date(Date.now() + SHARE_FREE_TTL_DAYS * 86400_000).toISOString()
+  const expiresAt = isReallyPaid ? null : trialEnd
 
   const { data, error } = await supabase
     .from('cv_shares')

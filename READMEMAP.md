@@ -12,6 +12,19 @@
 
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
+### Büyük UI + Monetizasyon revizyonu (beyaz+mor tema, 5 gün deneme, plan iptal, şablon galerisi)
+- [x] **Ücretsiz plan → 5 günlük deneme:** `profiles.trial_ends_at` (default now()+5g) + `plan_started_at` (mig `0012_trial.sql`). `lib/plans.ts` `isTrialActive`/`getEffectivePlanId`/`getEffectivePlan` (deneme = Pro seviyesi tam erişim, süre dolunca free/kilitli). `requireAuth` (lib/apiAuth) artık `profile.plan`'ı efektif plana çevirir + `realPlanId` taşır (link kalıcılığı gerçek plana bağlı). Paylaşım linki: TTL 5 gün, deneme linki tam **deneme bitiminde** sona erer; Pro+Career Coach kalıcı (public `/cv/[token]` owner efektif planına bakar).
+- [x] **Plan iptal:** `app/api/billing/cancel` (LemonSqueezy `cancelSubscription` + yerel `status=cancelled, ends_at=renews_at`), `components/billing/CancelButton`. Billing sayfası: plan başlangıç tarihi, yenileme/iptal tarihi, **deneme gün sayacı**.
+- [x] **Giriş/Kayıt → otomatik dashboard:** signup OTP başarısı oturumu koruyup `/dashboard`'a; middleware oturum açık kullanıcıyı `/login`,`/signup`'tan panele yönlendirir (plan param'ı korur).
+- [x] **CV şablon galerisi (cvmaker tarzı):** `lib/cvTemplates.ts` (istemci-güvenli id'ler — pdfkit'i client bundle'dan ayırır), cvPdf 6 tema (classic/modern/minimal/elegant/professional/creative), `TemplatePicker` görsel wireframe thumbnail grid.
+- [x] **Tüm site beyaz + açık mor tema:** ~45 dosya (ortak `ui/*` + `layout/*` + tüm sayfalar) koyu→beyaz, amber→mor. Gradyan yıldız logo geri (`/logo.png`). AuthShowcase düzeni korunup açık-mor'a uyarlandı.
+- [x] **Sidebar:** logoya basınca daral/genişle (`localStorage`), Analitik nav kaldırıldı.
+- [x] **Analitik → Dashboard'a gömüldü** (`/analytics` → `/dashboard` redirect), Takvim ayrı.
+- [x] **Her sayfada "i" bilgi butonu:** `components/ui/PageInfo` + `i18n.pageInfo.*` (tr/en).
+- [ ] **⚠️ DB:** `0012_trial.sql` Supabase'de ÇALIŞTIRILMALI (0009/0010/0011 ile birlikte) — yoksa deneme/şablon/paylaşım hata verir.
+- **Durum: Kod hazır, build geçiyor. Migration 0012 + manuel `vercel --prod` deploy bekliyor.**
+
+
 ### Yapılandırılmış CV Oluşturucu + Akıllı Paylaşılabilir Link (Faz A + F)
 - [x] **CV Oluşturucu (Faz A):** `profiles.cv_data` (jsonb) yapılandırılmış CV; `lib/cv.ts` (`CvData` Zod + `flattenCvData`→`cv_text` türetimi, mevcut 7 AI tüketicisi bozulmaz); `/cv-builder` bölüm bölüm form + canlı önizleme (`CvPreview`) + kaydet; `/api/cv/builder` GET/PUT; `/api/cv/pdf` gerçek yerleşimli PDF (3 şablon, `lib/cvPdf.ts`); sidebar "CV Oluştur" + onboarding.
 - [x] **Akıllı Paylaşılabilir Link (Faz F — monetizasyon):** `cv_shares` tablosu (token + dondurulmuş snapshot + expires_at + görüntülenme). Public `/cv/[token]` owner planına **canlı** bakar (cron yok): free **7 gün**, Pro **kalıcı**; Pro'ya geçince tüm linkler **anında canlanır**. Pasif durum profesyonel (`ExpiredCv`, itibar korunur). `/cv/[token]/pdf` public indirme. `/api/cv/share` POST/GET + `[id]` PATCH/DELETE; özel slug Pro+. 7 gün ücretsiz indirme penceresi (`cv_trial_started_at`). `SharePanel` (oluştur + Linklerim). **Google Drive/Dropbox bilinçli eklenmedi** (paywall'ı bypass eder).

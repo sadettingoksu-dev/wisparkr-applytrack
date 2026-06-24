@@ -50,9 +50,9 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
 
   return (
     <Card className="space-y-4">
-      <h3 className="text-sm font-semibold text-white">{t.interview.cardTitle}</h3>
+      <h3 className="text-sm font-semibold text-slate-900">{t.interview.cardTitle}</h3>
 
-      <p className="text-sm text-white/50">
+      <p className="text-sm text-slate-500">
         {format(t.interview.cardDesc, { count: MOCK_INTERVIEW_QUESTION_COUNT })}
       </p>
 
@@ -70,10 +70,10 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
       </Button>
 
       {sessions.length > 0 && (
-        <div className="border-t border-white/10 pt-3">
+        <div className="border-t border-slate-200 pt-3">
           <button
             onClick={() => setSessionsOpen((prev) => !prev)}
-            className="flex w-full items-center justify-between text-xs font-medium text-white/50 hover:text-white/90"
+            className="flex w-full items-center justify-between text-xs font-medium text-slate-500 hover:text-slate-800"
           >
             <span>{format(t.interview.pastSessions, { n: sessions.length })}</span>
             {sessionsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
@@ -90,9 +90,9 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
                   <Link
                     key={session.id}
                     href={`/applications/${applicationId}/mock-interview/${session.id}`}
-                    className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-2 text-sm hover:bg-white/5"
+                    className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-100"
                   >
-                    <span className="text-white/70">
+                    <span className="text-slate-600">
                       {new Date(session.created_at).toLocaleDateString('tr-TR', {
                         day: '2-digit',
                         month: '2-digit',
@@ -101,14 +101,14 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
                     </span>
                     {session.status === 'completed' ? (
                       session.overall_score !== null && readiness ? (
-                        <Badge className={`bg-white/5 ${readiness.className}`}>
+                        <Badge className={`bg-white ${readiness.className}`}>
                           %{session.overall_score} · {t.readiness[readiness.levelKey]}
                         </Badge>
                       ) : (
-                        <Badge className="bg-white/5 text-white/50">{t.interview.awaitingReport}</Badge>
+                        <Badge className="bg-white text-slate-500">{t.interview.awaitingReport}</Badge>
                       )
                     ) : (
-                      <Badge className="bg-amber-500/10 text-amber-500">{t.interview.inProgress}</Badge>
+                      <Badge className="bg-purple-50 text-purple-600">{t.interview.inProgress}</Badge>
                     )}
                   </Link>
                 )
@@ -117,7 +117,7 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
               {sessions.length > 3 && (
                 <button
                   onClick={() => setShowAll((prev) => !prev)}
-                  className="w-full pt-1 text-xs text-amber-500 hover:text-amber-700"
+                  className="w-full pt-1 text-xs text-purple-600 hover:text-purple-700"
                 >
                   {showAll ? t.interview.showLess : format(t.interview.showMore, { n: sessions.length - 3 })}
                 </button>

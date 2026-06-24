@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { DocumentsList, type DocumentItem } from '@/components/documents/DocumentsList'
+import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Application } from '@/lib/types'
 
@@ -28,15 +29,18 @@ export default async function DocumentsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">{t.documents.title}</h1>
-        <p className="text-sm text-white/50">
-          {t.documents.subtitle}
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">{t.documents.title}</h1>
+          <p className="text-sm text-slate-500">
+            {t.documents.subtitle}
+          </p>
+        </div>
+        <PageInfo page="documents" />
       </div>
 
       {items.length === 0 ? (
-        <p className="rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-sm text-white/40">
+        <p className="rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-400">
           {t.documents.empty}
         </p>
       ) : (

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { Download } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseCvData, isShareActive } from '@/lib/cv'
+import { getEffectivePlanId } from '@/lib/plans'
 import { CvPreview } from '@/components/cv-builder/CvPreview'
 import { ExpiredCv } from '@/components/cv/ExpiredCv'
 import { getServerDict } from '@/lib/i18n-server'
@@ -24,8 +25,14 @@ async function loadShare(token: string) {
   const { data: share } = await admin.from('cv_shares').select('*').eq('token', token).maybeSingle()
   if (!share) return null
   const row = share as unknown as CvShareRow
-  const { data: owner } = await admin.from('profiles').select('plan').eq('id', row.user_id).maybeSingle()
-  const ownerPlan = (owner as { plan?: string } | null)?.plan ?? 'free'
+  const { data: owner } = await admin
+    .from('profiles')
+    .select('plan, trial_ends_at')
+    .eq('id', row.user_id)
+    .maybeSingle()
+  // Live check against the owner's *effective* plan: an active trial keeps the
+  // link alive; once it expires (and no paid plan) the CV vanishes from this URL.
+  const ownerPlan = getEffectivePlanId(owner as { plan?: string; trial_ends_at?: string | null } | null)
   return { row, ownerPlan }
 }
 

@@ -15,8 +15,8 @@ interface RequiredDocumentsCardProps {
 
 const IMPORTANCE_CLASS: Record<RequiredDocument['importance'], string> = {
   critical: 'bg-red-500/10 text-red-400',
-  important: 'bg-amber-500/10 text-amber-400',
-  optional: 'bg-white/10 text-white/70',
+  important: 'bg-purple-50 text-purple-600',
+  optional: 'bg-slate-100 text-slate-600',
 }
 
 export function RequiredDocumentsCard({ applicationId, initialDocuments }: RequiredDocumentsCardProps) {
@@ -96,8 +96,8 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
   return (
     <Card className="space-y-4">
       <div>
-        <h2 className="text-sm font-semibold text-white">{t.requiredDocs.title}</h2>
-        <p className="text-sm text-white/50">
+        <h2 className="text-sm font-semibold text-slate-900">{t.requiredDocs.title}</h2>
+        <p className="text-sm text-slate-500">
           {t.requiredDocs.desc}
         </p>
       </div>
@@ -116,7 +116,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
       )}
 
       {documents && documents.length === 0 && (
-        <p className="text-sm text-white/50">
+        <p className="text-sm text-slate-500">
           {t.requiredDocs.none}
         </p>
       )}
@@ -126,11 +126,11 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
           {documents.map((doc, i) => (
             <li
               key={`${doc.name}-${i}`}
-              className="space-y-2 rounded-lg border border-white/10 px-3 py-2"
+              className="space-y-2 rounded-lg border border-slate-200 px-3 py-2"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-white/90">{doc.name}</span>
+                  <span className="text-sm text-slate-800">{doc.name}</span>
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${IMPORTANCE_CLASS[doc.importance]}`}>
                     {t.requiredDocs.importance[doc.importance]}
                   </span>
@@ -140,7 +140,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
                     type="button"
                     onClick={() => toggleDocument(i, true)}
                     className={`rounded-md px-2 py-1 text-xs font-medium ${
-                      doc.has === true ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white/70'
+                      doc.has === true ? 'bg-emerald-600 text-slate-900' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
                     {t.requiredDocs.has}
@@ -149,7 +149,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
                     type="button"
                     onClick={() => toggleDocument(i, false)}
                     className={`rounded-md px-2 py-1 text-xs font-medium ${
-                      doc.has === false ? 'bg-red-600 text-white' : 'bg-white/10 text-white/70'
+                      doc.has === false ? 'bg-red-600 text-slate-900' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
                     {t.requiredDocs.hasNot}

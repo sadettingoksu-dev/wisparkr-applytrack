@@ -54,7 +54,7 @@ export function NavbarAuth() {
     return (
       <Link
         href="/login"
-        className="text-sm font-medium text-white/70 transition-colors hover:text-white"
+        className="text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
       >
         {t.nav.login}
       </Link>

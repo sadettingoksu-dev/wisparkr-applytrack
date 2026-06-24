@@ -57,7 +57,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="grid min-h-screen grid-cols-1 gap-4 bg-black p-4 lg:grid-cols-2">
+    <div className="grid min-h-screen grid-cols-1 gap-4 bg-slate-50 p-4 lg:grid-cols-2">
       {/* Sol: animasyonlu vitrin */}
       <AuthShowcase />
 
@@ -71,51 +71,51 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-dark.png" alt={APP_NAME} width={36} height={36} className="rounded-xl" />
-            <span className="text-xl font-bold text-white">{APP_NAME}</span>
+            <img src="/logo.png" alt={APP_NAME} width={36} height={36} className="rounded-xl" />
+            <span className="text-xl font-bold text-slate-900">{APP_NAME}</span>
           </Link>
-          <p className="mt-3 text-white/50 text-sm">{t.login.subtitle}</p>
+          <p className="mt-3 text-slate-500 text-sm">{t.login.subtitle}</p>
         </div>
 
         {/* Google ile giriş */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition-colors mb-6"
+          className="w-full flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 hover:bg-slate-100 transition-colors mb-6"
         >
           <GoogleIcon className="h-4 w-4" />
           {t.login.google}
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="flex-1 h-px bg-white/10" />
-          <span className="text-xs text-white/30">{t.login.orEmail}</span>
-          <div className="flex-1 h-px bg-white/10" />
+          <div className="flex-1 h-px bg-slate-100" />
+          <span className="text-xs text-slate-400">{t.login.orEmail}</span>
+          <div className="flex-1 h-px bg-slate-100" />
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               type="email"
               placeholder={t.login.email}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-3 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
+              className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200 transition-colors"
             />
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
               type={showPass ? 'text' : 'password'}
               placeholder={t.login.password}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-10 py-3 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30 transition-colors"
+              className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-10 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200 transition-colors"
             />
-            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
+            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-500">
               {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
@@ -127,15 +127,15 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 py-3 text-sm font-semibold text-black hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             {loading ? t.login.submitting : t.login.submit}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-white/40">
+        <p className="mt-4 text-center text-sm text-slate-400">
           {t.login.noAccount}{' '}
-          <Link href="/signup" className="font-medium text-amber-400 hover:text-amber-300 transition-colors">
+          <Link href="/signup" className="font-medium text-purple-600 hover:text-purple-700 transition-colors">
             {t.login.signupLink}
           </Link>
         </p>

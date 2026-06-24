@@ -81,15 +81,15 @@ export function CvPolishCard({ hasCv }: { hasCv: boolean }) {
   return (
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
-        <Wand2 className="h-4 w-4 text-amber-500" />
-        <h2 className="text-sm font-semibold text-white">{t.cvPolish.title}</h2>
+        <Wand2 className="h-4 w-4 text-purple-600" />
+        <h2 className="text-sm font-semibold text-slate-900">{t.cvPolish.title}</h2>
       </div>
-      <p className="text-sm text-white/50">
+      <p className="text-sm text-slate-500">
         {t.cvPolish.desc}
       </p>
 
       {!hasCv ? (
-        <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/50">
+        <p className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-500">
           {t.cvPolish.noCv}
         </p>
       ) : (
@@ -111,13 +111,13 @@ export function CvPolishCard({ hasCv }: { hasCv: boolean }) {
             value={result}
             onChange={(e) => setResult(e.target.value)}
             rows={12}
-            className="w-full resize-y rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm leading-relaxed text-white/90 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+            className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-relaxed text-slate-800 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200"
           />
           {notes.length > 0 && (
             <ul className="space-y-1">
               {notes.map((n, i) => (
-                <li key={i} className="flex gap-2 text-xs text-white/50">
-                  <span className="text-amber-500">•</span>
+                <li key={i} className="flex gap-2 text-xs text-slate-500">
+                  <span className="text-purple-600">•</span>
                   {n}
                 </li>
               ))}

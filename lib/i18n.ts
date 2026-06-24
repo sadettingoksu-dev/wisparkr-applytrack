@@ -49,10 +49,11 @@ const tr = {
     pageSubtitle: 'İhtiyacına uygun planı seç, istediğin zaman değiştir.',
     popular: 'En Popüler',
     perMonth: '/ay',
-    freeCta: 'Ücretsiz Başla',
+    trialPrice: '5 gün ücretsiz',
+    freeCta: 'Ücretsiz Dene',
     paidCta: 'Plana Geç',
     lists: {
-      free: ['5 başvuru', '10 AI soru/ay', 'Temel kanban board'],
+      free: ['5 gün boyunca tüm özellikler açık', 'CV oluştur + paylaşılabilir link', 'Tüm AI özellikleri', 'Süre sonunda ödeme ile devam'],
       pro: ['Sınırsız başvuru', '200 AI soru/ay', 'CV uyum skoru', 'CV otomatik uyarlama'],
       career_coach: [
         "Pro'daki her şey",
@@ -320,9 +321,14 @@ const tr = {
   },
   templatePicker: {
     label: 'Şablon:',
+    heading: 'Şablon seç',
+    selected: 'Seçili',
     classic: 'Klasik',
     modern: 'Modern',
     minimal: 'Sade',
+    elegant: 'Zarif',
+    professional: 'Profesyonel',
+    creative: 'Yaratıcı',
   },
   expiredCv: {
     title: 'Bu CV bağlantısı şu an görüntülenemiyor',
@@ -453,6 +459,20 @@ const tr = {
     comparePlans: 'Planları Karşılaştır',
     current: 'Mevcut',
     upgradeArrow: 'Yükselt →',
+    cancelPlan: 'Planı iptal et',
+    cancelConfirm: 'Planını iptal etmek istediğine emin misin? Dönem sonuna kadar erişimin sürer, sonra denemeye/ücretsiz duruma dönersin ve paylaştığın CV linkleri pasifleşir.',
+    cancelConfirmYes: 'Evet, iptal et',
+    cancelConfirmNo: 'Vazgeç',
+    planStarted: '{date} tarihinde geçtin',
+    renewsOn: '{date} tarihinde yenilenecek',
+    cancelScheduled: 'İptal edildi — {date} tarihine kadar aktif',
+    trialBadge: 'Deneme',
+    trialTitle: 'Ücretsiz Deneme',
+    trialActiveDesc: 'Tüm özellikler deneme süresince açık.',
+    trialEndsOn: 'Deneme {date} tarihinde bitiyor',
+    trialDaysLeft: '{days} gün kaldı',
+    trialExpired: 'Deneme süren doldu. Devam etmek ve paylaşılan CV linklerini canlandırmak için bir plan seç.',
+    upgradeNow: 'Şimdi yükselt',
     features: {
       kanban: 'Kanban Board',
       cvFitScore: 'CV Uyum Skoru',
@@ -553,6 +573,40 @@ const tr = {
     backToDashboard: "Dashboard'a dön →",
     redirecting: 'Ödeme sayfasına yönlendiriliyorsun...',
   },
+  pageInfo: {
+    dashboard: {
+      title: 'Bu sayfada ne var?',
+      body: 'Genel bakış: başvuru sayıların, dönüşüm oranların ve analitik özetin. Aşamaların ve son hareketlerin tek bakışta burada.',
+    },
+    calendar: {
+      title: 'Takvim',
+      body: 'Mülakat ve takip tarihlerini takvimde gör. Yaklaşan mülakatları kaçırmamak için günleri buradan planla.',
+    },
+    board: {
+      title: 'Kanban Board',
+      body: 'Başvurularını Bekliyor / Mülakat / Teklif / Reddedildi sütunlarında sürükle-bırak ile yönet; her başvurunun durumunu anlık güncelle.',
+    },
+    applications: {
+      title: 'Başvurular',
+      body: 'Tüm başvurularının listesi. İlan linki yapıştırarak yeni başvuru ekle, detay aç, not tut ve AI özelliklerini çalıştır.',
+    },
+    cvBuilder: {
+      title: 'CV Oluştur',
+      body: 'CV’ni bölüm bölüm doldur, şablon seç, PDF indir ve paylaşılabilir bir link oluştur. Kaydettiğin CV tüm AI özelliklerinde kullanılır.',
+    },
+    documents: {
+      title: 'Belgelerim',
+      body: 'Oluşturduğun CV ve ön yazıların hazır PDF’lerini tek yerden farklı şablonlarla indir.',
+    },
+    settings: {
+      title: 'Ayarlar',
+      body: 'Profil bilgilerini, master CV’ni ve AI tercihlerin gibi hesap ayarlarını buradan yönet.',
+    },
+    billing: {
+      title: 'Plan & Faturalama',
+      body: 'Aktif planını, deneme sürenin bitiş tarihini, yenileme/iptal tarihlerini ve aylık kullanımını takip et. Buradan plan yükselt veya iptal et.',
+    },
+  },
 }
 
 type Dictionary = typeof tr
@@ -594,10 +648,11 @@ const en: Dictionary = {
     pageSubtitle: 'Choose the plan that fits you, change anytime.',
     popular: 'Most Popular',
     perMonth: '/mo',
-    freeCta: 'Start Free',
+    trialPrice: '5 days free',
+    freeCta: 'Start Free Trial',
     paidCta: 'Get This Plan',
     lists: {
-      free: ['5 applications', '10 AI questions/mo', 'Basic kanban board'],
+      free: ['All features unlocked for 5 days', 'Build CV + shareable link', 'All AI features', 'Continue with payment after trial'],
       pro: ['Unlimited applications', '200 AI questions/mo', 'CV match score', 'Automatic CV tailoring'],
       career_coach: [
         'Everything in Pro',
@@ -865,9 +920,14 @@ const en: Dictionary = {
   },
   templatePicker: {
     label: 'Template:',
+    heading: 'Choose a template',
+    selected: 'Selected',
     classic: 'Classic',
     modern: 'Modern',
     minimal: 'Minimal',
+    elegant: 'Elegant',
+    professional: 'Professional',
+    creative: 'Creative',
   },
   expiredCv: {
     title: 'This CV link is currently unavailable',
@@ -998,6 +1058,20 @@ const en: Dictionary = {
     comparePlans: 'Compare Plans',
     current: 'Current',
     upgradeArrow: 'Upgrade →',
+    cancelPlan: 'Cancel plan',
+    cancelConfirm: 'Are you sure you want to cancel? You keep access until the end of the period, then drop back to trial/free and your shared CV links become inactive.',
+    cancelConfirmYes: 'Yes, cancel',
+    cancelConfirmNo: 'Keep plan',
+    planStarted: 'Started on {date}',
+    renewsOn: 'Renews on {date}',
+    cancelScheduled: 'Cancelled — active until {date}',
+    trialBadge: 'Trial',
+    trialTitle: 'Free Trial',
+    trialActiveDesc: 'All features are unlocked during the trial.',
+    trialEndsOn: 'Trial ends on {date}',
+    trialDaysLeft: '{days} days left',
+    trialExpired: 'Your trial has ended. Pick a plan to continue and reactivate your shared CV links.',
+    upgradeNow: 'Upgrade now',
     features: {
       kanban: 'Kanban Board',
       cvFitScore: 'CV Match Score',
@@ -1097,6 +1171,40 @@ const en: Dictionary = {
     error: 'Could not open the payment page.',
     backToDashboard: 'Back to dashboard →',
     redirecting: 'Redirecting you to the payment page...',
+  },
+  pageInfo: {
+    dashboard: {
+      title: 'What is this page?',
+      body: 'Your overview: number of applications, conversion rates and analytics summary. Stages and recent activity at a glance.',
+    },
+    calendar: {
+      title: 'Calendar',
+      body: 'See your interview and follow-up dates on a calendar. Plan your days here so you never miss an upcoming interview.',
+    },
+    board: {
+      title: 'Kanban Board',
+      body: 'Manage applications across Pending / Interview / Offer / Rejected columns with drag & drop; update each status instantly.',
+    },
+    applications: {
+      title: 'Applications',
+      body: 'The full list of your applications. Paste a job link to add one, open details, take notes and run AI features.',
+    },
+    cvBuilder: {
+      title: 'Build CV',
+      body: 'Fill your CV section by section, pick a template, download a PDF and create a shareable link. The saved CV powers all AI features.',
+    },
+    documents: {
+      title: 'My Documents',
+      body: 'Download ready-made PDFs of the CVs and cover letters you created, in different templates, from one place.',
+    },
+    settings: {
+      title: 'Settings',
+      body: 'Manage account settings like your profile info, master CV and AI preferences here.',
+    },
+    billing: {
+      title: 'Plan & Billing',
+      body: 'Track your active plan, trial end date, renewal/cancellation dates and monthly usage. Upgrade or cancel your plan here.',
+    },
   },
 }
 

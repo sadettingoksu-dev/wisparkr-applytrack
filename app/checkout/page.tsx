@@ -36,19 +36,19 @@ export default function CheckoutRedirectPage() {
   }, [plan, router, t])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-6">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
       <div className="text-center">
         {error ? (
           <>
             <p className="text-sm text-red-400">{error}</p>
-            <Link href="/dashboard" className="mt-4 inline-block text-sm text-amber-400 hover:text-amber-300">
+            <Link href="/dashboard" className="mt-4 inline-block text-sm text-purple-600 hover:text-purple-700">
               {t.checkout.backToDashboard}
             </Link>
           </>
         ) : (
           <>
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-amber-400" />
-            <p className="mt-4 text-sm text-white/60">{t.checkout.redirecting}</p>
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-purple-600" />
+            <p className="mt-4 text-sm text-slate-500">{t.checkout.redirecting}</p>
           </>
         )}
       </div>

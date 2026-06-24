@@ -5,6 +5,7 @@ import { getPlan } from '@/lib/plans'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { PageInfo } from '@/components/ui/PageInfo'
 import { CompareSelector } from '@/components/applications/CompareSelector'
 import { LimitBanner } from '@/components/applications/LimitBanner'
 import { STATUS_BADGE_CLASSES } from '@/utils/constants'
@@ -36,10 +37,11 @@ export default async function ApplicationsPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t.applications.title}</h1>
-          <p className="text-sm text-white/50">{t.applications.subtitle}</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t.applications.title}</h1>
+          <p className="text-sm text-slate-500">{t.applications.subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
+          <PageInfo page="applications" />
           {apps.length >= 2 && <CompareSelector apps={apps} />}
           {!limitReached && (
             <Link href="/applications/new">
@@ -59,7 +61,7 @@ export default async function ApplicationsPage({
 
       {apps.length === 0 ? (
         <Card>
-          <p className="text-sm text-white/50">{t.applications.empty}</p>
+          <p className="text-sm text-slate-500">{t.applications.empty}</p>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -67,12 +69,12 @@ export default async function ApplicationsPage({
             <Link key={app.id} href={`/applications/${app.id}`}>
               <Card className="flex items-center justify-between transition-shadow hover:shadow-lg">
                 <div>
-                  <p className="font-semibold text-white">{app.position_title}</p>
-                  <p className="text-sm text-white/50">{app.company_name}</p>
+                  <p className="font-semibold text-slate-900">{app.position_title}</p>
+                  <p className="text-sm text-slate-500">{app.company_name}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   {app.applied_at && (
-                    <span className="text-xs text-white/40">{formatDate(app.applied_at)}</span>
+                    <span className="text-xs text-slate-400">{formatDate(app.applied_at)}</span>
                   )}
                   <Badge className={STATUS_BADGE_CLASSES[app.status]}>
                     {t.status[app.status]}

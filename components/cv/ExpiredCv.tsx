@@ -13,7 +13,7 @@ export function ExpiredCv() {
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-6">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center shadow-xl">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-          <Clock className="h-7 w-7 text-amber-600" />
+          <Clock className="h-7 w-7 text-purple-700" />
         </div>
         <h1 className="text-lg font-bold text-neutral-900">{t.expiredCv.title}</h1>
         <p className="mt-2 text-sm text-neutral-500">
@@ -23,7 +23,7 @@ export function ExpiredCv() {
           <p className="text-xs text-neutral-400">{t.expiredCv.yours}</p>
           <Link
             href="/pricing"
-            className="mt-2 inline-block rounded-xl bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+            className="mt-2 inline-block rounded-xl bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-100"
           >
             {t.expiredCv.makePermanent}
           </Link>

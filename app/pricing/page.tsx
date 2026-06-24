@@ -12,8 +12,8 @@ export default function PricingPage() {
       <Navbar />
       <main className="flex-1">
         <section className="mx-auto max-w-6xl px-6 py-16 text-center">
-          <h1 className="text-3xl font-bold text-white sm:text-4xl">{t.nav.pricing}</h1>
-          <p className="mt-3 text-white/50">{t.pricing.pageSubtitle}</p>
+          <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">{t.nav.pricing}</h1>
+          <p className="mt-3 text-slate-500">{t.pricing.pageSubtitle}</p>
 
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
             {PLAN_ORDER.map((planId) => (

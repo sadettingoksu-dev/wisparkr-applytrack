@@ -60,10 +60,10 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
   return (
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
-        <FileSignature className="h-4 w-4 text-amber-500" />
-        <h3 className="text-sm font-semibold text-white">{t.coverLetter.title}</h3>
+        <FileSignature className="h-4 w-4 text-purple-600" />
+        <h3 className="text-sm font-semibold text-slate-900">{t.coverLetter.title}</h3>
       </div>
-      <p className="text-sm text-white/50">
+      <p className="text-sm text-slate-500">
         {t.coverLetter.desc}
       </p>
 
@@ -74,8 +74,8 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
             onClick={() => setTone(id)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               tone === id
-                ? 'bg-amber-500/15 text-amber-300'
-                : 'bg-white/5 text-white/50 hover:text-white'
+                ? 'bg-purple-100 text-purple-700'
+                : 'bg-white text-slate-500 hover:text-slate-900'
             }`}
           >
             {t.coverLetter.tones[id]}
@@ -88,7 +88,7 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={10}
-          className="w-full resize-y rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm leading-relaxed text-white/90 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+          className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-relaxed text-slate-800 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200"
         />
       )}
 
@@ -124,7 +124,7 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
       </div>
 
       {savedText && text !== savedText && (
-        <p className="text-xs text-amber-400/80">
+        <p className="text-xs text-purple-600/80">
           {t.coverLetter.staleNote}
         </p>
       )}

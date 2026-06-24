@@ -10,7 +10,7 @@ import { useI18n } from '@/components/i18n/I18nProvider'
 import { format } from '@/lib/i18n'
 
 const inputClass =
-  'flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30'
+  'flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200'
 
 interface Share {
   id: string
@@ -85,10 +85,10 @@ export function SharePanel({ plan }: { plan: string }) {
   return (
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
-        <Share2 className="h-4 w-4 text-amber-500" />
-        <h2 className="text-sm font-semibold text-white">{t.share.title}</h2>
+        <Share2 className="h-4 w-4 text-purple-600" />
+        <h2 className="text-sm font-semibold text-slate-900">{t.share.title}</h2>
       </div>
-      <p className="text-sm text-white/50">
+      <p className="text-sm text-slate-500">
         {t.share.descMain}{' '}
         {isPaid ? t.share.descPaid : format(t.share.descFree, { days: SHARE_FREE_TTL_DAYS })}{' '}
         {t.share.descSave}
@@ -118,26 +118,26 @@ export function SharePanel({ plan }: { plan: string }) {
       {error && <p className="text-xs text-red-500">{error}</p>}
 
       {loading ? (
-        <p className="text-xs text-white/40">{t.share.loading}</p>
+        <p className="text-xs text-slate-400">{t.share.loading}</p>
       ) : shares.length === 0 ? (
-        <p className="text-xs text-white/40">{t.share.noShares}</p>
+        <p className="text-xs text-slate-400">{t.share.noShares}</p>
       ) : (
         <div className="space-y-2">
           {shares.map((s) => {
             const active = isShareActive(s, plan)
             const left = daysLeft(s.expires_at)
             return (
-              <div key={s.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+              <div key={s.id} className="rounded-xl border border-slate-200 bg-white/[0.03] p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-white">{s.label || t.share.untitled}</p>
-                    <p className="truncate text-xs text-white/40">{s.url}</p>
+                    <p className="truncate text-sm text-slate-900">{s.label || t.share.untitled}</p>
+                    <p className="truncate text-xs text-slate-400">{s.url}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
-                    <button onClick={() => copy(s)} className="rounded p-1.5 text-white/50 hover:bg-white/5 hover:text-white">
+                    <button onClick={() => copy(s)} className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900">
                       {copiedId === s.id ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
                     </button>
-                    <button onClick={() => remove(s.id)} className="rounded p-1.5 text-white/40 hover:bg-white/5 hover:text-red-400">
+                    <button onClick={() => remove(s.id)} className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-red-400">
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
@@ -147,14 +147,14 @@ export function SharePanel({ plan }: { plan: string }) {
                     {s.revoked ? t.share.revoked : active ? t.share.active : t.share.inactive}
                   </span>
                   {isPaid && (
-                    <span className="inline-flex items-center gap-1 text-white/40">
+                    <span className="inline-flex items-center gap-1 text-slate-400">
                       <Eye className="h-3 w-3" />
                       {s.view_count} {t.share.viewsSuffix}
                     </span>
                   )}
-                  {!isPaid && active && left !== null && <span className="text-amber-300/80">{format(t.share.daysLeft, { n: left })}</span>}
+                  {!isPaid && active && left !== null && <span className="text-purple-700/80">{format(t.share.daysLeft, { n: left })}</span>}
                   {!isPaid && !active && !s.revoked && (
-                    <a href="/pricing" className="inline-flex items-center gap-1 text-amber-400 hover:underline">
+                    <a href="/pricing" className="inline-flex items-center gap-1 text-purple-600 hover:underline">
                       <Crown className="h-3 w-3" />
                       {t.share.makePermanent}
                     </a>

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { NotificationBell } from '@/components/layout/NotificationBell'
+import { getEffectivePlanId } from '@/lib/plans'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -12,14 +13,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('plan')
+      .select('plan, trial_ends_at')
       .eq('id', user.id)
       .single()
-    plan = (profile as { plan?: string } | null)?.plan ?? 'free'
+    // Deneme aktifse rozet "free" yerine efektif planı (Pro) göstersin.
+    plan = getEffectivePlanId(profile as { plan?: string; trial_ends_at?: string | null } | null)
   }
 
   return (
-    <div className="flex min-h-screen bg-black">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar
         name={meta.full_name ?? meta.name ?? user?.email ?? ''}
         email={user?.email ?? ''}

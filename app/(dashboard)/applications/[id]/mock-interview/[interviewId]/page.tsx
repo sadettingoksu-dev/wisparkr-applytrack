@@ -43,15 +43,15 @@ export default async function MockInterviewPage({
       <div>
         <Link
           href={`/applications/${params.id}`}
-          className="inline-flex items-center gap-1 text-sm text-white/50 hover:text-white/90"
+          className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
         >
           <ArrowLeft className="h-4 w-4" />
           {t.mockPage.back}
         </Link>
-        <h1 className="mt-1 text-xl font-bold text-white">
+        <h1 className="mt-1 text-xl font-bold text-slate-900">
           {application.position_title} — {t.mockPage.suffix}
         </h1>
-        <p className="text-sm text-white/50">{application.company_name}</p>
+        <p className="text-sm text-slate-500">{application.company_name}</p>
       </div>
 
       <div className="h-[600px]">

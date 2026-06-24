@@ -1,9 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
-import { getPlan, PLANS, PLAN_ORDER } from '@/lib/plans'
+import { getPlan, getEffectivePlan, isTrialActive, PLANS, PLAN_ORDER } from '@/lib/plans'
 import { formatDate } from '@/utils/format'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { format } from '@/lib/i18n'
+import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { UpgradeButton } from '@/components/billing/UpgradeButton'
+import { CancelButton } from '@/components/billing/CancelButton'
+import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Profile, Subscription, AiUsage } from '@/lib/types'
 
@@ -13,9 +16,9 @@ function FeatureRow({ label, enabled }: { label: string; enabled: boolean }) {
       {enabled ? (
         <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
       ) : (
-        <XCircle className="h-4 w-4 shrink-0 text-white/30" />
+        <XCircle className="h-4 w-4 shrink-0 text-slate-300" />
       )}
-      <span className={enabled ? 'text-white/90' : 'text-white/40'}>{label}</span>
+      <span className={enabled ? 'text-slate-700' : 'text-slate-400'}>{label}</span>
     </div>
   )
 }
@@ -25,12 +28,12 @@ function UsageBar({ label, used, limit, unlimitedLabel }: { label: string; used:
   const color = pct >= 90 ? 'bg-red-400' : pct >= 70 ? 'bg-amber-400' : 'bg-emerald-400'
   return (
     <div className="space-y-1">
-      <div className="flex justify-between text-xs text-white/50">
+      <div className="flex justify-between text-xs text-slate-500">
         <span>{label}</span>
         <span>{limit === null ? `${used} / ${unlimitedLabel}` : `${used} / ${limit}`}</span>
       </div>
       {limit !== null && (
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
           <div className={`h-1.5 rounded-full ${color}`} style={{ width: `${pct}%` }} />
         </div>
       )}
@@ -56,7 +59,18 @@ export default async function BillingPage() {
   const sub = subscriptionData as Subscription | null
   const usage = usageData as AiUsage | null
   const appCount = (appsData ?? []).length
-  const plan = getPlan(profile?.plan)
+
+  const realPlan = getPlan(profile?.plan)
+  // Usage limits / feature access follow the *effective* plan (trial = full access).
+  const plan = getEffectivePlan(profile)
+  const isPaid = realPlan.id === 'pro' || realPlan.id === 'career_coach'
+  const onTrial = !isPaid && isTrialActive(profile)
+  const trialExpired = !isPaid && !onTrial
+  const isCancelled = sub?.status === 'cancelled' || sub?.status === 'expired'
+
+  const trialDaysLeft = profile?.trial_ends_at
+    ? Math.max(0, Math.ceil((new Date(profile.trial_ends_at).getTime() - Date.now()) / 86400_000))
+    : 0
 
   const FEATURE_KEYS: (keyof typeof plan.features & keyof typeof t.billing.features)[] = [
     'kanban',
@@ -70,35 +84,75 @@ export default async function BillingPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">{t.billing.title}</h1>
-        <p className="text-sm text-white/50">{t.billing.subtitle}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">{t.billing.title}</h1>
+          <p className="text-sm text-slate-500">{t.billing.subtitle}</p>
+        </div>
+        <PageInfo page="billing" />
       </div>
 
-      {/* Aktif plan */}
+      {/* Aktif plan / deneme durumu */}
       <Card className="space-y-3">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-xs text-white/50">{t.billing.currentPlan}</p>
-            <p className="text-2xl font-bold text-amber-500">{plan.name}</p>
-            <p className="text-sm text-white/50">${plan.priceMonthly}{t.billing.perMonth}</p>
-          </div>
-          {sub?.renews_at && (
-            <div className="text-right text-xs text-white/40">
-              <p>{t.billing.renewal}</p>
-              <p className="font-medium text-white/70">{formatDate(sub.renews_at)}</p>
+        {isPaid ? (
+          <>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs text-slate-500">{t.billing.currentPlan}</p>
+                <p className="text-2xl font-bold text-purple-600">{realPlan.name}</p>
+                <p className="text-sm text-slate-500">${realPlan.priceMonthly}{t.billing.perMonth}</p>
+                {profile?.plan_started_at && (
+                  <p className="mt-1 text-xs text-slate-400">{format(t.billing.planStarted, { date: formatDate(profile.plan_started_at) })}</p>
+                )}
+              </div>
+              <div className="text-right text-xs text-slate-400">
+                {isCancelled && sub?.ends_at ? (
+                  <p className="font-medium text-amber-600">{format(t.billing.cancelScheduled, { date: formatDate(sub.ends_at) })}</p>
+                ) : sub?.renews_at ? (
+                  <>
+                    <p>{t.billing.renewal}</p>
+                    <p className="font-medium text-slate-600">{format(t.billing.renewsOn, { date: formatDate(sub.renews_at) })}</p>
+                  </>
+                ) : null}
+              </div>
             </div>
-          )}
-        </div>
-
-        {plan.id !== 'career_coach' && (
-          <UpgradeButton planId={plan.id === 'free' ? 'pro' : 'career_coach'} label={t.billing.upgrade} />
+            <div className="flex items-center justify-between gap-3">
+              {realPlan.id !== 'career_coach' && (
+                <UpgradeButton planId="career_coach" label={t.billing.upgrade} />
+              )}
+              {!isCancelled && <CancelButton />}
+            </div>
+          </>
+        ) : onTrial ? (
+          <>
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                  <Clock className="h-3 w-3" />{t.billing.trialBadge}
+                </span>
+                <p className="mt-1.5 text-2xl font-bold text-purple-600">{t.billing.trialTitle}</p>
+                <p className="text-sm text-slate-500">{t.billing.trialActiveDesc}</p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {format(t.billing.trialEndsOn, { date: formatDate(profile!.trial_ends_at!) })} · {format(t.billing.trialDaysLeft, { days: trialDaysLeft })}
+                </p>
+              </div>
+            </div>
+            <UpgradeButton planId="pro" label={t.billing.upgradeNow} />
+          </>
+        ) : (
+          <>
+            <div>
+              <p className="text-2xl font-bold text-slate-900">{t.billing.trialTitle}</p>
+              <p className="mt-1 text-sm text-slate-500">{t.billing.trialExpired}</p>
+            </div>
+            <UpgradeButton planId="pro" label={t.billing.upgradeNow} />
+          </>
         )}
       </Card>
 
       {/* Kullanım durumu */}
       <Card className="space-y-4">
-        <h2 className="text-sm font-semibold text-white">{t.billing.usageThisMonth}</h2>
+        <h2 className="text-sm font-semibold text-slate-900">{t.billing.usageThisMonth}</h2>
         <UsageBar
           label={t.billing.usageApplications}
           used={appCount}
@@ -127,7 +181,7 @@ export default async function BillingPage() {
 
       {/* Plan özellikleri */}
       <Card className="space-y-3">
-        <h2 className="text-sm font-semibold text-white">{t.billing.planFeatures}</h2>
+        <h2 className="text-sm font-semibold text-slate-900">{t.billing.planFeatures}</h2>
         <div className="space-y-2">
           {FEATURE_KEYS.map((key) => (
             <FeatureRow key={key} label={t.billing.features[key]} enabled={plan.features[key]} />
@@ -136,25 +190,25 @@ export default async function BillingPage() {
       </Card>
 
       {/* Diğer planlar karşılaştırma */}
-      {plan.id !== 'career_coach' && (
+      {realPlan.id !== 'career_coach' && (
         <Card className="space-y-4">
-          <h2 className="text-sm font-semibold text-white">{t.billing.comparePlans}</h2>
+          <h2 className="text-sm font-semibold text-slate-900">{t.billing.comparePlans}</h2>
           <div className="grid grid-cols-3 gap-3">
-            {PLAN_ORDER.map((pid) => {
+            {PLAN_ORDER.filter((pid) => pid !== 'free').map((pid) => {
               const p = PLANS[pid]
-              const isCurrent = pid === plan.id
+              const isCurrent = isPaid && pid === realPlan.id
               return (
                 <div
                   key={pid}
-                  className={`rounded-lg border p-3 text-center ${isCurrent ? 'border-amber-400 bg-amber-500/10' : 'border-white/10'}`}
+                  className={`rounded-lg border p-3 text-center ${isCurrent ? 'border-purple-400 bg-purple-50' : 'border-slate-200'}`}
                 >
-                  <p className={`text-sm font-semibold ${isCurrent ? 'text-amber-600' : 'text-white/90'}`}>{p.name}</p>
-                  <p className="text-lg font-bold text-white">${p.priceMonthly}<span className="text-xs font-normal text-white/40">{t.billing.perMonth}</span></p>
+                  <p className={`text-sm font-semibold ${isCurrent ? 'text-purple-700' : 'text-slate-700'}`}>{p.name}</p>
+                  <p className="text-lg font-bold text-slate-900">${p.priceMonthly}<span className="text-xs font-normal text-slate-400">{t.billing.perMonth}</span></p>
                   {isCurrent ? (
-                    <span className="mt-1 inline-block rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-500">{t.billing.current}</span>
-                  ) : pid !== 'free' ? (
-                    <a href="/pricing" className="mt-1 inline-block text-xs text-amber-500 hover:underline">{t.billing.upgradeArrow}</a>
-                  ) : null}
+                    <span className="mt-1 inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700">{t.billing.current}</span>
+                  ) : (
+                    <a href="/pricing" className="mt-1 inline-block text-xs text-purple-600 hover:underline">{t.billing.upgradeArrow}</a>
+                  )}
                 </div>
               )
             })}

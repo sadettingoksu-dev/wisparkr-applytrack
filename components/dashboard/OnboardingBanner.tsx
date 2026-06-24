@@ -23,19 +23,19 @@ export function OnboardingBanner({ hasApplications, hasCv }: { hasApplications: 
   const pct = Math.round((completedCount / 2) * 100)
 
   return (
-    <div className="rounded-xl border border-amber-500/15 bg-gradient-to-r from-amber-500/10 to-white/5 p-5">
+    <div className="rounded-xl border border-purple-500/15 bg-gradient-to-r from-purple-600/10 to-white/5 p-5">
       <div className="mb-4 flex items-start justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-white">{t.onboarding.welcome}</h2>
-          <p className="text-xs text-white/50 mt-0.5">{t.onboarding.subtitle}</p>
+          <h2 className="text-sm font-semibold text-slate-900">{t.onboarding.welcome}</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{t.onboarding.subtitle}</p>
         </div>
-        <button onClick={() => setDismissed(true)} className="text-white/40 hover:text-white/70">
+        <button onClick={() => setDismissed(true)} className="text-slate-400 hover:text-slate-600">
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-amber-500/15">
-        <div className="h-1.5 rounded-full bg-amber-400 transition-all" style={{ width: `${pct}%` }} />
+      <div className="mb-4 h-1.5 w-full overflow-hidden rounded-full bg-purple-100">
+        <div className="h-1.5 rounded-full bg-purple-500 transition-all" style={{ width: `${pct}%` }} />
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -45,14 +45,14 @@ export function OnboardingBanner({ hasApplications, hasCv }: { hasApplications: 
           return (
             <div
               key={title}
-              className={`rounded-lg border p-3 text-left ${done ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-white/10 bg-white/5'}`}
+              className={`rounded-lg border p-3 text-left ${done ? 'border-emerald-500/30 bg-emerald-500/10' : 'border-slate-200 bg-white'}`}
             >
-              <Icon className={`h-4 w-4 mb-2 ${done ? 'text-emerald-400' : 'text-amber-400'}`} />
-              <p className={`text-xs font-semibold ${done ? 'text-emerald-400 line-through' : 'text-white/90'}`}>{title}</p>
+              <Icon className={`h-4 w-4 mb-2 ${done ? 'text-emerald-400' : 'text-purple-600'}`} />
+              <p className={`text-xs font-semibold ${done ? 'text-emerald-400 line-through' : 'text-slate-800'}`}>{title}</p>
               {!done && (
                 <>
-                  <p className="mt-0.5 text-xs text-white/40">{desc}</p>
-                  <Link href={href} className="mt-2 inline-block text-xs font-medium text-amber-500 hover:underline">
+                  <p className="mt-0.5 text-xs text-slate-400">{desc}</p>
+                  <Link href={href} className="mt-2 inline-block text-xs font-medium text-purple-600 hover:underline">
                     {cta} →
                   </Link>
                 </>

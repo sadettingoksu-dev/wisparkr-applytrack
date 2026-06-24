@@ -170,22 +170,22 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
   }
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-white/10 bg-white/5">
-      <div className="border-b border-white/10 px-4 py-3">
+    <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white">
+      <div className="border-b border-slate-200 px-4 py-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white">{t.interview.chatTitle}</h3>
+          <h3 className="text-sm font-semibold text-slate-900">{t.interview.chatTitle}</h3>
           <div className="flex items-center gap-2">
             {speechSupported && voiceMode && (
-              <div className="flex overflow-hidden rounded-md border border-white/10 text-xs">
+              <div className="flex overflow-hidden rounded-md border border-slate-200 text-xs">
                 <button
                   onClick={() => setVoiceGender('female')}
-                  className={`px-2 py-1 ${voiceGender === 'female' ? 'bg-amber-500 text-white' : 'text-white/50 hover:bg-white/5'}`}
+                  className={`px-2 py-1 ${voiceGender === 'female' ? 'bg-purple-600 text-slate-900' : 'text-slate-500 hover:bg-slate-100'}`}
                 >
                   {t.interview.voiceFemale}
                 </button>
                 <button
                   onClick={() => setVoiceGender('male')}
-                  className={`px-2 py-1 ${voiceGender === 'male' ? 'bg-amber-500 text-white' : 'text-white/50 hover:bg-white/5'}`}
+                  className={`px-2 py-1 ${voiceGender === 'male' ? 'bg-purple-600 text-slate-900' : 'text-slate-500 hover:bg-slate-100'}`}
                 >
                   {t.interview.voiceMale}
                 </button>
@@ -200,13 +200,13 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
                 >
                   {voiceMode ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
                 </Button>
-                <div className="pointer-events-none absolute right-0 top-full mt-2 z-50 w-56 rounded-lg bg-slate-800 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+                <div className="pointer-events-none absolute right-0 top-full mt-2 z-50 w-56 rounded-lg bg-slate-800 px-3 py-2 text-xs text-slate-900 opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
                   {voiceMode ? t.interview.voiceTipOn : t.interview.voiceTipOff}
                   <div className="absolute -top-1.5 right-3 h-3 w-3 rotate-45 bg-slate-800" />
                 </div>
               </div>
             )}
-            <span className="text-xs text-white/50">
+            <span className="text-xs text-slate-500">
               {status === 'completed'
                 ? t.interview.completed
                 : format(t.interview.questionProgress, { n: Math.min(questionCount, MOCK_INTERVIEW_QUESTION_COUNT), total: MOCK_INTERVIEW_QUESTION_COUNT })}
@@ -219,14 +219,14 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
         {messages.map((message, i) => (
           <div key={i} className="space-y-1">
             <div className="flex items-center gap-1">
-              <p className="text-xs font-medium text-white/40">
+              <p className="text-xs font-medium text-slate-400">
                 {message.role === 'interviewer' ? t.interview.interviewer : t.interview.you}
               </p>
               {message.role === 'interviewer' && speechSupported && (
                 <button
                   onClick={() => speakText(message.content, voiceGender)}
                   title={t.interview.readAloud}
-                  className="text-white/30 hover:text-white/50"
+                  className="text-slate-400 hover:text-slate-500"
                 >
                   <Volume2 className="h-3 w-3" />
                 </button>
@@ -235,8 +235,8 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
             <div
               className={`max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${
                 message.role === 'candidate'
-                  ? 'ml-auto bg-amber-500 text-white'
-                  : 'bg-white/10 text-white'
+                  ? 'ml-auto bg-purple-600 text-slate-900'
+                  : 'bg-slate-100 text-slate-900'
               }`}
             >
               {message.content}
@@ -250,7 +250,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
             {feedback ? (
               <InterviewFeedbackReport feedback={feedback} overallScore={overallScore ?? 0} />
             ) : (
-              <div className="space-y-2 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-300">
+              <div className="space-y-2 rounded-lg border border-purple-500/20 bg-purple-50 p-4 text-sm text-purple-700">
                 <p>{t.interview.feedbackFailed}</p>
                 <Button onClick={retryFeedback} disabled={retrying} variant="secondary">
                   {retrying ? <Spinner /> : t.interview.retry}
@@ -264,7 +264,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
       {error && <p className="px-4 pb-2 text-xs text-red-500">{error}</p>}
 
       {status === 'in_progress' && (
-        <div className="flex gap-2 border-t border-white/10 p-3">
+        <div className="flex gap-2 border-t border-slate-200 p-3">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}

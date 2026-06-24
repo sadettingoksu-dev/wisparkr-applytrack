@@ -36,11 +36,11 @@ export function DocumentsList({ items }: { items: DocumentItem[] }) {
               <div className="min-w-0">
                 <Link
                   href={`/applications/${it.id}`}
-                  className="text-sm font-medium text-white transition-colors hover:text-amber-400"
+                  className="text-sm font-medium text-slate-900 transition-colors hover:text-purple-600"
                 >
                   {it.position_title}
                 </Link>
-                <p className="truncate text-xs text-white/50">{it.company_name}</p>
+                <p className="truncate text-xs text-slate-500">{it.company_name}</p>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -48,19 +48,19 @@ export function DocumentsList({ items }: { items: DocumentItem[] }) {
                   (cvReady ? (
                     <a
                       href={`/api/applications/${it.id}/cv-pdf?type=cv&template=${template}`}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white transition-colors hover:bg-white/10"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 transition-colors hover:bg-slate-100"
                     >
                       <FileText className="h-3.5 w-3.5" /> {t.documents.cvPdf}
                     </a>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/30">
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs text-slate-400">
                       <Lock className="h-3.5 w-3.5" /> {t.documents.lowScore}
                     </span>
                   ))}
                 {it.hasCoverLetter && (
                   <a
                     href={`/api/applications/${it.id}/cv-pdf?type=cover_letter&template=${template}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white transition-colors hover:bg-white/10"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900 transition-colors hover:bg-slate-100"
                   >
                     <FileSignature className="h-3.5 w-3.5" /> {t.documents.coverLetterPdf}
                   </a>

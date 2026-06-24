@@ -83,18 +83,18 @@ export default function NewApplicationPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t.newApp.title}</h1>
-          <p className="text-sm text-white/50">{t.newApp.subtitle}</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t.newApp.title}</h1>
+          <p className="text-sm text-slate-500">{t.newApp.subtitle}</p>
         </div>
         {limitInfo?.max !== null && limitInfo && (
-          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/50">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
             {limitInfo.used}/{limitInfo.max} {t.newApp.applicationsSuffix}
           </span>
         )}
       </div>
 
       <Card className="space-y-3">
-        <label className="text-sm font-medium text-white/90">{t.newApp.urlLabel}</label>
+        <label className="text-sm font-medium text-slate-800">{t.newApp.urlLabel}</label>
         <div className="flex gap-2">
           <Input type="url" placeholder="https://www.linkedin.com/jobs/view/..." value={url} onChange={(e) => setUrl(e.target.value)} />
           <Button onClick={handleParse} disabled={parsing || !url} variant="secondary">
@@ -107,17 +107,17 @@ export default function NewApplicationPage() {
         <Card className="space-y-4">
           {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="space-y-1">
-            <label className="text-sm font-medium text-white/90">{t.newApp.companyLabel}</label>
+            <label className="text-sm font-medium text-slate-800">{t.newApp.companyLabel}</label>
             <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-white/90">{t.newApp.positionLabel}</label>
+            <label className="text-sm font-medium text-slate-800">{t.newApp.positionLabel}</label>
             <Input value={positionTitle} onChange={(e) => setPositionTitle(e.target.value)} required />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-white/90">{t.newApp.descLabel}</label>
+            <label className="text-sm font-medium text-slate-800">{t.newApp.descLabel}</label>
             <textarea
-              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
               rows={6} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)}
             />
           </div>

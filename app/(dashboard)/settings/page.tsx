@@ -5,6 +5,7 @@ import { CvUploadCard } from '@/components/settings/CvUploadCard'
 import { CvPolishCard } from '@/components/settings/CvPolishCard'
 import { ForwardingEmailCard } from '@/components/settings/ForwardingEmailCard'
 import { ExtensionTokenCard } from '@/components/settings/ExtensionTokenCard'
+import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Profile } from '@/lib/types'
 
@@ -21,14 +22,17 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-white">{t.settings.title}</h1>
-        <p className="text-sm text-white/50">{t.settings.subtitle}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">{t.settings.title}</h1>
+          <p className="text-sm text-slate-500">{t.settings.subtitle}</p>
+        </div>
+        <PageInfo page="settings" />
       </div>
 
       <Card className="space-y-4">
         <div className="space-y-1">
-          <label className="text-sm font-medium text-white/90">{t.settings.email}</label>
+          <label className="text-sm font-medium text-slate-800">{t.settings.email}</label>
           <Input value={profile?.email ?? ''} disabled />
         </div>
 

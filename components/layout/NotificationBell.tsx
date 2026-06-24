@@ -55,7 +55,7 @@ export function NotificationBell() {
     <div ref={containerRef} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative rounded-lg p-2 text-white/50 hover:bg-white/5 hover:text-white"
+        className="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -66,9 +66,9 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-10 mt-2 w-80 rounded-lg border border-white/10 bg-white/5 shadow-lg">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <p className="text-sm font-semibold text-white">{t.notifications.title}</p>
+        <div className="absolute right-0 z-10 mt-2 w-80 rounded-lg border border-slate-200 bg-white shadow-lg">
+          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+            <p className="text-sm font-semibold text-slate-900">{t.notifications.title}</p>
             {unreadCount > 0 && (
               <button
                 onClick={async () => {
@@ -83,7 +83,7 @@ export function NotificationBell() {
                   )
                   setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
                 }}
-                className="text-xs text-amber-500 hover:underline"
+                className="text-xs text-purple-600 hover:underline"
               >
                 {t.notifications.markAllRead}
               </button>
@@ -91,7 +91,7 @@ export function NotificationBell() {
           </div>
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-white/40">
+              <p className="px-4 py-6 text-center text-sm text-slate-400">
                 {t.notifications.empty}
               </p>
             ) : (
@@ -100,13 +100,13 @@ export function NotificationBell() {
                   key={n.id}
                   onClick={() => handleSelect(n)}
                   className={clsx(
-                    'block w-full border-b border-white/10 px-4 py-3 text-left hover:bg-white/5',
-                    !n.read && 'bg-amber-500/10'
+                    'block w-full border-b border-slate-200 px-4 py-3 text-left hover:bg-slate-100',
+                    !n.read && 'bg-purple-50'
                   )}
                 >
-                  <p className="text-sm font-medium text-white">{n.title}</p>
-                  <p className="mt-1 text-xs text-white/50">{n.message}</p>
-                  <p className="mt-1 text-xs text-white/40">{formatRelative(n.created_at)}</p>
+                  <p className="text-sm font-medium text-slate-900">{n.title}</p>
+                  <p className="mt-1 text-xs text-slate-500">{n.message}</p>
+                  <p className="mt-1 text-xs text-slate-400">{formatRelative(n.created_at)}</p>
                 </button>
               ))
             )}

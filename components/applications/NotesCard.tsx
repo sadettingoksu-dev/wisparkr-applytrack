@@ -34,15 +34,15 @@ export function NotesCard({ applicationId, initialNotes }: { applicationId: stri
   return (
     <Card className="space-y-3">
       <div className="flex items-center gap-2">
-        <StickyNote className="h-4 w-4 text-amber-500" />
-        <h3 className="text-sm font-semibold text-white">{t.appDetail.notes}</h3>
+        <StickyNote className="h-4 w-4 text-purple-600" />
+        <h3 className="text-sm font-semibold text-slate-900">{t.appDetail.notes}</h3>
       </div>
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder={t.appDetail.notesPlaceholder}
         rows={4}
-        className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/90 placeholder-white/40 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400"
+        className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
       />
       <div className="flex items-center gap-2">
         <Button onClick={handleSave} disabled={saving} variant="secondary">

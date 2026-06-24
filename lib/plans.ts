@@ -31,7 +31,7 @@ export interface PlanConfig {
 export const PLANS: Record<PlanId, PlanConfig> = {
   free: {
     id: 'free',
-    name: 'Free',
+    name: 'Deneme',
     priceMonthly: 0,
     lemonSqueezyVariantId: null,
     limits: { maxApplications: 5, aiQuestionsPerMonth: 10 },
@@ -99,6 +99,36 @@ export const PLANS: Record<PlanId, PlanConfig> = {
 
 export function getPlan(planId: string | null | undefined): PlanConfig {
   return PLANS[planId as PlanId] ?? PLANS.free
+}
+
+/** Plan tier granted during the free trial (full standard access). */
+export const TRIAL_PLAN: PlanId = 'pro'
+
+export interface TrialableProfile {
+  plan?: string | null
+  trial_ends_at?: string | null
+}
+
+/** True while the 5-day signup trial window is still open. */
+export function isTrialActive(profile: TrialableProfile | null | undefined): boolean {
+  if (!profile?.trial_ends_at) return false
+  return new Date(profile.trial_ends_at).getTime() > Date.now()
+}
+
+/**
+ * The plan actually in effect for a user: a real paid plan wins; otherwise an
+ * active trial grants TRIAL_PLAN-level access; an expired trial falls back to free.
+ */
+export function getEffectivePlanId(profile: TrialableProfile | null | undefined): PlanId {
+  const plan = (profile?.plan as PlanId) ?? 'free'
+  if (plan === 'pro' || plan === 'career_coach') return plan
+  if (isTrialActive(profile)) return TRIAL_PLAN
+  return 'free'
+}
+
+/** PlanConfig resolved through trial logic. */
+export function getEffectivePlan(profile: TrialableProfile | null | undefined): PlanConfig {
+  return PLANS[getEffectivePlanId(profile)]
 }
 
 /** Maps a Lemon Squeezy variant ID back to a plan, used by the billing webhook. */

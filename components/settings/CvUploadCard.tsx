@@ -49,13 +49,13 @@ export function CvUploadCard({ initialFilename }: { initialFilename: string | nu
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-white/90">{t.settings.cvFile}</label>
+      <label className="text-sm font-medium text-slate-800">{t.settings.cvFile}</label>
       <Input value={filename ?? t.settings.noCv} disabled />
       <input
         ref={fileInputRef}
         type="file"
         accept="application/pdf"
-        className="text-sm text-white/50"
+        className="text-sm text-slate-500"
         onChange={() => {
           setError(null)
           setSuccess(false)

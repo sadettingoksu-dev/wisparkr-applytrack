@@ -191,8 +191,8 @@ export function hasCvContent(data: CvData): boolean {
 // Shareable CV link helpers (Faz F monetization).
 // ---------------------------------------------------------------------------
 
-export const SHARE_FREE_TTL_DAYS = 7
-export const CV_TRIAL_DAYS = 7
+export const SHARE_FREE_TTL_DAYS = 5
+export const CV_TRIAL_DAYS = 5
 
 export interface ShareActivenessInput {
   expires_at: string | null

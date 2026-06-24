@@ -55,13 +55,13 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">{t.cvTailor.title}</h3>
+        <h3 className="text-sm font-semibold text-slate-900">{t.cvTailor.title}</h3>
         {score !== null && (
-          <span className="text-2xl font-bold text-amber-500">%{score}</span>
+          <span className="text-2xl font-bold text-purple-600">%{score}</span>
         )}
       </div>
 
-      <p className="text-sm text-white/50">
+      <p className="text-sm text-slate-500">
         {format(t.cvTailor.desc, { min: MIN_APPLY_SCORE })}
       </p>
 
@@ -70,7 +70,7 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
       {suggestions && suggestions.length > 0 && (
         <ul className="space-y-2">
           {suggestions.map((s, i) => (
-            <li key={i} className="flex gap-2 text-sm text-white/70">
+            <li key={i} className="flex gap-2 text-sm text-slate-600">
               <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700" />
               {s}
             </li>

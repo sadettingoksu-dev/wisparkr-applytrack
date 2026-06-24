@@ -52,8 +52,8 @@ export function InterviewDateField({
 
   return (
     <div className="flex items-center gap-2">
-      <CalendarDays className="h-4 w-4 text-white/40" />
-      <label htmlFor="interview_date" className="text-sm text-white/70">
+      <CalendarDays className="h-4 w-4 text-slate-400" />
+      <label htmlFor="interview_date" className="text-sm text-slate-600">
         {t.appDetail.interviewDate}
       </label>
       <input
@@ -61,7 +61,7 @@ export function InterviewDateField({
         type="datetime-local"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-sm text-white/90 focus:border-amber-400 focus:outline-none [color-scheme:dark]"
+        className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm text-slate-800 focus:border-purple-400 focus:outline-none [color-scheme:dark]"
       />
       <Button variant="secondary" onClick={handleSave} disabled={loading}>
         {loading ? <Spinner /> : t.common.save}

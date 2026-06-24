@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { Button } from '@/components/ui/Button'
+import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Application } from '@/lib/types'
 
@@ -18,15 +19,18 @@ export default async function BoardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t.board.title}</h1>
-          <p className="text-sm text-white/50">{t.board.subtitle}</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t.board.title}</h1>
+          <p className="text-sm text-slate-500">{t.board.subtitle}</p>
         </div>
-        <Link href="/applications/new">
-          <Button>
-            <Plus className="h-4 w-4" />
-            {t.board.newApplication}
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <PageInfo page="board" />
+          <Link href="/applications/new">
+            <Button>
+              <Plus className="h-4 w-4" />
+              {t.board.newApplication}
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <KanbanBoard initialApplications={(applications ?? []) as Application[]} />

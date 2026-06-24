@@ -44,8 +44,8 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
       <div className="space-y-4 lg:col-span-2">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">{app.position_title}</h1>
-            <p className="text-sm text-white/50">{app.company_name}</p>
+            <h1 className="text-2xl font-bold text-slate-900">{app.position_title}</h1>
+            <p className="text-sm text-slate-500">{app.company_name}</p>
           </div>
           <div className="flex items-center gap-3">
             <StatusSelector applicationId={app.id} initialStatus={app.status} />

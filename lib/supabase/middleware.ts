@@ -32,13 +32,21 @@ export async function updateSession(request: NextRequest) {
   )
 
   const { data } = await supabase.auth.getUser()
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    request.nextUrl.pathname.startsWith(prefix)
-  )
+  const path = request.nextUrl.pathname
+  const isProtected = PROTECTED_PREFIXES.some((prefix) => path.startsWith(prefix))
+  const isAuthPage = path === '/login' || path === '/signup'
 
   if (isProtected && !data.user) {
     const redirectUrl = new URL('/login', request.url)
     return NextResponse.redirect(redirectUrl)
+  }
+
+  // Oturum açık kullanıcı giriş/kayıt ekranına gelirse doğrudan panele al —
+  // tekrar "panele git" demekle uğraşmasın. Plan seçimi varsa ödemeye götür.
+  if (isAuthPage && data.user) {
+    const plan = request.nextUrl.searchParams.get('plan')
+    const dest = plan === 'pro' || plan === 'career_coach' ? `/checkout?plan=${plan}` : '/dashboard'
+    return NextResponse.redirect(new URL(dest, request.url))
   }
 
   return response
