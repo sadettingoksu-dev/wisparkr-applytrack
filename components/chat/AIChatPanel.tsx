@@ -5,6 +5,7 @@ import { Send } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { AiMessage } from '@/lib/types'
 
 interface AIChatPanelProps {
@@ -12,13 +13,8 @@ interface AIChatPanelProps {
   initialMessages: AiMessage[]
 }
 
-const SUGGESTED_QUESTIONS = [
-  'Bu pozisyon için en olası mülakat sorularını sırala',
-  'Bu şirket hakkında bilmem gereken önemli noktalar neler?',
-  'CV\'mdeki hangi deneyimleri bu mülakatta öne çıkarmalıyım?',
-]
-
 export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps) {
+  const { t } = useI18n()
   const [messages, setMessages] = useState(initialMessages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -42,7 +38,7 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
       const json = await res.json()
 
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
 
@@ -51,7 +47,7 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
         { role: 'assistant', content: json.data.reply } as AiMessage,
       ])
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -60,19 +56,18 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
   return (
     <div className="flex h-full flex-col rounded-lg border border-white/10 bg-white/5">
       <div className="border-b border-white/10 px-4 py-3">
-        <h3 className="text-sm font-semibold text-white">Mülakat Hazırlık Asistanı</h3>
+        <h3 className="text-sm font-semibold text-white">{t.chat.title}</h3>
         <p className="text-xs text-white/50">
-          Bu şirket ve pozisyona özel mülakat sorularını, şirket hakkında araştırılması
-          gerekenleri ve CV&apos;ndeki hangi noktaları öne çıkarman gerektiğini sorabilirsin.
+          {t.chat.desc}
         </p>
       </div>
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {messages.length === 0 && (
           <div className="space-y-2">
             <p className="text-sm text-white/40">
-              Nereden başlayacağını bilmiyorsan aşağıdaki sorulardan birini deneyebilirsin:
+              {t.chat.emptyHint}
             </p>
-            {SUGGESTED_QUESTIONS.map((q) => (
+            {t.chat.suggested.map((q) => (
               <button
                 key={q}
                 type="button"
@@ -105,7 +100,7 @@ export function AIChatPanel({ applicationId, initialMessages }: AIChatPanelProps
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-          placeholder="Bir soru sor..."
+          placeholder={t.chat.placeholder}
           disabled={loading}
         />
         <Button onClick={() => sendMessage(input)} disabled={loading}>

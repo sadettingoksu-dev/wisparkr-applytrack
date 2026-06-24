@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { DocumentsList, type DocumentItem } from '@/components/documents/DocumentsList'
+import { getServerDict } from '@/lib/i18n-server'
 import type { Application } from '@/lib/types'
 
 export default async function DocumentsPage() {
+  const t = getServerDict()
   const supabase = createClient()
   const { data } = await supabase.auth.getUser()
   const userId = data.user!.id
@@ -27,16 +29,15 @@ export default async function DocumentsPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Belgelerim</h1>
+        <h1 className="text-2xl font-bold text-white">{t.documents.title}</h1>
         <p className="text-sm text-white/50">
-          Başvurularına özel hazırladığın CV ve ön yazıları seçtiğin şablonla buradan indir.
+          {t.documents.subtitle}
         </p>
       </div>
 
       {items.length === 0 ? (
         <p className="rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-sm text-white/40">
-          Henüz hazırlanmış belge yok. Bir başvuru aç, CV&apos;ni optimize et veya ön yazı oluştur;
-          burada listelenecekler.
+          {t.documents.empty}
         </p>
       ) : (
         <DocumentsList items={items} />

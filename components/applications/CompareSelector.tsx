@@ -4,10 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { GitCompare } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { useI18n } from '@/components/i18n/I18nProvider'
+import { format } from '@/lib/i18n'
 import type { Application } from '@/lib/types'
 
 export function CompareSelector({ apps }: { apps: Application[] }) {
+  const { t } = useI18n()
   const [selected, setSelected] = useState<string[]>([])
   const [open, setOpen] = useState(false)
   const router = useRouter()
@@ -26,12 +29,12 @@ export function CompareSelector({ apps }: { apps: Application[] }) {
     <div>
       <Button variant="ghost" onClick={() => setOpen((p) => !p)}>
         <GitCompare className="h-4 w-4" />
-        Karşılaştır
+        {t.appDetail.compare}
       </Button>
 
       {open && (
         <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-4 shadow-sm space-y-3">
-          <p className="text-xs text-white/50">En fazla 3 başvuru seç ({selected.length}/3)</p>
+          <p className="text-xs text-white/50">{format(t.appDetail.compareHint, { n: selected.length })}</p>
           <div className="max-h-64 space-y-2 overflow-y-auto">
             {apps.map((a) => {
               const checked = selected.includes(a.id)
@@ -54,14 +57,14 @@ export function CompareSelector({ apps }: { apps: Application[] }) {
                     <p className="truncate text-xs text-white/40">{a.company_name}</p>
                   </div>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE_CLASSES[a.status]}`}>
-                    {STATUS_LABELS[a.status]}
+                    {t.status[a.status]}
                   </span>
                 </label>
               )
             })}
           </div>
           <Button onClick={handleCompare} disabled={selected.length < 2}>
-            {selected.length < 2 ? 'En az 2 seç' : `${selected.length} Başvuruyu Karşılaştır`}
+            {selected.length < 2 ? t.appDetail.compareMin : format(t.appDetail.compareCta, { n: selected.length })}
           </Button>
         </div>
       )}

@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { Zap } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { PlanId } from '@/lib/types'
 
 export function UpgradeButton({ planId, label }: { planId: Exclude<PlanId, 'free'>; label?: string }) {
+  const { t } = useI18n()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,12 +23,12 @@ export function UpgradeButton({ planId, label }: { planId: Exclude<PlanId, 'free
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       window.location.href = json.data.checkout_url
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -35,7 +37,7 @@ export function UpgradeButton({ planId, label }: { planId: Exclude<PlanId, 'free
   return (
     <div className="space-y-1">
       <Button onClick={handleUpgrade} disabled={loading}>
-        {loading ? <Spinner /> : <><Zap className="h-3.5 w-3.5" />{label ?? 'Planı Yükselt'}</>}
+        {loading ? <Spinner /> : <><Zap className="h-3.5 w-3.5" />{label ?? t.billing.upgrade}</>}
       </Button>
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>

@@ -6,8 +6,10 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 export default function NewApplicationPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const [url, setUrl] = useState('')
   const [companyName, setCompanyName] = useState('')
@@ -42,11 +44,11 @@ export default function NewApplicationPage() {
         body: JSON.stringify({ url }),
       })
       const json = await res.json()
-      if (!res.ok) { setError(json.error?.message ?? 'İlan okunamadı.'); return }
+      if (!res.ok) { setError(json.error?.message ?? t.newApp.parseError); return }
       setCompanyName(json.data.company_name)
       setPositionTitle(json.data.position_title)
       setJobDescription(json.data.job_description)
-    } catch { setError('Bağlantı hatası.') }
+    } catch { setError(t.common.connectionError) }
     finally { setParsing(false) }
   }
 
@@ -69,7 +71,7 @@ export default function NewApplicationPage() {
       if (json.error?.code === 'PLAN_LIMIT_EXCEEDED') {
         router.replace('/applications?limit=1')
       } else {
-        setError(json.error?.message ?? 'Kaydedilemedi.')
+        setError(json.error?.message ?? t.newApp.saveError)
         setSaving(false)
       }
       return
@@ -81,22 +83,22 @@ export default function NewApplicationPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Yeni Başvuru</h1>
-          <p className="text-sm text-white/50">İş ilanı linkini yapıştır, bilgileri otomatik doldurmayı dene.</p>
+          <h1 className="text-2xl font-bold text-white">{t.newApp.title}</h1>
+          <p className="text-sm text-white/50">{t.newApp.subtitle}</p>
         </div>
         {limitInfo?.max !== null && limitInfo && (
           <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-white/50">
-            {limitInfo.used}/{limitInfo.max} başvuru
+            {limitInfo.used}/{limitInfo.max} {t.newApp.applicationsSuffix}
           </span>
         )}
       </div>
 
       <Card className="space-y-3">
-        <label className="text-sm font-medium text-white/90">İlan URL&apos;si</label>
+        <label className="text-sm font-medium text-white/90">{t.newApp.urlLabel}</label>
         <div className="flex gap-2">
           <Input type="url" placeholder="https://www.linkedin.com/jobs/view/..." value={url} onChange={(e) => setUrl(e.target.value)} />
           <Button onClick={handleParse} disabled={parsing || !url} variant="secondary">
-            {parsing ? <Spinner /> : 'Doldur'}
+            {parsing ? <Spinner /> : t.newApp.fill}
           </Button>
         </div>
       </Card>
@@ -105,22 +107,22 @@ export default function NewApplicationPage() {
         <Card className="space-y-4">
           {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="space-y-1">
-            <label className="text-sm font-medium text-white/90">Şirket Adı</label>
+            <label className="text-sm font-medium text-white/90">{t.newApp.companyLabel}</label>
             <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-white/90">Pozisyon</label>
+            <label className="text-sm font-medium text-white/90">{t.newApp.positionLabel}</label>
             <Input value={positionTitle} onChange={(e) => setPositionTitle(e.target.value)} required />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-medium text-white/90">İlan Açıklaması</label>
+            <label className="text-sm font-medium text-white/90">{t.newApp.descLabel}</label>
             <textarea
-              className="w-full rounded-lg border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               rows={6} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)}
             />
           </div>
           <Button type="submit" disabled={saving || !companyName || !positionTitle}>
-            {saving ? <Spinner /> : 'Kaydet'}
+            {saving ? <Spinner /> : t.common.save}
           </Button>
         </Card>
       </form>

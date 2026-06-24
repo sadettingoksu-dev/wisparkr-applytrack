@@ -1,5 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import { ApplicationCard } from '@/components/kanban/ApplicationCard'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { Application, ApplicationStatus } from '@/lib/types'
 
 interface KanbanColumnProps {
@@ -9,6 +10,7 @@ interface KanbanColumnProps {
 }
 
 export function KanbanColumn({ id, label, applications }: KanbanColumnProps) {
+  const { t } = useI18n()
   const { setNodeRef, isOver } = useDroppable({ id })
 
   return (
@@ -26,7 +28,7 @@ export function KanbanColumn({ id, label, applications }: KanbanColumnProps) {
         <ApplicationCard key={app.id} application={app} />
       ))}
       {applications.length === 0 && (
-        <p className="px-1 text-xs text-white/40">Henüz başvuru yok.</p>
+        <p className="px-1 text-xs text-white/40">{t.board.empty}</p>
       )}
     </div>
   )

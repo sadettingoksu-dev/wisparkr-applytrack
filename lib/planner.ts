@@ -3,11 +3,20 @@ import type { Application } from '@/lib/types'
 
 export type PlannerTaskKind = 'follow_up' | 'interview_prep' | 'fit_score'
 
+/** Etiket varyantı — gerçek metin sözlükten (t.planner) kurulur. */
+export type PlannerVariant =
+  | 'interview_prep'
+  | 'interview_today'
+  | 'interview_days'
+  | 'follow_up'
+  | 'fit_score'
+
 export interface PlannerTask {
   id: string
   kind: PlannerTaskKind
-  label: string
+  variant: PlannerVariant
   company: string
+  daysLeft?: number
   href: string
 }
 
@@ -33,22 +42,21 @@ export function generateTasks(apps: Application[]): PlannerTask[] {
     const href = `/applications/${app.id}`
 
     if (app.status === 'interview') {
-      let label = `${app.company_name} mülakatına AI ile hazırlan`
+      let variant: PlannerVariant = 'interview_prep'
+      let daysLeft: number | undefined
       let sortKey = KIND_PRIORITY.interview_prep
 
       if (app.interview_date) {
-        const daysLeft = differenceInDays(new Date(app.interview_date), new Date())
-        if (daysLeft >= 0) {
-          label =
-            daysLeft === 0
-              ? `${app.company_name} mülakatı bugün, AI ile hazırlan`
-              : `${app.company_name} mülakatına ${daysLeft} gün kaldı, AI ile hazırlan`
+        const days = differenceInDays(new Date(app.interview_date), new Date())
+        if (days >= 0) {
+          variant = days === 0 ? 'interview_today' : 'interview_days'
+          daysLeft = days
           // Yaklaşan mülakatları listenin en üstüne taşı
-          sortKey = KIND_PRIORITY.interview_prep - (1000 - daysLeft)
+          sortKey = KIND_PRIORITY.interview_prep - (1000 - days)
         }
       }
 
-      tasks.push({ id: `${app.id}-interview_prep`, kind: 'interview_prep', label, company: app.company_name, href, sortKey })
+      tasks.push({ id: `${app.id}-interview_prep`, kind: 'interview_prep', variant, daysLeft, company: app.company_name, href, sortKey })
     }
 
     if (app.status === 'pending') {
@@ -57,7 +65,7 @@ export function generateTasks(apps: Application[]): PlannerTask[] {
         tasks.push({
           id: `${app.id}-follow_up`,
           kind: 'follow_up',
-          label: `${app.company_name} için takip maili gönder`,
+          variant: 'follow_up',
           company: app.company_name,
           href,
           sortKey: KIND_PRIORITY.follow_up,
@@ -68,7 +76,7 @@ export function generateTasks(apps: Application[]): PlannerTask[] {
         tasks.push({
           id: `${app.id}-fit_score`,
           kind: 'fit_score',
-          label: `${app.company_name} için CV uyum skorunu hesapla`,
+          variant: 'fit_score',
           company: app.company_name,
           href,
           sortKey: KIND_PRIORITY.fit_score,

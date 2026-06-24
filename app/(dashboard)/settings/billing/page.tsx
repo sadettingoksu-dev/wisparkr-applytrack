@@ -4,6 +4,7 @@ import { getPlan, PLANS, PLAN_ORDER } from '@/lib/plans'
 import { formatDate } from '@/utils/format'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { UpgradeButton } from '@/components/billing/UpgradeButton'
+import { getServerDict } from '@/lib/i18n-server'
 import type { Profile, Subscription, AiUsage } from '@/lib/types'
 
 function FeatureRow({ label, enabled }: { label: string; enabled: boolean }) {
@@ -19,14 +20,14 @@ function FeatureRow({ label, enabled }: { label: string; enabled: boolean }) {
   )
 }
 
-function UsageBar({ label, used, limit }: { label: string; used: number; limit: number | null }) {
+function UsageBar({ label, used, limit, unlimitedLabel }: { label: string; used: number; limit: number | null; unlimitedLabel: string }) {
   const pct = limit ? Math.min(Math.round((used / limit) * 100), 100) : 0
   const color = pct >= 90 ? 'bg-red-400' : pct >= 70 ? 'bg-amber-400' : 'bg-emerald-400'
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-xs text-white/50">
         <span>{label}</span>
-        <span>{limit === null ? `${used} / Sınırsız` : `${used} / ${limit}`}</span>
+        <span>{limit === null ? `${used} / ${unlimitedLabel}` : `${used} / ${limit}`}</span>
       </div>
       {limit !== null && (
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -38,6 +39,7 @@ function UsageBar({ label, used, limit }: { label: string; used: number; limit: 
 }
 
 export default async function BillingPage() {
+  const t = getServerDict()
   const supabase = createClient()
   const { data } = await supabase.auth.getUser()
   const userId = data.user!.id
@@ -56,75 +58,79 @@ export default async function BillingPage() {
   const appCount = (appsData ?? []).length
   const plan = getPlan(profile?.plan)
 
-  const FEATURE_LABELS: { key: keyof typeof plan.features; label: string }[] = [
-    { key: 'kanban', label: 'Kanban Board' },
-    { key: 'cvFitScore', label: 'CV Uyum Skoru' },
-    { key: 'cvAutoTailoring', label: 'CV Otomatik Optimizasyon' },
-    { key: 'mockInterview', label: 'Mock Mülakat Provası' },
-    { key: 'companyInsights', label: 'Şirket İçgörüleri' },
-    { key: 'salaryNegotiationCoach', label: 'Maaş Müzakere Koçu' },
-    { key: 'unlimitedAi', label: 'Sınırsız AI Kullanımı' },
+  const FEATURE_KEYS: (keyof typeof plan.features & keyof typeof t.billing.features)[] = [
+    'kanban',
+    'cvFitScore',
+    'cvAutoTailoring',
+    'mockInterview',
+    'companyInsights',
+    'salaryNegotiationCoach',
+    'unlimitedAi',
   ]
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Plan & Faturalama</h1>
-        <p className="text-sm text-white/50">Mevcut planın, kullanım durumun ve özellikler</p>
+        <h1 className="text-2xl font-bold text-white">{t.billing.title}</h1>
+        <p className="text-sm text-white/50">{t.billing.subtitle}</p>
       </div>
 
       {/* Aktif plan */}
       <Card className="space-y-3">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs text-white/50">Mevcut Plan</p>
+            <p className="text-xs text-white/50">{t.billing.currentPlan}</p>
             <p className="text-2xl font-bold text-amber-500">{plan.name}</p>
-            <p className="text-sm text-white/50">${plan.priceMonthly}/ay</p>
+            <p className="text-sm text-white/50">${plan.priceMonthly}{t.billing.perMonth}</p>
           </div>
           {sub?.renews_at && (
             <div className="text-right text-xs text-white/40">
-              <p>Yenileme</p>
+              <p>{t.billing.renewal}</p>
               <p className="font-medium text-white/70">{formatDate(sub.renews_at)}</p>
             </div>
           )}
         </div>
 
         {plan.id !== 'career_coach' && (
-          <UpgradeButton planId={plan.id === 'free' ? 'pro' : 'career_coach'} />
+          <UpgradeButton planId={plan.id === 'free' ? 'pro' : 'career_coach'} label={t.billing.upgrade} />
         )}
       </Card>
 
       {/* Kullanım durumu */}
       <Card className="space-y-4">
-        <h2 className="text-sm font-semibold text-white">Bu Ayki Kullanım</h2>
+        <h2 className="text-sm font-semibold text-white">{t.billing.usageThisMonth}</h2>
         <UsageBar
-          label="Başvuru"
+          label={t.billing.usageApplications}
           used={appCount}
           limit={plan.limits.maxApplications}
+          unlimitedLabel={t.billing.unlimited}
         />
         <UsageBar
-          label="AI Sorusu"
+          label={t.billing.usageAiQuestions}
           used={usage?.ai_questions_used ?? 0}
           limit={plan.limits.aiQuestionsPerMonth}
+          unlimitedLabel={t.billing.unlimited}
         />
         <UsageBar
-          label="CV Optimizasyonu"
+          label={t.billing.usageCvTailor}
           used={usage?.cv_tailors_used ?? 0}
           limit={plan.id === 'free' ? 0 : plan.id === 'pro' ? 10 : null}
+          unlimitedLabel={t.billing.unlimited}
         />
         <UsageBar
-          label="Mock Mülakat"
+          label={t.billing.usageMockInterview}
           used={usage?.mock_interviews_used ?? 0}
           limit={plan.id === 'free' ? 0 : plan.id === 'pro' ? 5 : null}
+          unlimitedLabel={t.billing.unlimited}
         />
       </Card>
 
       {/* Plan özellikleri */}
       <Card className="space-y-3">
-        <h2 className="text-sm font-semibold text-white">Plan Özellikleri</h2>
+        <h2 className="text-sm font-semibold text-white">{t.billing.planFeatures}</h2>
         <div className="space-y-2">
-          {FEATURE_LABELS.map(({ key, label }) => (
-            <FeatureRow key={key} label={label} enabled={plan.features[key]} />
+          {FEATURE_KEYS.map((key) => (
+            <FeatureRow key={key} label={t.billing.features[key]} enabled={plan.features[key]} />
           ))}
         </div>
       </Card>
@@ -132,7 +138,7 @@ export default async function BillingPage() {
       {/* Diğer planlar karşılaştırma */}
       {plan.id !== 'career_coach' && (
         <Card className="space-y-4">
-          <h2 className="text-sm font-semibold text-white">Planları Karşılaştır</h2>
+          <h2 className="text-sm font-semibold text-white">{t.billing.comparePlans}</h2>
           <div className="grid grid-cols-3 gap-3">
             {PLAN_ORDER.map((pid) => {
               const p = PLANS[pid]
@@ -143,11 +149,11 @@ export default async function BillingPage() {
                   className={`rounded-lg border p-3 text-center ${isCurrent ? 'border-amber-400 bg-amber-500/10' : 'border-white/10'}`}
                 >
                   <p className={`text-sm font-semibold ${isCurrent ? 'text-amber-600' : 'text-white/90'}`}>{p.name}</p>
-                  <p className="text-lg font-bold text-white">${p.priceMonthly}<span className="text-xs font-normal text-white/40">/ay</span></p>
+                  <p className="text-lg font-bold text-white">${p.priceMonthly}<span className="text-xs font-normal text-white/40">{t.billing.perMonth}</span></p>
                   {isCurrent ? (
-                    <span className="mt-1 inline-block rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-500">Mevcut</span>
+                    <span className="mt-1 inline-block rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-500">{t.billing.current}</span>
                   ) : pid !== 'free' ? (
-                    <a href="/pricing" className="mt-1 inline-block text-xs text-amber-500 hover:underline">Yükselt →</a>
+                    <a href="/pricing" className="mt-1 inline-block text-xs text-amber-500 hover:underline">{t.billing.upgradeArrow}</a>
                   ) : null}
                 </div>
               )

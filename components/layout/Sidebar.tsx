@@ -6,20 +6,21 @@ import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, BarChart2 } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import { APP_NAME } from '@/utils/constants'
 import type { PlanId } from '@/lib/plans'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/analytics', label: 'Analitik', icon: BarChart2 },
-  { href: '/calendar', label: 'Takvim', icon: CalendarDays },
-  { href: '/board', label: 'Kanban Board', icon: Kanban },
-  { href: '/applications', label: 'Başvurular', icon: FileText },
-  { href: '/cv-builder', label: 'CV Oluştur', icon: FilePlus },
-  { href: '/documents', label: 'Belgelerim', icon: Files },
-  { href: '/settings', label: 'Ayarlar', icon: Settings },
-  { href: '/settings/billing', label: 'Plan & Faturalama', icon: CreditCard },
-]
+  { href: '/dashboard', key: 'dashboard', icon: LayoutDashboard },
+  { href: '/analytics', key: 'analytics', icon: BarChart2 },
+  { href: '/calendar', key: 'calendar', icon: CalendarDays },
+  { href: '/board', key: 'board', icon: Kanban },
+  { href: '/applications', key: 'applications', icon: FileText },
+  { href: '/cv-builder', key: 'cvBuilder', icon: FilePlus },
+  { href: '/documents', key: 'documents', icon: Files },
+  { href: '/settings', key: 'settings', icon: Settings },
+  { href: '/settings/billing', key: 'billing', icon: CreditCard },
+] as const
 
 interface SidebarProps {
   name?: string
@@ -30,6 +31,7 @@ interface SidebarProps {
 
 export function Sidebar({ name, email, avatarUrl, plan }: SidebarProps) {
   const pathname = usePathname()
+  const { t } = useI18n()
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-white/10 bg-white/5">
@@ -40,8 +42,9 @@ export function Sidebar({ name, email, avatarUrl, plan }: SidebarProps) {
         </Link>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ href, key, icon: Icon }) => {
           const active = pathname === href
+          const label = t.sidebar[key]
           return (
             <Link
               key={href}

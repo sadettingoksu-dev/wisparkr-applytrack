@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { CompareSelector } from '@/components/applications/CompareSelector'
 import { LimitBanner } from '@/components/applications/LimitBanner'
-import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { getServerDict } from '@/lib/i18n-server'
 import { formatDate } from '@/utils/format'
 import type { Application, Profile } from '@/lib/types'
 
@@ -16,6 +17,7 @@ export default async function ApplicationsPage({
 }: {
   searchParams: { limit?: string }
 }) {
+  const t = getServerDict()
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user!.id).single()
@@ -34,8 +36,8 @@ export default async function ApplicationsPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Başvurular</h1>
-          <p className="text-sm text-white/50">Tüm başvurularının listesi</p>
+          <h1 className="text-2xl font-bold text-white">{t.applications.title}</h1>
+          <p className="text-sm text-white/50">{t.applications.subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
           {apps.length >= 2 && <CompareSelector apps={apps} />}
@@ -43,7 +45,7 @@ export default async function ApplicationsPage({
             <Link href="/applications/new">
               <Button>
                 <Plus className="h-4 w-4" />
-                Yeni Başvuru
+                {t.applications.newApplication}
                 {max !== null && (
                   <span className="ml-1 text-xs opacity-60">({apps.length}/{max})</span>
                 )}
@@ -57,7 +59,7 @@ export default async function ApplicationsPage({
 
       {apps.length === 0 ? (
         <Card>
-          <p className="text-sm text-white/50">Henüz başvuru eklemediniz.</p>
+          <p className="text-sm text-white/50">{t.applications.empty}</p>
         </Card>
       ) : (
         <div className="space-y-3">
@@ -73,7 +75,7 @@ export default async function ApplicationsPage({
                     <span className="text-xs text-white/40">{formatDate(app.applied_at)}</span>
                   )}
                   <Badge className={STATUS_BADGE_CLASSES[app.status]}>
-                    {STATUS_LABELS[app.status]}
+                    {t.status[app.status]}
                   </Badge>
                 </div>
               </Card>

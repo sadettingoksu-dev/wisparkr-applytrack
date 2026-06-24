@@ -15,6 +15,7 @@ import {
   ChevronsUpDown,
 } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import { createClient } from '@/lib/supabase/client'
 import { getPlan, type PlanId } from '@/lib/plans'
 
@@ -55,6 +56,7 @@ function Avatar({ name, avatarUrl, size = 28 }: { name: string; avatarUrl?: stri
 }
 
 export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: UserMenuProps) {
+  const { t } = useI18n()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -114,14 +116,14 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
           <Avatar name={displayName} avatarUrl={avatarUrl} size={32} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-white">{displayName}</span>
-            <span className="block truncate text-xs text-white/40">{planConfig.name} plan</span>
+            <span className="block truncate text-xs text-white/40">{planConfig.name} {t.userMenu.planSuffix}</span>
           </span>
           <ChevronsUpDown className="h-4 w-4 shrink-0 text-white/40" />
         </button>
       ) : (
         <button
           onClick={() => setOpen((v) => !v)}
-          aria-label="Hesap menüsü"
+          aria-label={t.userMenu.accountMenu}
           className="flex items-center rounded-full ring-2 ring-transparent transition hover:ring-amber-500/40"
         >
           <Avatar name={displayName} avatarUrl={avatarUrl} size={32} />
@@ -149,21 +151,21 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
           <div className="border-b border-white/10 px-4 py-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs font-medium text-amber-300">
               <Sparkles className="h-3 w-3" />
-              {planConfig.name} plan
+              {planConfig.name} {t.userMenu.planSuffix}
             </span>
           </div>
 
           {/* Items */}
           <div className="py-1">
             {variant === 'navbar' && (
-              <MenuLink href="/dashboard" icon={LayoutDashboard} label="Panele git" onClick={() => setOpen(false)} />
+              <MenuLink href="/dashboard" icon={LayoutDashboard} label={t.userMenu.goToPanel} onClick={() => setOpen(false)} />
             )}
-            <MenuLink href="/settings" icon={Settings} label="Ayarlar" onClick={() => setOpen(false)} />
+            <MenuLink href="/settings" icon={Settings} label={t.userMenu.settings} onClick={() => setOpen(false)} />
             {canUpgrade && (
               <MenuLink
                 href="/settings/billing"
                 icon={Sparkles}
-                label="Planı yükselt"
+                label={t.userMenu.upgrade}
                 accent
                 onClick={() => setOpen(false)}
               />
@@ -171,17 +173,17 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
             <MenuLink
               href="/settings#extension"
               icon={Puzzle}
-              label="Uygulama & eklentiler"
+              label={t.userMenu.extensions}
               onClick={() => setOpen(false)}
             />
             <MenuLink
               href={`mailto:${HELP_EMAIL}`}
               icon={HelpCircle}
-              label="Yardım al"
+              label={t.userMenu.help}
               external
               onClick={() => setOpen(false)}
             />
-            <MenuLink href="/#features" icon={Info} label="Daha fazla bilgi" onClick={() => setOpen(false)} />
+            <MenuLink href="/#features" icon={Info} label={t.userMenu.moreInfo} onClick={() => setOpen(false)} />
           </div>
 
           {/* Account actions */}
@@ -192,7 +194,7 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
               className="flex w-full items-center gap-3 px-4 py-2 text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50"
             >
               <GoogleIcon className="h-4 w-4" />
-              Google ile hesap değiştir
+              {t.userMenu.switchAccount}
             </button>
             <button
               onClick={handleSignOut}
@@ -200,7 +202,7 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar' }: 
               className="flex w-full items-center gap-3 px-4 py-2 text-sm text-white/70 transition-colors hover:bg-red-500/10 hover:text-red-400 disabled:opacity-50"
             >
               <LogOut className="h-4 w-4" />
-              Çıkış yap
+              {t.userMenu.signOut}
             </button>
           </div>
         </div>

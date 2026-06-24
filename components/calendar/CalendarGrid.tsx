@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { Application } from '@/lib/types'
-
-const DAYS = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
 
 function getMonthDays(year: number, month: number) {
   const firstDay = new Date(year, month, 1)
@@ -16,6 +15,7 @@ function getMonthDays(year: number, month: number) {
 }
 
 export function CalendarGrid({ apps }: { apps: Application[] }) {
+  const { t, locale } = useI18n()
   const today = new Date()
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
@@ -28,7 +28,7 @@ export function CalendarGrid({ apps }: { apps: Application[] }) {
   }
 
   const { startOffset, daysInMonth } = getMonthDays(year, month)
-  const monthLabel = new Date(year, month, 1).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+  const monthLabel = new Date(year, month, 1).toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR', { month: 'long', year: 'numeric' })
 
   // interview_date olan başvuruları bu ay için grupla
   const byDay: Record<number, Application[]> = {}
@@ -64,7 +64,7 @@ export function CalendarGrid({ apps }: { apps: Application[] }) {
 
       {/* Day labels */}
       <div className="grid grid-cols-7 gap-1">
-        {DAYS.map((d) => (
+        {t.calendar.days.map((d) => (
           <div key={d} className="py-1 text-center text-xs font-medium text-white/40">{d}</div>
         ))}
 

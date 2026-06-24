@@ -5,8 +5,10 @@ import { Copy, Check, RefreshCw } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 export function ExtensionTokenCard({ initialToken }: { initialToken: string }) {
+  const { t } = useI18n()
   const [token, setToken] = useState(initialToken)
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -18,7 +20,7 @@ export function ExtensionTokenCard({ initialToken }: { initialToken: string }) {
   }
 
   async function handleRegenerate() {
-    if (!confirm('Yeni bir token oluşturulursa eski token ile bağlı tarayıcı eklentileri çalışmayı durdurur. Devam edilsin mi?')) {
+    if (!confirm(t.settings.regenerateConfirm)) {
       return
     }
     setLoading(true)
@@ -33,22 +35,20 @@ export function ExtensionTokenCard({ initialToken }: { initialToken: string }) {
 
   return (
     <Card className="space-y-2">
-      <h2 className="text-sm font-semibold text-white">Tarayıcı Eklentisi</h2>
+      <h2 className="text-sm font-semibold text-white">{t.settings.extensionTitle}</h2>
       <p className="text-sm text-white/50">
-        Wisparkr tarayıcı eklentisini LinkedIn ve Indeed&apos;deki ilan sayfalarında
-        &quot;Wisparkr&apos;e Kaydet&quot; düğmesiyle kullanmak için aşağıdaki kişisel
-        anahtarı eklentiye yapıştır. Bu anahtarı kimseyle paylaşma.
+        {t.settings.extensionDesc}
       </p>
       <div className="flex items-center gap-2">
         <Input value={token} disabled />
         <Button variant="secondary" onClick={handleCopy}>
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          {copied ? 'Kopyalandı' : 'Kopyala'}
+          {copied ? t.common.copied : t.common.copy}
         </Button>
       </div>
       <Button variant="secondary" onClick={handleRegenerate} disabled={loading}>
         <RefreshCw className="h-4 w-4" />
-        {loading ? 'Oluşturuluyor...' : 'Anahtarı Yenile'}
+        {loading ? t.settings.regenerating : t.settings.regenerate}
       </Button>
     </Card>
   )

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 import { MIN_APPLY_SCORE, getApplyReadiness } from '@/utils/constants'
+import { useI18n } from '@/components/i18n/I18nProvider'
+import { format } from '@/lib/i18n'
 
 interface CvTailorCardProps {
   applicationId: string
@@ -15,6 +17,7 @@ interface CvTailorCardProps {
 }
 
 export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvTailorCardProps) {
+  const { t } = useI18n()
   const [score, setScore] = useState(initialScore ?? null)
   const [suggestions, setSuggestions] = useState<string[] | null>(null)
   const [ready, setReady] = useState(hasTailoredCv)
@@ -33,14 +36,14 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setScore(json.data.score)
       setSuggestions(json.data.suggestions)
       setReady(true)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -52,20 +55,17 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Başvuru Hazırlık Skoru</h3>
+        <h3 className="text-sm font-semibold text-white">{t.cvTailor.title}</h3>
         {score !== null && (
           <span className="text-2xl font-bold text-amber-500">%{score}</span>
         )}
       </div>
 
       <p className="text-sm text-white/50">
-        AI, CV&apos;ni bu ilana göre yeniden düzenler ve başvuruya ne kadar hazır olduğunu
-        puanlar. Yukarıdaki &quot;Sektöre Özel Belgeler&quot; bölümünde işaretlediğin
-        belgeler de bu skoru etkiler. Skor en az <strong>{MIN_APPLY_SCORE}</strong> olduğunda
-        optimize edilmiş CV&apos;ni PDF olarak indirip başvurunda kullanabilirsin.
+        {format(t.cvTailor.desc, { min: MIN_APPLY_SCORE })}
       </p>
 
-      {readiness && <p className={`text-sm font-medium ${readiness.className}`}>{readiness.label}</p>}
+      {readiness && <p className={`text-sm font-medium ${readiness.className}`}>{t.readiness[readiness.levelKey]}</p>}
 
       {suggestions && suggestions.length > 0 && (
         <ul className="space-y-2">
@@ -89,7 +89,7 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
           ) : (
             <>
               <Sparkles className="h-4 w-4" />
-              {score === null ? "CV'yi Bu İlana Göre Optimize Et" : 'Yeniden Optimize Et'}
+              {score === null ? t.cvTailor.optimize : t.cvTailor.reoptimize}
             </>
           )}
         </Button>
@@ -104,7 +104,7 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
           >
             <Button variant={canDownload ? 'primary' : 'secondary'} disabled={!canDownload}>
               <Download className="h-4 w-4" />
-              Başvuru CV&apos;sini İndir (PDF)
+              {t.cvTailor.download}
             </Button>
           </a>
         )}

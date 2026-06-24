@@ -4,9 +4,11 @@ import { useState } from 'react'
 import { DndContext, type DragEndEvent } from '@dnd-kit/core'
 import { KanbanColumn } from '@/components/kanban/KanbanColumn'
 import { KANBAN_COLUMNS } from '@/utils/constants'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { Application, ApplicationStatus } from '@/lib/types'
 
 export function KanbanBoard({ initialApplications }: { initialApplications: Application[] }) {
+  const { t } = useI18n()
   const [applications, setApplications] = useState(initialApplications)
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -34,7 +36,7 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Appl
           <KanbanColumn
             key={column.id}
             id={column.id}
-            label={column.label}
+            label={t.status[column.id]}
             applications={applications.filter((app) => app.status === column.id)}
           />
         ))}

@@ -5,9 +5,12 @@ import { Card } from '@/components/ui/Card'
 import { formatDate, formatRelative } from '@/utils/format'
 import { FOLLOW_UP_AFTER_DAYS } from '@/lib/planner'
 import { CalendarGrid } from '@/components/calendar/CalendarGrid'
+import { getServerDict } from '@/lib/i18n-server'
+import { format } from '@/lib/i18n'
 import type { Application } from '@/lib/types'
 
 export default async function CalendarPage() {
+  const t = getServerDict()
   const supabase = createClient()
   const { data: applications } = await supabase
     .from('applications')
@@ -29,8 +32,8 @@ export default async function CalendarPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Takvim</h1>
-        <p className="text-sm text-white/50">Yaklaşan mülakatların ve takip hatırlatmaların</p>
+        <h1 className="text-2xl font-bold text-white">{t.calendar.title}</h1>
+        <p className="text-sm text-white/50">{t.calendar.subtitle}</p>
       </div>
 
       {/* Takvim grid */}
@@ -40,10 +43,10 @@ export default async function CalendarPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Yaklaşan Mülakatlar</h2>
+          <h2 className="text-sm font-semibold text-white">{t.calendar.upcomingInterviews}</h2>
           {upcomingInterviews.length === 0 ? (
             <Card>
-              <p className="text-sm text-white/50">Şu anda yaklaşan mülakatınız yok.</p>
+              <p className="text-sm text-white/50">{t.calendar.noUpcoming}</p>
             </Card>
           ) : (
             upcomingInterviews.map((app) => (
@@ -63,10 +66,10 @@ export default async function CalendarPage() {
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Takip Hatırlatmaları</h2>
+          <h2 className="text-sm font-semibold text-white">{t.calendar.followUps}</h2>
           {followUps.length === 0 ? (
             <Card>
-              <p className="text-sm text-white/50">Bekleyen bir takip hatırlatması yok.</p>
+              <p className="text-sm text-white/50">{t.calendar.noFollowUps}</p>
             </Card>
           ) : (
             followUps.map((app) => (
@@ -77,7 +80,7 @@ export default async function CalendarPage() {
                     <p className="text-sm text-white/50">{app.company_name}</p>
                   </div>
                   <span className="text-xs text-white/40">
-                    {formatRelative(app.applied_at ?? app.created_at)} başvuruldu
+                    {format(t.calendar.appliedLabel, { when: formatRelative(app.applied_at ?? app.created_at) })}
                   </span>
                 </Card>
               </Link>

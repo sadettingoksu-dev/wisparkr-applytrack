@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { BarChart2, TrendingUp, Target, Award, X } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { STATUS_LABELS, STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { useI18n } from '@/components/i18n/I18nProvider'
+import { format } from '@/lib/i18n'
 import type { Application, ApplicationStatus } from '@/lib/types'
 
 function StatCard({
@@ -71,23 +73,26 @@ function MiniBar({
   )
 }
 
-const STATUS_ROWS: { status: ApplicationStatus; label: string; color: string }[] = [
-  { status: 'pending', label: 'Beklemede', color: 'bg-amber-400' },
-  { status: 'interview', label: 'Mülakat', color: 'bg-blue-400' },
-  { status: 'offer', label: 'Teklif', color: 'bg-emerald-400' },
-  { status: 'rejected', label: 'Reddedildi', color: 'bg-red-300' },
+const STATUS_ROWS: { status: ApplicationStatus; color: string }[] = [
+  { status: 'pending', color: 'bg-amber-400' },
+  { status: 'interview', color: 'bg-blue-400' },
+  { status: 'offer', color: 'bg-emerald-400' },
+  { status: 'rejected', color: 'bg-red-300' },
 ]
 
-const SCORE_ROWS = [
-  { label: 'Mükemmel (90-100)', filter: (s: number) => s >= 90, color: 'bg-emerald-500' },
-  { label: 'İyi (75-89)', filter: (s: number) => s >= 75 && s < 90, color: 'bg-blue-400' },
-  { label: 'Orta (50-74)', filter: (s: number) => s >= 50 && s < 75, color: 'bg-amber-400' },
-  { label: 'Düşük (0-49)', filter: (s: number) => s < 50, color: 'bg-red-300' },
+type ScoreKey = 'excellent' | 'good' | 'medium' | 'low'
+
+const SCORE_ROWS: { key: ScoreKey; filter: (s: number) => boolean; color: string }[] = [
+  { key: 'excellent', filter: (s: number) => s >= 90, color: 'bg-emerald-500' },
+  { key: 'good', filter: (s: number) => s >= 75 && s < 90, color: 'bg-blue-400' },
+  { key: 'medium', filter: (s: number) => s >= 50 && s < 75, color: 'bg-amber-400' },
+  { key: 'low', filter: (s: number) => s < 50, color: 'bg-red-300' },
 ]
 
 export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
+  const { t, locale } = useI18n()
   const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | null>(null)
-  const [selectedScoreLabel, setSelectedScoreLabel] = useState<string | null>(null)
+  const [selectedScoreKey, setSelectedScoreKey] = useState<ScoreKey | null>(null)
 
   const total = apps.length
   const byStatus = {
@@ -107,7 +112,7 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
     return {
-      label: d.toLocaleDateString('tr-TR', { month: 'short', year: '2-digit' }),
+      label: d.toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR', { month: 'short', year: '2-digit' }),
       count: apps.filter((a) => {
         const c = new Date(a.created_at)
         return c.getFullYear() === d.getFullYear() && c.getMonth() === d.getMonth()
@@ -122,47 +127,47 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
 
   if (selectedStatus) {
     panelApps = apps.filter((a) => a.status === selectedStatus)
-    panelTitle = STATUS_LABELS[selectedStatus]
-  } else if (selectedScoreLabel) {
-    const row = SCORE_ROWS.find((r) => r.label === selectedScoreLabel)
+    panelTitle = t.status[selectedStatus]
+  } else if (selectedScoreKey) {
+    const row = SCORE_ROWS.find((r) => r.key === selectedScoreKey)
     if (row) {
       panelApps = apps.filter((a) => a.fit_score !== null && row.filter(a.fit_score!))
-      panelTitle = selectedScoreLabel
+      panelTitle = t.analytics.score[selectedScoreKey]
     }
   }
 
-  const showPanel = selectedStatus !== null || selectedScoreLabel !== null
+  const showPanel = selectedStatus !== null || selectedScoreKey !== null
 
   function handleStatusClick(status: ApplicationStatus) {
-    setSelectedScoreLabel(null)
+    setSelectedScoreKey(null)
     setSelectedStatus((prev) => (prev === status ? null : status))
   }
 
-  function handleScoreClick(label: string) {
+  function handleScoreClick(key: ScoreKey) {
     setSelectedStatus(null)
-    setSelectedScoreLabel((prev) => (prev === label ? null : label))
+    setSelectedScoreKey((prev) => (prev === key ? null : key))
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Analitik</h1>
-        <p className="text-sm text-white/50">Bir satıra tıkla, detayları sağ panelde gör</p>
+        <h1 className="text-2xl font-bold text-white">{t.analytics.title}</h1>
+        <p className="text-sm text-white/50">{t.analytics.subtitle}</p>
       </div>
 
       {/* Özet metrikler */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Toplam Başvuru" value={total} />
+        <StatCard label={t.analytics.total} value={total} />
         <StatCard
-          label="Mülakat Oranı"
+          label={t.analytics.interviewRate}
           value={`%${interviewRate}`}
-          sub={`${byStatus.interview + byStatus.offer} başvurudan`}
+          sub={format(t.analytics.interviewRateSub, { n: byStatus.interview + byStatus.offer })}
         />
-        <StatCard label="Teklif Oranı" value={`%${offerRate}`} sub={`${byStatus.offer} teklif`} />
+        <StatCard label={t.analytics.offerRate} value={`%${offerRate}`} sub={format(t.analytics.offerRateSub, { n: byStatus.offer })} />
         <StatCard
-          label="Ort. Uyum Skoru"
+          label={t.analytics.avgScore}
           value={avgScore !== null ? `%${avgScore}` : '—'}
-          sub={maxScore !== null ? `En yüksek: %${maxScore}` : undefined}
+          sub={maxScore !== null ? format(t.analytics.maxScoreSub, { n: maxScore }) : undefined}
         />
       </div>
 
@@ -173,17 +178,17 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
               <BarChart2 className="h-4 w-4 text-amber-500" />
-              <h2 className="text-sm font-semibold text-white">Durum Dağılımı</h2>
-              <span className="text-xs text-white/40">(tıkla → detay)</span>
+              <h2 className="text-sm font-semibold text-white">{t.analytics.statusDist}</h2>
+              <span className="text-xs text-white/40">{t.analytics.clickHint}</span>
             </div>
             {total === 0 ? (
-              <p className="text-sm text-white/40">Henüz başvuru yok.</p>
+              <p className="text-sm text-white/40">{t.analytics.noApps}</p>
             ) : (
               <div className="space-y-1">
-                {STATUS_ROWS.map(({ status, label, color }) => (
+                {STATUS_ROWS.map(({ status, color }) => (
                   <MiniBar
                     key={status}
-                    label={label}
+                    label={t.status[status]}
                     count={byStatus[status]}
                     total={total}
                     color={color}
@@ -199,10 +204,10 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
           <Card className="space-y-4">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-amber-500" />
-              <h2 className="text-sm font-semibold text-white">Aylık Başvuru Trendi</h2>
+              <h2 className="text-sm font-semibold text-white">{t.analytics.monthlyTrend}</h2>
             </div>
             {total === 0 ? (
-              <p className="text-sm text-white/40">Henüz başvuru yok.</p>
+              <p className="text-sm text-white/40">{t.analytics.noApps}</p>
             ) : (
               <div className="flex h-32 items-end gap-2">
                 {months.map((m) => (
@@ -226,22 +231,22 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-amber-500" />
-              <h2 className="text-sm font-semibold text-white">Uyum Skoru Dağılımı</h2>
-              <span className="text-xs text-white/40">(tıkla → detay)</span>
+              <h2 className="text-sm font-semibold text-white">{t.analytics.scoreDist}</h2>
+              <span className="text-xs text-white/40">{t.analytics.clickHint}</span>
             </div>
             {scores.length === 0 ? (
-              <p className="text-sm text-white/40">Henüz uyum skoru hesaplanmamış.</p>
+              <p className="text-sm text-white/40">{t.analytics.noScores}</p>
             ) : (
               <div className="space-y-1">
                 {SCORE_ROWS.map((row) => (
                   <MiniBar
-                    key={row.label}
-                    label={row.label}
+                    key={row.key}
+                    label={t.analytics.score[row.key]}
                     count={scores.filter(row.filter).length}
                     total={scores.length}
                     color={row.color}
-                    selected={selectedScoreLabel === row.label}
-                    onClick={() => handleScoreClick(row.label)}
+                    selected={selectedScoreKey === row.key}
+                    onClick={() => handleScoreClick(row.key)}
                   />
                 ))}
               </div>
@@ -262,7 +267,7 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
                   </span>
                 </div>
                 <button
-                  onClick={() => { setSelectedStatus(null); setSelectedScoreLabel(null) }}
+                  onClick={() => { setSelectedStatus(null); setSelectedScoreKey(null) }}
                   className="text-white/40 hover:text-white/70"
                 >
                   <X className="h-4 w-4" />
@@ -270,7 +275,7 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
               </div>
 
               {panelApps.length === 0 ? (
-                <p className="text-sm text-white/40">Bu kategoride başvuru yok.</p>
+                <p className="text-sm text-white/40">{t.analytics.noneInCategory}</p>
               ) : (
                 <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
                   {panelApps.map((a) => (
@@ -283,11 +288,11 @@ export function AnalyticsDashboard({ apps }: { apps: Application[] }) {
                         <p className="truncate text-sm font-medium text-white/90">{a.position_title}</p>
                         <p className="truncate text-xs text-white/40">{a.company_name}</p>
                         {a.fit_score !== null && (
-                          <p className="mt-0.5 text-xs text-amber-400">Uyum: %{a.fit_score}</p>
+                          <p className="mt-0.5 text-xs text-amber-400">{format(t.analytics.matchPrefix, { n: a.fit_score })}</p>
                         )}
                       </div>
                       <Badge className={`ml-2 mt-0.5 shrink-0 ${STATUS_BADGE_CLASSES[a.status]}`}>
-                        {STATUS_LABELS[a.status]}
+                        {t.status[a.status]}
                       </Badge>
                     </Link>
                   ))}

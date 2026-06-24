@@ -3,54 +3,31 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { X, Sparkles, Chrome, FileText, CalendarDays } from 'lucide-react'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
-const STEPS = [
-  {
-    icon: FileText,
-    title: 'CV\'ini oluştur',
-    desc: 'CV Oluşturucu ile sıfırdan yap veya mevcut PDF\'ini içe aktar.',
-    href: '/cv-builder',
-    cta: 'CV Oluştur',
-  },
-  {
-    icon: Sparkles,
-    title: 'İlk başvurunu ekle',
-    desc: 'Manuel ekle veya LinkedIn eklentisiyle tek tıkla kaydet.',
-    href: '/applications/new',
-    cta: 'Başvuru Ekle',
-  },
-  {
-    icon: Chrome,
-    title: 'Tarayıcı eklentisini kur',
-    desc: 'Ayarlar\'dan token\'ını al, LinkedIn\'de ilanları tek tıkla kaydet.',
-    href: '/settings',
-    cta: 'Token Al',
-  },
-  {
-    icon: CalendarDays,
-    title: 'Mülakat tarihi gir',
-    desc: 'Başvuru detayında mülakat tarihini gir, takvimde takip et.',
-    href: '/calendar',
-    cta: 'Takvimi Aç',
-  },
+const STEP_META = [
+  { icon: FileText, href: '/cv-builder' },
+  { icon: Sparkles, href: '/applications/new' },
+  { icon: Chrome, href: '/settings' },
+  { icon: CalendarDays, href: '/calendar' },
 ]
 
 export function OnboardingBanner({ hasApplications, hasCv }: { hasApplications: boolean; hasCv: boolean }) {
+  const { t } = useI18n()
   const [dismissed, setDismissed] = useState(false)
 
   // Tüm adımlar tamamlandıysa veya kullanıcı kapattıysa gösterme
   if (dismissed || (hasApplications && hasCv)) return null
 
   const completedCount = [hasCv, hasApplications].filter(Boolean).length
-  const totalSteps = STEPS.length
   const pct = Math.round((completedCount / 2) * 100)
 
   return (
     <div className="rounded-xl border border-amber-500/15 bg-gradient-to-r from-amber-500/10 to-white/5 p-5">
       <div className="mb-4 flex items-start justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-white">Wisparkr&apos;e Hoş Geldin! 👋</h2>
-          <p className="text-xs text-white/50 mt-0.5">Başlamak için şu adımları tamamla</p>
+          <h2 className="text-sm font-semibold text-white">{t.onboarding.welcome}</h2>
+          <p className="text-xs text-white/50 mt-0.5">{t.onboarding.subtitle}</p>
         </div>
         <button onClick={() => setDismissed(true)} className="text-white/40 hover:text-white/70">
           <X className="h-4 w-4" />
@@ -62,7 +39,8 @@ export function OnboardingBanner({ hasApplications, hasCv }: { hasApplications: 
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {STEPS.map(({ icon: Icon, title, desc, href, cta }, i) => {
+        {STEP_META.map(({ icon: Icon, href }, i) => {
+          const { title, desc, cta } = t.onboarding.steps[i]
           const done = i === 0 ? hasCv : i === 1 ? hasApplications : false
           return (
             <div

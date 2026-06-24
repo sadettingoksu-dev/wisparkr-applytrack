@@ -5,6 +5,7 @@ import { CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 interface FitScoreCardProps {
   applicationId: string
@@ -17,6 +18,7 @@ export function FitScoreCard({
   initialScore,
   initialSuggestions,
 }: FitScoreCardProps) {
+  const { t } = useI18n()
   const [score, setScore] = useState(initialScore ?? null)
   const [suggestions, setSuggestions] = useState(initialSuggestions ?? null)
   const [loading, setLoading] = useState(false)
@@ -33,13 +35,13 @@ export function FitScoreCard({
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setScore(json.data.score)
       setSuggestions(json.data.suggestions)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -48,7 +50,7 @@ export function FitScoreCard({
   return (
     <Card className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">CV Uyum Skoru</h3>
+        <h3 className="text-sm font-semibold text-white">{t.fitScore.title}</h3>
         {score !== null && (
           <span className="text-2xl font-bold text-amber-500">%{score}</span>
         )}
@@ -68,7 +70,7 @@ export function FitScoreCard({
       {error && <p className="text-xs text-red-500">{error}</p>}
 
       <Button onClick={handleAnalyze} disabled={loading} variant="secondary">
-        {loading ? <Spinner /> : score === null ? 'Uyum Skorunu Hesapla' : 'Yeniden Hesapla'}
+        {loading ? <Spinner /> : score === null ? t.fitScore.calc : t.fitScore.recalc}
       </Button>
     </Card>
   )

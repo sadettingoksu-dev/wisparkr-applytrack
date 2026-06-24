@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { isShareActive, SHARE_FREE_TTL_DAYS } from '@/lib/cv'
+import { useI18n } from '@/components/i18n/I18nProvider'
+import { format } from '@/lib/i18n'
 
 const inputClass =
   'flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 focus:border-amber-500/50 focus:outline-none focus:ring-1 focus:ring-amber-500/30'
@@ -22,6 +24,7 @@ interface Share {
 }
 
 export function SharePanel({ plan }: { plan: string }) {
+  const { t } = useI18n()
   const isPaid = plan !== 'free'
   const [shares, setShares] = useState<Share[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,14 +53,14 @@ export function SharePanel({ plan }: { plan: string }) {
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Link oluşturulamadı.')
+        setError(json.error?.message ?? t.share.createError)
         return
       }
       setShares((p) => [json.data, ...p])
       setLabel('')
       setSlug('')
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setCreating(false)
     }
@@ -83,22 +86,20 @@ export function SharePanel({ plan }: { plan: string }) {
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
         <Share2 className="h-4 w-4 text-amber-500" />
-        <h2 className="text-sm font-semibold text-white">Paylaşılabilir CV Linki</h2>
+        <h2 className="text-sm font-semibold text-white">{t.share.title}</h2>
       </div>
       <p className="text-sm text-white/50">
-        CV&apos;ni link olarak paylaş (LinkedIn DM, e-posta, mesaj — dosya ekleyemediğin her yer).{' '}
-        {isPaid
-          ? 'Linklerin kalıcı ve görüntülenme sayısını görürsün.'
-          : `Ücretsiz linkler ${SHARE_FREE_TTL_DAYS} gün sonra pasifleşir — Pro ile kalıcı yap.`}{' '}
-        Linki oluşturmadan önce CV&apos;ni <strong>kaydet</strong>.
+        {t.share.descMain}{' '}
+        {isPaid ? t.share.descPaid : format(t.share.descFree, { days: SHARE_FREE_TTL_DAYS })}{' '}
+        {t.share.descSave}
       </p>
 
       <div className="flex flex-wrap gap-2">
-        <input className={inputClass} placeholder="Etiket (örn. Google başvurusu)" value={label} onChange={(e) => setLabel(e.target.value)} />
+        <input className={inputClass} placeholder={t.share.labelPlaceholder} value={label} onChange={(e) => setLabel(e.target.value)} />
         {isPaid && (
           <input
             className={`${inputClass} max-w-[180px]`}
-            placeholder="özel-link-adı (ops.)"
+            placeholder={t.share.slugPlaceholder}
             value={slug}
             onChange={(e) => setSlug(e.target.value.toLowerCase())}
           />
@@ -109,7 +110,7 @@ export function SharePanel({ plan }: { plan: string }) {
           ) : (
             <>
               <Link2 className="h-4 w-4" />
-              Link Oluştur
+              {t.share.create}
             </>
           )}
         </Button>
@@ -117,9 +118,9 @@ export function SharePanel({ plan }: { plan: string }) {
       {error && <p className="text-xs text-red-500">{error}</p>}
 
       {loading ? (
-        <p className="text-xs text-white/40">Yükleniyor...</p>
+        <p className="text-xs text-white/40">{t.share.loading}</p>
       ) : shares.length === 0 ? (
-        <p className="text-xs text-white/40">Henüz paylaşım linkin yok.</p>
+        <p className="text-xs text-white/40">{t.share.noShares}</p>
       ) : (
         <div className="space-y-2">
           {shares.map((s) => {
@@ -129,7 +130,7 @@ export function SharePanel({ plan }: { plan: string }) {
               <div key={s.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-white">{s.label || 'Etiketsiz'}</p>
+                    <p className="truncate text-sm text-white">{s.label || t.share.untitled}</p>
                     <p className="truncate text-xs text-white/40">{s.url}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
@@ -143,19 +144,19 @@ export function SharePanel({ plan }: { plan: string }) {
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                   <span className={`rounded-full px-2 py-0.5 ${active ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'}`}>
-                    {s.revoked ? 'İptal edildi' : active ? 'Aktif' : 'Pasif'}
+                    {s.revoked ? t.share.revoked : active ? t.share.active : t.share.inactive}
                   </span>
                   {isPaid && (
                     <span className="inline-flex items-center gap-1 text-white/40">
                       <Eye className="h-3 w-3" />
-                      {s.view_count} görüntülenme
+                      {s.view_count} {t.share.viewsSuffix}
                     </span>
                   )}
-                  {!isPaid && active && left !== null && <span className="text-amber-300/80">{left} gün kaldı</span>}
+                  {!isPaid && active && left !== null && <span className="text-amber-300/80">{format(t.share.daysLeft, { n: left })}</span>}
                   {!isPaid && !active && !s.revoked && (
                     <a href="/pricing" className="inline-flex items-center gap-1 text-amber-400 hover:underline">
                       <Crown className="h-3 w-3" />
-                      Pro ile kalıcı yap
+                      {t.share.makePermanent}
                     </a>
                   )}
                 </div>

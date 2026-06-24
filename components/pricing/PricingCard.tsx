@@ -5,6 +5,7 @@ import clsx from 'clsx'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { UpgradeButton } from '@/components/billing/UpgradeButton'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { PlanConfig } from '@/lib/plans'
 
 interface PricingCardProps {
@@ -15,18 +16,19 @@ interface PricingCardProps {
 }
 
 export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup' }: PricingCardProps) {
+  const { t } = useI18n()
   return (
     <Card className={clsx('flex flex-col gap-4', highlighted && 'border-2 border-amber-500')}>
       {highlighted && (
         <span className="self-start rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-500">
-          En Popüler
+          {t.pricing.popular}
         </span>
       )}
       <div>
         <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
         <p className="mt-1 text-3xl font-bold text-white">
           ${plan.priceMonthly}
-          <span className="text-sm font-normal text-white/50">/ay</span>
+          <span className="text-sm font-normal text-white/50">{t.pricing.perMonth}</span>
         </p>
       </div>
       <ul className="flex-1 space-y-2">
@@ -39,12 +41,12 @@ export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup
       </ul>
       {plan.priceMonthly === 0 ? (
         <a href={ctaHref}>
-          <Button variant="secondary" className="w-full">Ücretsiz Başla</Button>
+          <Button variant="secondary" className="w-full">{t.pricing.freeCta}</Button>
         </a>
       ) : (
         <UpgradeButton
           planId={plan.id as 'pro' | 'career_coach'}
-          label="Plana Geç"
+          label={t.pricing.paidCta}
         />
       )}
     </Card>

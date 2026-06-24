@@ -5,6 +5,7 @@ import { Target, Check, X, Sparkles } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 interface SkillsGap {
   matched: string[]
@@ -18,6 +19,7 @@ interface SkillsGapCardProps {
 }
 
 export function SkillsGapCard({ applicationId, initialData }: SkillsGapCardProps) {
+  const { t } = useI18n()
   const [data, setData] = useState<SkillsGap | null>(initialData ?? null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -33,12 +35,12 @@ export function SkillsGapCard({ applicationId, initialData }: SkillsGapCardProps
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setData(json.data)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -48,11 +50,10 @@ export function SkillsGapCard({ applicationId, initialData }: SkillsGapCardProps
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
         <Target className="h-4 w-4 text-amber-500" />
-        <h3 className="text-sm font-semibold text-white">Beceri Açığı Analizi</h3>
+        <h3 className="text-sm font-semibold text-white">{t.skillsGap.title}</h3>
       </div>
       <p className="text-sm text-white/50">
-        AI, ilanın istediği becerileri CV&apos;ndekilerle karşılaştırır: hangileri var, hangileri
-        eksik? Eksikleri kapatmak için CV&apos;ni bu ilana göre optimize edebilirsin.
+        {t.skillsGap.desc}
       </p>
 
       {data && (
@@ -60,7 +61,7 @@ export function SkillsGapCard({ applicationId, initialData }: SkillsGapCardProps
           {data.summary && <p className="text-sm text-white/70">{data.summary}</p>}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <p className="text-xs font-medium text-emerald-400">CV&apos;nde olanlar</p>
+              <p className="text-xs font-medium text-emerald-400">{t.skillsGap.matched}</p>
               <div className="flex flex-wrap gap-1.5">
                 {data.matched.length === 0 ? (
                   <span className="text-xs text-white/30">—</span>
@@ -78,7 +79,7 @@ export function SkillsGapCard({ applicationId, initialData }: SkillsGapCardProps
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-medium text-red-400">Eksik olanlar</p>
+              <p className="text-xs font-medium text-red-400">{t.skillsGap.missing}</p>
               <div className="flex flex-wrap gap-1.5">
                 {data.missing.length === 0 ? (
                   <span className="text-xs text-white/30">—</span>
@@ -107,7 +108,7 @@ export function SkillsGapCard({ applicationId, initialData }: SkillsGapCardProps
         ) : (
           <>
             <Sparkles className="h-4 w-4" />
-            {data ? 'Yeniden Analiz Et' : 'Beceri Açığını Analiz Et'}
+            {data ? t.skillsGap.reanalyze : t.skillsGap.analyze}
           </>
         )}
       </Button>

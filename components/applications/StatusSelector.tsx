@@ -4,10 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
-import { STATUS_LABELS, STATUS_BADGE_CLASSES, KANBAN_COLUMNS } from '@/utils/constants'
+import { STATUS_BADGE_CLASSES, KANBAN_COLUMNS } from '@/utils/constants'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { ApplicationStatus } from '@/lib/types'
 
 export function StatusSelector({ applicationId, initialStatus }: { applicationId: string; initialStatus: ApplicationStatus }) {
+  const { t } = useI18n()
   const [status, setStatus] = useState(initialStatus)
   const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
@@ -35,7 +37,7 @@ export function StatusSelector({ applicationId, initialStatus }: { applicationId
       <button onClick={() => setOpen((p) => !p)} disabled={loading} className="flex items-center gap-1.5">
         {loading ? <Spinner /> : (
           <Badge className={`${STATUS_BADGE_CLASSES[status]} cursor-pointer hover:opacity-80`}>
-            {STATUS_LABELS[status]} ▾
+            {t.status[status]} ▾
           </Badge>
         )}
       </button>
@@ -49,7 +51,7 @@ export function StatusSelector({ applicationId, initialStatus }: { applicationId
               className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-white/5 ${col.id === status ? 'font-semibold' : ''}`}
             >
               <span className={`h-2 w-2 rounded-full ${STATUS_BADGE_CLASSES[col.id].split(' ')[0]}`} />
-              {col.label}
+              {t.status[col.id]}
             </button>
           ))}
         </div>

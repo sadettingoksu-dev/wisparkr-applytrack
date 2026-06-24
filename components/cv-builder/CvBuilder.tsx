@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 import { CvPreview } from '@/components/cv-builder/CvPreview'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type {
   CvData,
   CvExperience,
@@ -43,6 +44,7 @@ const emptyLanguage: CvLanguage = { name: '', level: '' }
 const emptyCertification: CvCertification = { name: '', issuer: '', date: '' }
 
 export function CvBuilder({ initial }: { initial: CvData }) {
+  const { t } = useI18n()
   const [cv, setCv] = useState<CvData>(initial)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -67,12 +69,12 @@ export function CvBuilder({ initial }: { initial: CvData }) {
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Kaydedilemedi.')
+        setError(json.error?.message ?? t.newApp.saveError)
         return
       }
       setSaved(true)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setSaving(false)
     }
@@ -90,90 +92,89 @@ export function CvBuilder({ initial }: { initial: CvData }) {
       {/* Editor */}
       <div className="space-y-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">CV Oluştur</h1>
+          <h1 className="text-2xl font-bold text-white">{t.cvBuilder.title}</h1>
           <p className="text-sm text-white/50">
-            CV&apos;ni bölüm bölüm doldur; sağda canlı önizle. Kaydettiğinde tüm AI özellikleri bu
-            CV&apos;yi kullanır.
+            {t.cvBuilder.subtitle}
           </p>
         </div>
 
         {/* Kişisel */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Kişisel Bilgiler</h2>
-          <input className={inputClass} placeholder="Ad Soyad" value={cv.personal.fullName} onChange={(e) => setPersonal({ fullName: e.target.value })} />
-          <input className={inputClass} placeholder="Ünvan (örn. Frontend Geliştirici)" value={cv.personal.headline} onChange={(e) => setPersonal({ headline: e.target.value })} />
+          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.personal}</h2>
+          <input className={inputClass} placeholder={t.cvBuilder.fullName} value={cv.personal.fullName} onChange={(e) => setPersonal({ fullName: e.target.value })} />
+          <input className={inputClass} placeholder={t.cvBuilder.headline} value={cv.personal.headline} onChange={(e) => setPersonal({ headline: e.target.value })} />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <input className={inputClass} placeholder="E-posta" value={cv.personal.email} onChange={(e) => setPersonal({ email: e.target.value })} />
-            <input className={inputClass} placeholder="Telefon" value={cv.personal.phone} onChange={(e) => setPersonal({ phone: e.target.value })} />
+            <input className={inputClass} placeholder={t.cvBuilder.email} value={cv.personal.email} onChange={(e) => setPersonal({ email: e.target.value })} />
+            <input className={inputClass} placeholder={t.cvBuilder.phone} value={cv.personal.phone} onChange={(e) => setPersonal({ phone: e.target.value })} />
           </div>
-          <input className={inputClass} placeholder="Konum (örn. İstanbul, Türkiye)" value={cv.personal.location} onChange={(e) => setPersonal({ location: e.target.value })} />
+          <input className={inputClass} placeholder={t.cvBuilder.location} value={cv.personal.location} onChange={(e) => setPersonal({ location: e.target.value })} />
           <div className="space-y-2">
             {cv.personal.links.map((link, i) => (
               <div key={i} className="flex gap-2">
-                <input className={inputClass} placeholder="Etiket (LinkedIn)" value={link.label} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, label: e.target.value } : l)) })} />
+                <input className={inputClass} placeholder={t.cvBuilder.linkLabel} value={link.label} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, label: e.target.value } : l)) })} />
                 <input className={inputClass} placeholder="https://..." value={link.url} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, url: e.target.value } : l)) })} />
                 <button onClick={() => setPersonal({ links: cv.personal.links.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-red-400">
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
             ))}
-            <AddButton label="Link ekle" onClick={() => setPersonal({ links: [...cv.personal.links, { label: '', url: '' }] })} />
+            <AddButton label={t.cvBuilder.addLink} onClick={() => setPersonal({ links: [...cv.personal.links, { label: '', url: '' }] })} />
           </div>
         </Card>
 
         {/* Özet */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Profesyonel Özet</h2>
-          <textarea className={inputClass} rows={4} placeholder="Seni 2-3 cümleyle özetleyen profesyonel giriş..." value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
+          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.summary}</h2>
+          <textarea className={inputClass} rows={4} placeholder={t.cvBuilder.summaryPlaceholder} value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
         </Card>
 
         {/* Deneyim */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Deneyim</h2>
+          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.experience}</h2>
           {cv.experience.map((exp, i) => (
             <ItemFrame key={i} index={i} total={cv.experience.length} onMove={(to) => patch({ experience: moveItem(cv.experience, i, to) })} onRemove={() => patch({ experience: cv.experience.filter((_, idx) => idx !== i) })}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <input className={inputClass} placeholder="Pozisyon" value={exp.role} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, role: e.target.value } : x)) })} />
-                <input className={inputClass} placeholder="Şirket" value={exp.company} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, company: e.target.value } : x)) })} />
-                <input className={inputClass} placeholder="Konum" value={exp.location} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, location: e.target.value } : x)) })} />
+                <input className={inputClass} placeholder={t.cvBuilder.role} value={exp.role} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, role: e.target.value } : x)) })} />
+                <input className={inputClass} placeholder={t.cvBuilder.company} value={exp.company} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, company: e.target.value } : x)) })} />
+                <input className={inputClass} placeholder={t.cvBuilder.expLocation} value={exp.location} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, location: e.target.value } : x)) })} />
                 <div className="flex gap-2">
-                  <input className={inputClass} placeholder="Başlangıç (2022)" value={exp.start} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
-                  <input className={inputClass} placeholder="Bitiş" value={exp.end} disabled={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
+                  <input className={inputClass} placeholder={t.cvBuilder.startYear} value={exp.start} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
+                  <input className={inputClass} placeholder={t.cvBuilder.end} value={exp.end} disabled={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
                 </div>
               </div>
               <label className="flex items-center gap-2 text-xs text-white/60">
                 <input type="checkbox" checked={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, current: e.target.checked } : x)) })} />
-                Halen çalışıyorum
+                {t.cvBuilder.current}
               </label>
-              <textarea className={inputClass} rows={3} placeholder="Başarılar (her satır bir madde). İpucu: sayı/etki ekle — &quot;Satışları %20 artırdım&quot;" value={exp.bullets.join('\n')} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, bullets: e.target.value.split('\n') } : x)) })} />
+              <textarea className={inputClass} rows={3} placeholder={t.cvBuilder.expBullets} value={exp.bullets.join('\n')} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, bullets: e.target.value.split('\n') } : x)) })} />
             </ItemFrame>
           ))}
-          <AddButton label="Deneyim ekle" onClick={() => patch({ experience: [...cv.experience, { ...emptyExperience }] })} />
+          <AddButton label={t.cvBuilder.addExperience} onClick={() => patch({ experience: [...cv.experience, { ...emptyExperience }] })} />
         </Card>
 
         {/* Eğitim */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Eğitim</h2>
+          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.education}</h2>
           {cv.education.map((ed, i) => (
             <ItemFrame key={i} index={i} total={cv.education.length} onMove={(to) => patch({ education: moveItem(cv.education, i, to) })} onRemove={() => patch({ education: cv.education.filter((_, idx) => idx !== i) })}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <input className={inputClass} placeholder="Derece (Lisans)" value={ed.degree} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, degree: e.target.value } : x)) })} />
-                <input className={inputClass} placeholder="Alan (Bilgisayar Müh.)" value={ed.field} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, field: e.target.value } : x)) })} />
-                <input className={inputClass} placeholder="Okul" value={ed.school} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, school: e.target.value } : x)) })} />
+                <input className={inputClass} placeholder={t.cvBuilder.degree} value={ed.degree} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, degree: e.target.value } : x)) })} />
+                <input className={inputClass} placeholder={t.cvBuilder.field} value={ed.field} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, field: e.target.value } : x)) })} />
+                <input className={inputClass} placeholder={t.cvBuilder.school} value={ed.school} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, school: e.target.value } : x)) })} />
                 <div className="flex gap-2">
-                  <input className={inputClass} placeholder="Başlangıç" value={ed.start} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
-                  <input className={inputClass} placeholder="Bitiş" value={ed.end} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
+                  <input className={inputClass} placeholder={t.cvBuilder.start} value={ed.start} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
+                  <input className={inputClass} placeholder={t.cvBuilder.end} value={ed.end} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
                 </div>
               </div>
-              <input className={inputClass} placeholder="Not (ortalama, onur vs. — opsiyonel)" value={ed.note} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, note: e.target.value } : x)) })} />
+              <input className={inputClass} placeholder={t.cvBuilder.eduNote} value={ed.note} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, note: e.target.value } : x)) })} />
             </ItemFrame>
           ))}
-          <AddButton label="Eğitim ekle" onClick={() => patch({ education: [...cv.education, { ...emptyEducation }] })} />
+          <AddButton label={t.cvBuilder.addEducation} onClick={() => patch({ education: [...cv.education, { ...emptyEducation }] })} />
         </Card>
 
         {/* Beceriler */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Beceriler</h2>
+          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.skills}</h2>
           <div className="flex flex-wrap gap-1.5">
             {cv.skills.map((s, i) => (
               <span key={i} className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-xs text-amber-200">
@@ -186,7 +187,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
           </div>
           <input
             className={inputClass}
-            placeholder="Beceri yaz, Enter'a bas (örn. React)"
+            placeholder={t.cvBuilder.skillPlaceholder}
             value={skillInput}
             onChange={(e) => setSkillInput(e.target.value)}
             onKeyDown={(e) => {
@@ -200,46 +201,46 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
         {/* Projeler */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Projeler</h2>
+          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.projects}</h2>
           {cv.projects.map((pr, i) => (
             <ItemFrame key={i} index={i} total={cv.projects.length} onMove={(to) => patch({ projects: moveItem(cv.projects, i, to) })} onRemove={() => patch({ projects: cv.projects.filter((_, idx) => idx !== i) })}>
-              <input className={inputClass} placeholder="Proje adı" value={pr.name} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
-              <input className={inputClass} placeholder="Link (opsiyonel)" value={pr.link} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, link: e.target.value } : x)) })} />
-              <textarea className={inputClass} rows={2} placeholder="Kısa açıklama" value={pr.description} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, description: e.target.value } : x)) })} />
-              <textarea className={inputClass} rows={2} placeholder="Öne çıkanlar (her satır bir madde)" value={pr.bullets.join('\n')} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, bullets: e.target.value.split('\n') } : x)) })} />
+              <input className={inputClass} placeholder={t.cvBuilder.projectName} value={pr.name} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+              <input className={inputClass} placeholder={t.cvBuilder.projectLink} value={pr.link} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, link: e.target.value } : x)) })} />
+              <textarea className={inputClass} rows={2} placeholder={t.cvBuilder.projectDesc} value={pr.description} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, description: e.target.value } : x)) })} />
+              <textarea className={inputClass} rows={2} placeholder={t.cvBuilder.projectBullets} value={pr.bullets.join('\n')} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, bullets: e.target.value.split('\n') } : x)) })} />
             </ItemFrame>
           ))}
-          <AddButton label="Proje ekle" onClick={() => patch({ projects: [...cv.projects, { ...emptyProject }] })} />
+          <AddButton label={t.cvBuilder.addProject} onClick={() => patch({ projects: [...cv.projects, { ...emptyProject }] })} />
         </Card>
 
         {/* Diller & Sertifikalar */}
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Diller</h2>
+          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.languages}</h2>
           {cv.languages.map((l, i) => (
             <div key={i} className="flex gap-2">
-              <input className={inputClass} placeholder="Dil (İngilizce)" value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
-              <input className={inputClass} placeholder="Seviye (C1)" value={l.level} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, level: e.target.value } : x)) })} />
+              <input className={inputClass} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+              <input className={inputClass} placeholder={t.cvBuilder.langLevel} value={l.level} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, level: e.target.value } : x)) })} />
               <button onClick={() => patch({ languages: cv.languages.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-red-400">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
-          <AddButton label="Dil ekle" onClick={() => patch({ languages: [...cv.languages, { ...emptyLanguage }] })} />
+          <AddButton label={t.cvBuilder.addLanguage} onClick={() => patch({ languages: [...cv.languages, { ...emptyLanguage }] })} />
         </Card>
 
         <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-white">Sertifikalar</h2>
+          <h2 className="text-sm font-semibold text-white">{t.cvBuilder.certifications}</h2>
           {cv.certifications.map((c, i) => (
             <div key={i} className="flex gap-2">
-              <input className={inputClass} placeholder="Sertifika" value={c.name} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
-              <input className={inputClass} placeholder="Kurum" value={c.issuer} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, issuer: e.target.value } : x)) })} />
-              <input className={`${inputClass} max-w-[90px]`} placeholder="Yıl" value={c.date} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, date: e.target.value } : x)) })} />
+              <input className={inputClass} placeholder={t.cvBuilder.certName} value={c.name} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+              <input className={inputClass} placeholder={t.cvBuilder.certIssuer} value={c.issuer} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, issuer: e.target.value } : x)) })} />
+              <input className={`${inputClass} max-w-[90px]`} placeholder={t.cvBuilder.certYear} value={c.date} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, date: e.target.value } : x)) })} />
               <button onClick={() => patch({ certifications: cv.certifications.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-white/40 hover:bg-white/5 hover:text-red-400">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           ))}
-          <AddButton label="Sertifika ekle" onClick={() => patch({ certifications: [...cv.certifications, { ...emptyCertification }] })} />
+          <AddButton label={t.cvBuilder.addCertification} onClick={() => patch({ certifications: [...cv.certifications, { ...emptyCertification }] })} />
         </Card>
       </div>
 
@@ -248,18 +249,18 @@ export function CvBuilder({ initial }: { initial: CvData }) {
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={handleSave} disabled={saving} variant="primary">
             {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            {saved ? 'Kaydedildi' : 'Kaydet'}
+            {saved ? t.common.saved : t.common.save}
           </Button>
           <a href={`/api/cv/pdf?template=${template}`}>
             <Button variant="secondary">
               <Download className="h-4 w-4" />
-              PDF İndir
+              {t.cvBuilder.downloadPdf}
             </Button>
           </a>
           <TemplatePicker value={template} onChange={setTemplate} />
         </div>
         {error && <p className="text-xs text-red-500">{error}</p>}
-        <p className="text-xs text-white/40">PDF, en son <strong>kaydedilen</strong> sürümü indirir.</p>
+        <p className="text-xs text-white/40">{t.cvBuilder.pdfNote}</p>
 
         <CvPreview data={cv} />
       </div>

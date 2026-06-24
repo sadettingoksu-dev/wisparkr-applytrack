@@ -6,21 +6,19 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 interface CoverLetterCardProps {
   applicationId: string
   initialText?: string | null
 }
 
-const TONES = [
-  { id: 'professional', label: 'Profesyonel' },
-  { id: 'enthusiastic', label: 'İstekli' },
-  { id: 'concise', label: 'Kısa & öz' },
-] as const
+const TONE_IDS = ['professional', 'enthusiastic', 'concise'] as const
 
-type Tone = (typeof TONES)[number]['id']
+type Tone = (typeof TONE_IDS)[number]
 
 export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardProps) {
+  const { t } = useI18n()
   const [text, setText] = useState(initialText ?? '')
   const [tone, setTone] = useState<Tone>('professional')
   const [loading, setLoading] = useState(false)
@@ -41,13 +39,13 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setText(json.data.cover_letter)
       setSavedText(json.data.cover_letter)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -63,25 +61,24 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
         <FileSignature className="h-4 w-4 text-amber-500" />
-        <h3 className="text-sm font-semibold text-white">AI Ön Yazı</h3>
+        <h3 className="text-sm font-semibold text-white">{t.coverLetter.title}</h3>
       </div>
       <p className="text-sm text-white/50">
-        AI, CV&apos;ni ve bu ilanı kullanarak başvuruna özel bir ön yazı (niyet mektubu)
-        yazar. Üslubu seç, oluştur, düzenle ve kopyala.
+        {t.coverLetter.desc}
       </p>
 
       <div className="flex flex-wrap gap-2">
-        {TONES.map((t) => (
+        {TONE_IDS.map((id) => (
           <button
-            key={t.id}
-            onClick={() => setTone(t.id)}
+            key={id}
+            onClick={() => setTone(id)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              tone === t.id
+              tone === id
                 ? 'bg-amber-500/15 text-amber-300'
                 : 'bg-white/5 text-white/50 hover:text-white'
             }`}
           >
-            {t.label}
+            {t.coverLetter.tones[id]}
           </button>
         ))}
       </div>
@@ -106,21 +103,21 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
           ) : (
             <>
               <Sparkles className="h-4 w-4" />
-              {text ? 'Yeniden Oluştur' : 'Ön Yazı Oluştur'}
+              {text ? t.coverLetter.regenerate : t.coverLetter.generate}
             </>
           )}
         </Button>
         {text && (
           <Button onClick={handleCopy} variant="secondary">
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? 'Kopyalandı' : 'Kopyala'}
+            {copied ? t.common.copied : t.common.copy}
           </Button>
         )}
         {savedText && (
           <a href={`/api/applications/${applicationId}/cv-pdf?type=cover_letter&template=${template}`}>
             <Button variant="primary">
               <Download className="h-4 w-4" />
-              PDF İndir
+              {t.coverLetter.downloadPdf}
             </Button>
           </a>
         )}
@@ -128,8 +125,7 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
 
       {savedText && text !== savedText && (
         <p className="text-xs text-amber-400/80">
-          Not: PDF, en son oluşturulan sürümü indirir. Düzenlediğin metni PDF&apos;te görmek için
-          &quot;Yeniden Oluştur&quot;a basman gerekebilir.
+          {t.coverLetter.staleNote}
         </p>
       )}
     </Card>

@@ -8,7 +8,9 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
-import { getInterviewReadiness } from '@/utils/constants'
+import { getInterviewReadiness, MOCK_INTERVIEW_QUESTION_COUNT } from '@/utils/constants'
+import { useI18n } from '@/components/i18n/I18nProvider'
+import { format } from '@/lib/i18n'
 import type { MockInterview } from '@/lib/types'
 
 interface MockInterviewCardProps {
@@ -17,6 +19,7 @@ interface MockInterviewCardProps {
 }
 
 export function MockInterviewCard({ applicationId, sessions }: MockInterviewCardProps) {
+  const { t } = useI18n()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -34,12 +37,12 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       router.push(`/applications/${applicationId}/mock-interview/${json.data.interview_id}`)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -47,12 +50,10 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
 
   return (
     <Card className="space-y-4">
-      <h3 className="text-sm font-semibold text-white">Mock Mülakat Provası</h3>
+      <h3 className="text-sm font-semibold text-white">{t.interview.cardTitle}</h3>
 
       <p className="text-sm text-white/50">
-        AI, bu pozisyon ve CV&apos;ne göre seninle {' '}
-        <strong>6 soruluk</strong> bir mülakat provası yapar; sonunda kategori bazlı bir geri
-        bildirim raporu alırsın.
+        {format(t.interview.cardDesc, { count: MOCK_INTERVIEW_QUESTION_COUNT })}
       </p>
 
       {error && <p className="text-xs text-red-500">{error}</p>}
@@ -63,7 +64,7 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
         ) : (
           <>
             <Sparkles className="h-4 w-4" />
-            Yeni Mülakat Provası Başlat
+            {t.interview.start}
           </>
         )}
       </Button>
@@ -74,7 +75,7 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
             onClick={() => setSessionsOpen((prev) => !prev)}
             className="flex w-full items-center justify-between text-xs font-medium text-white/50 hover:text-white/90"
           >
-            <span>Geçmiş Oturumlar ({sessions.length})</span>
+            <span>{format(t.interview.pastSessions, { n: sessions.length })}</span>
             {sessionsOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
 
@@ -101,13 +102,13 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
                     {session.status === 'completed' ? (
                       session.overall_score !== null && readiness ? (
                         <Badge className={`bg-white/5 ${readiness.className}`}>
-                          %{session.overall_score} · {readiness.label}
+                          %{session.overall_score} · {t.readiness[readiness.levelKey]}
                         </Badge>
                       ) : (
-                        <Badge className="bg-white/5 text-white/50">Rapor bekliyor</Badge>
+                        <Badge className="bg-white/5 text-white/50">{t.interview.awaitingReport}</Badge>
                       )
                     ) : (
-                      <Badge className="bg-amber-500/10 text-amber-500">Devam ediyor</Badge>
+                      <Badge className="bg-amber-500/10 text-amber-500">{t.interview.inProgress}</Badge>
                     )}
                   </Link>
                 )
@@ -118,7 +119,7 @@ export function MockInterviewCard({ applicationId, sessions }: MockInterviewCard
                   onClick={() => setShowAll((prev) => !prev)}
                   className="w-full pt-1 text-xs text-amber-500 hover:text-amber-700"
                 >
-                  {showAll ? 'Daha az göster' : `Daha fazla göster (${sessions.length - 3} oturum daha)`}
+                  {showAll ? t.interview.showLess : format(t.interview.showMore, { n: sessions.length - 3 })}
                 </button>
               )}
             </div>

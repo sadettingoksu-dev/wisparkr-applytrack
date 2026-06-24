@@ -9,6 +9,8 @@ import { InterviewFeedbackReport } from '@/components/interview/InterviewFeedbac
 import { MOCK_INTERVIEW_QUESTION_COUNT } from '@/utils/constants'
 import { isSpeechSynthesisSupported, speakText, cancelSpeech, type VoiceGender } from '@/lib/speech'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
+import { useI18n } from '@/components/i18n/I18nProvider'
+import { format } from '@/lib/i18n'
 import type { MockInterview, MockInterviewMessage, MockInterviewFeedback } from '@/lib/types'
 
 interface MockInterviewChatProps {
@@ -17,6 +19,7 @@ interface MockInterviewChatProps {
 }
 
 export function MockInterviewChat({ interview, initialMessages }: MockInterviewChatProps) {
+  const { t } = useI18n()
   const [messages, setMessages] = useState(initialMessages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -93,7 +96,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
       const json = await res.json()
 
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         setMessages((prev) => prev.slice(0, -1))
         setInput(content)
         return
@@ -114,7 +117,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
         setQuestionCount((prev) => prev + 1)
       }
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
       setMessages((prev) => prev.slice(0, -1))
       setInput(content)
     } finally {
@@ -123,7 +126,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
   }
 
   async function finishInterview() {
-    if (!window.confirm('Mülakatı şimdi bitirmek istediğine emin misin?')) return
+    if (!window.confirm(t.interview.finishConfirm)) return
     setError(null)
     setLoading(true)
     try {
@@ -132,14 +135,14 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setStatus('completed')
       setFeedback(json.data.feedback)
       setOverallScore(json.data.overall_score)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -154,13 +157,13 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setFeedback(json.data.feedback)
       setOverallScore(json.data.overall_score)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setRetrying(false)
     }
@@ -170,7 +173,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
     <div className="flex h-full flex-col rounded-lg border border-white/10 bg-white/5">
       <div className="border-b border-white/10 px-4 py-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white">Mock Mülakat</h3>
+          <h3 className="text-sm font-semibold text-white">{t.interview.chatTitle}</h3>
           <div className="flex items-center gap-2">
             {speechSupported && voiceMode && (
               <div className="flex overflow-hidden rounded-md border border-white/10 text-xs">
@@ -178,13 +181,13 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
                   onClick={() => setVoiceGender('female')}
                   className={`px-2 py-1 ${voiceGender === 'female' ? 'bg-amber-500 text-white' : 'text-white/50 hover:bg-white/5'}`}
                 >
-                  ♀ Kadın
+                  {t.interview.voiceFemale}
                 </button>
                 <button
                   onClick={() => setVoiceGender('male')}
                   className={`px-2 py-1 ${voiceGender === 'male' ? 'bg-amber-500 text-white' : 'text-white/50 hover:bg-white/5'}`}
                 >
-                  ♂ Erkek
+                  {t.interview.voiceMale}
                 </button>
               </div>
             )}
@@ -193,22 +196,20 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
                 <Button
                   onClick={toggleVoiceMode}
                   variant="ghost"
-                  title={voiceMode ? 'Sesli modu kapat' : 'Sesli modu aç'}
+                  title={voiceMode ? t.interview.voiceOffTitle : t.interview.voiceOnTitle}
                 >
                   {voiceMode ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
                 </Button>
                 <div className="pointer-events-none absolute right-0 top-full mt-2 z-50 w-56 rounded-lg bg-slate-800 px-3 py-2 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                  {voiceMode
-                    ? 'Sesli mod açık — mülakatçı sorularını sesli okur, mikrofon ile cevap verebilirsin. Kapatmak için tıkla.'
-                    : 'Sesli modu aç — mülakatçı sorularını sesli okusun ve mikrofon ile cevap verebilesin.'}
+                  {voiceMode ? t.interview.voiceTipOn : t.interview.voiceTipOff}
                   <div className="absolute -top-1.5 right-3 h-3 w-3 rotate-45 bg-slate-800" />
                 </div>
               </div>
             )}
             <span className="text-xs text-white/50">
               {status === 'completed'
-                ? 'Tamamlandı'
-                : `Soru ${Math.min(questionCount, MOCK_INTERVIEW_QUESTION_COUNT)} / ${MOCK_INTERVIEW_QUESTION_COUNT}`}
+                ? t.interview.completed
+                : format(t.interview.questionProgress, { n: Math.min(questionCount, MOCK_INTERVIEW_QUESTION_COUNT), total: MOCK_INTERVIEW_QUESTION_COUNT })}
             </span>
           </div>
         </div>
@@ -219,12 +220,12 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
           <div key={i} className="space-y-1">
             <div className="flex items-center gap-1">
               <p className="text-xs font-medium text-white/40">
-                {message.role === 'interviewer' ? 'Mülakatçı' : 'Sen'}
+                {message.role === 'interviewer' ? t.interview.interviewer : t.interview.you}
               </p>
               {message.role === 'interviewer' && speechSupported && (
                 <button
                   onClick={() => speakText(message.content, voiceGender)}
-                  title="Sesli oku"
+                  title={t.interview.readAloud}
                   className="text-white/30 hover:text-white/50"
                 >
                   <Volume2 className="h-3 w-3" />
@@ -250,9 +251,9 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
               <InterviewFeedbackReport feedback={feedback} overallScore={overallScore ?? 0} />
             ) : (
               <div className="space-y-2 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-300">
-                <p>Geri bildirim raporu oluşturulamadı.</p>
+                <p>{t.interview.feedbackFailed}</p>
                 <Button onClick={retryFeedback} disabled={retrying} variant="secondary">
-                  {retrying ? <Spinner /> : 'Tekrar Dene'}
+                  {retrying ? <Spinner /> : t.interview.retry}
                 </Button>
               </div>
             )}
@@ -268,7 +269,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder={speech.isListening ? 'Dinleniyor...' : 'Cevabını yaz...'}
+            placeholder={speech.isListening ? t.interview.listening : t.interview.answerPlaceholder}
             disabled={loading}
           />
           {voiceMode && (
@@ -276,7 +277,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
               onClick={() => (speech.isListening ? speech.stop() : speech.start())}
               disabled={loading}
               variant={speech.isListening ? 'secondary' : 'ghost'}
-              title={speech.isListening ? 'Dinlemeyi durdur' : 'Sesle cevapla'}
+              title={speech.isListening ? t.interview.stopListening : t.interview.answerByVoice}
             >
               {speech.isListening ? (
                 <Mic className="h-4 w-4 animate-pulse text-red-500" />
@@ -289,7 +290,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
             <Send className="h-4 w-4" />
           </Button>
           <Button onClick={finishInterview} disabled={loading} variant="ghost">
-            Mülakatı Bitir
+            {t.interview.finish}
           </Button>
         </div>
       )}

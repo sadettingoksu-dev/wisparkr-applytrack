@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { parseCvData, isShareActive } from '@/lib/cv'
 import { CvPreview } from '@/components/cv-builder/CvPreview'
 import { ExpiredCv } from '@/components/cv/ExpiredCv'
+import { getServerDict } from '@/lib/i18n-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: { params: { token: string } }
   const name = cv.personal.fullName || 'CV'
   return {
     title: `${name} — CV`,
-    description: cv.personal.headline || 'Wisparkr ile oluşturulmuş CV',
+    description: cv.personal.headline || getServerDict().publicCv.metaDesc,
   }
 }
 
@@ -56,6 +57,7 @@ export default async function PublicCvPage({ params }: { params: { token: string
     .eq('id', row.id)
 
   const cvData = parseCvData(row.cv_snapshot)
+  const t = getServerDict()
 
   return (
     <div className="min-h-screen bg-neutral-100 py-10">
@@ -67,10 +69,10 @@ export default async function PublicCvPage({ params }: { params: { token: string
             className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
           >
             <Download className="h-4 w-4" />
-            PDF indir
+            {t.publicCv.downloadPdf}
           </a>
           <Link href="/" className="text-xs text-neutral-400 hover:text-neutral-600">
-            Wisparkr ile oluşturuldu
+            {t.publicCv.builtWith}
           </Link>
         </div>
       </div>

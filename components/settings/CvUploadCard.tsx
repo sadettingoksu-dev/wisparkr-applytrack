@@ -5,8 +5,10 @@ import { CheckCircle2, UploadCloud } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 export function CvUploadCard({ initialFilename }: { initialFilename: string | null }) {
+  const { t } = useI18n()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [filename, setFilename] = useState(initialFilename)
   const [loading, setLoading] = useState(false)
@@ -16,7 +18,7 @@ export function CvUploadCard({ initialFilename }: { initialFilename: string | nu
   async function handleUpload() {
     const file = fileInputRef.current?.files?.[0]
     if (!file) {
-      setError('Önce bir PDF dosyası seç.')
+      setError(t.settings.selectPdf)
       return
     }
 
@@ -32,14 +34,14 @@ export function CvUploadCard({ initialFilename }: { initialFilename: string | nu
       const json = await res.json()
 
       if (!res.ok) {
-        setError(json.error?.message ?? 'CV yüklenemedi.')
+        setError(json.error?.message ?? t.settings.cvUploadError)
         return
       }
 
       setFilename(file.name)
       setSuccess(true)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -47,8 +49,8 @@ export function CvUploadCard({ initialFilename }: { initialFilename: string | nu
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-white/90">CV Dosyası</label>
-      <Input value={filename ?? 'Henüz CV yüklenmedi'} disabled />
+      <label className="text-sm font-medium text-white/90">{t.settings.cvFile}</label>
+      <Input value={filename ?? t.settings.noCv} disabled />
       <input
         ref={fileInputRef}
         type="file"
@@ -64,13 +66,13 @@ export function CvUploadCard({ initialFilename }: { initialFilename: string | nu
       {success && (
         <p className="flex items-center gap-1 text-xs text-emerald-600">
           <CheckCircle2 className="h-3.5 w-3.5" />
-          CV başarıyla yüklendi.
+          {t.settings.cvUploaded}
         </p>
       )}
 
       <Button onClick={handleUpload} disabled={loading} variant="secondary">
         {loading ? <Spinner /> : <UploadCloud className="h-4 w-4" />}
-        {loading ? 'Yükleniyor...' : 'CV Yükle'}
+        {loading ? t.settings.uploading : t.settings.uploadCv}
       </Button>
     </div>
   )

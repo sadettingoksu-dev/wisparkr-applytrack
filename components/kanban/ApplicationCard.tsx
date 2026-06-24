@@ -3,9 +3,12 @@ import { CSS } from '@dnd-kit/utilities'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { formatDate } from '@/utils/format'
+import { useI18n } from '@/components/i18n/I18nProvider'
+import { format } from '@/lib/i18n'
 import type { Application } from '@/lib/types'
 
 export function ApplicationCard({ application }: { application: Application }) {
+  const { t } = useI18n()
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: application.id,
   })
@@ -27,7 +30,7 @@ export function ApplicationCard({ application }: { application: Application }) {
         )}
         {score !== null && score !== undefined && (
           <Badge className={score >= 70 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}>
-            %{score} uyum
+            {format(t.board.matchLabel, { score })}
           </Badge>
         )}
       </div>

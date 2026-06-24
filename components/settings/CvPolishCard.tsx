@@ -5,15 +5,17 @@ import { Wand2, SpellCheck, Scissors, Copy, Check, Save } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 type Mode = 'proofread' | 'shorten'
 
-const MODES: { id: Mode; label: string; icon: React.ElementType }[] = [
-  { id: 'proofread', label: 'Dil & yazım düzelt', icon: SpellCheck },
-  { id: 'shorten', label: 'Kısalt (tek sayfa)', icon: Scissors },
+const MODE_META: { id: Mode; icon: React.ElementType }[] = [
+  { id: 'proofread', icon: SpellCheck },
+  { id: 'shorten', icon: Scissors },
 ]
 
 export function CvPolishCard({ hasCv }: { hasCv: boolean }) {
+  const { t } = useI18n()
   const [result, setResult] = useState('')
   const [notes, setNotes] = useState<string[]>([])
   const [activeMode, setActiveMode] = useState<Mode | null>(null)
@@ -34,13 +36,13 @@ export function CvPolishCard({ hasCv }: { hasCv: boolean }) {
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setResult(json.data.result_text)
       setNotes(json.data.notes ?? [])
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setActiveMode(null)
     }
@@ -63,12 +65,12 @@ export function CvPolishCard({ hasCv }: { hasCv: boolean }) {
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Kaydedilemedi.')
+        setError(json.error?.message ?? t.newApp.saveError)
         return
       }
       setSaved(true)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setSaving(false)
     }
@@ -80,23 +82,22 @@ export function CvPolishCard({ hasCv }: { hasCv: boolean }) {
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
         <Wand2 className="h-4 w-4 text-amber-500" />
-        <h2 className="text-sm font-semibold text-white">AI CV Cila Araçları</h2>
+        <h2 className="text-sm font-semibold text-white">{t.cvPolish.title}</h2>
       </div>
       <p className="text-sm text-white/50">
-        Master CV&apos;ndeki dil/yazım hatalarını tek tıkla düzelt ya da tek sayfaya sığacak
-        şekilde kısalt. Sonucu düzenleyip kopyalayabilir veya master CV olarak kaydedebilirsin.
+        {t.cvPolish.desc}
       </p>
 
       {!hasCv ? (
         <p className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/50">
-          Önce yukarıdan bir CV yükle; araçlar yüklenen CV üzerinde çalışır.
+          {t.cvPolish.noCv}
         </p>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {MODES.map(({ id, label, icon: Icon }) => (
+          {MODE_META.map(({ id, icon: Icon }) => (
             <Button key={id} onClick={() => handleRun(id)} disabled={busy} variant="secondary">
               {activeMode === id ? <Spinner /> : <Icon className="h-4 w-4" />}
-              {label}
+              {t.cvPolish[id]}
             </Button>
           ))}
         </div>
@@ -125,11 +126,11 @@ export function CvPolishCard({ hasCv }: { hasCv: boolean }) {
           <div className="flex flex-wrap gap-2">
             <Button onClick={handleCopy} variant="secondary">
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              {copied ? 'Kopyalandı' : 'Kopyala'}
+              {copied ? t.common.copied : t.common.copy}
             </Button>
             <Button onClick={handleSave} disabled={saving} variant="primary">
               {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-              {saved ? 'Kaydedildi' : 'Master CV olarak kaydet'}
+              {saved ? t.common.saved : t.cvPolish.saveAsMaster}
             </Button>
           </div>
         </div>

@@ -28,25 +28,29 @@ export const APP_NAME = 'Wisparkr'
 /** Minimum "başvuru hazırlık skoru" required to unlock the tailored CV PDF download. */
 export const MIN_APPLY_SCORE = 75
 
-export function getApplyReadiness(score: number): { label: string; className: string } {
+export type ApplyReadinessKey = 'applyExcellent' | 'applyReady' | 'applyNotReady'
+export type InterviewReadinessKey = 'interviewReady' | 'interviewImprove' | 'interviewMore'
+
+/** Etiket metni sözlükten (t.readiness[levelKey]) kurulur. */
+export function getApplyReadiness(score: number): { levelKey: ApplyReadinessKey; className: string } {
   if (score >= 90) {
-    return { label: 'Mükemmel, başvurabilirsiniz!', className: 'text-emerald-700' }
+    return { levelKey: 'applyExcellent', className: 'text-emerald-700' }
   }
   if (score >= MIN_APPLY_SCORE) {
-    return { label: 'Hazır, başvurabilirsiniz', className: 'text-emerald-600' }
+    return { levelKey: 'applyReady', className: 'text-emerald-600' }
   }
-  return { label: 'Henüz hazır değil, tekrar optimize edin', className: 'text-amber-600' }
+  return { levelKey: 'applyNotReady', className: 'text-amber-600' }
 }
 
 /** Number of interviewer questions in a mock interview session. */
 export const MOCK_INTERVIEW_QUESTION_COUNT = 6
 
-export function getInterviewReadiness(score: number): { label: string; className: string } {
+export function getInterviewReadiness(score: number): { levelKey: InterviewReadinessKey; className: string } {
   if (score >= 85) {
-    return { label: 'Mülakata hazırsın', className: 'text-emerald-700' }
+    return { levelKey: 'interviewReady', className: 'text-emerald-700' }
   }
   if (score >= 60) {
-    return { label: 'Birkaç noktayı geliştir', className: 'text-amber-600' }
+    return { levelKey: 'interviewImprove', className: 'text-amber-600' }
   }
-  return { label: 'Daha fazla pratiğe ihtiyacın var', className: 'text-red-500' }
+  return { levelKey: 'interviewMore', className: 'text-red-500' }
 }

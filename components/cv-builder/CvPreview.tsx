@@ -1,3 +1,6 @@
+'use client'
+
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { CvData } from '@/lib/cv'
 
 /**
@@ -5,6 +8,7 @@ import type { CvData } from '@/lib/cv'
  * builder's live preview and (later) the public shareable CV page.
  */
 export function CvPreview({ data }: { data: CvData }) {
+  const { t } = useI18n()
   const p = data.personal
   const contact = [p.email, p.phone, p.location].filter(Boolean)
   const links = p.links.filter((l) => l.url || l.label)
@@ -19,7 +23,7 @@ export function CvPreview({ data }: { data: CvData }) {
     <div className="rounded-2xl bg-white p-8 text-[13px] leading-relaxed text-neutral-800 shadow-xl">
       {/* Header */}
       <header className="border-b border-neutral-200 pb-4">
-        <h1 className="text-2xl font-bold text-neutral-900">{p.fullName || 'Adınız Soyadınız'}</h1>
+        <h1 className="text-2xl font-bold text-neutral-900">{p.fullName || t.cvPreview.yourName}</h1>
         {p.headline && <p className="mt-0.5 text-neutral-600">{p.headline}</p>}
         {(contact.length > 0 || links.length > 0) && (
           <p className="mt-2 text-xs text-neutral-500">
@@ -29,13 +33,13 @@ export function CvPreview({ data }: { data: CvData }) {
       </header>
 
       {data.summary.trim() && (
-        <Section title="Özet">
+        <Section title={t.cvPreview.summary}>
           <p className="whitespace-pre-line">{data.summary.trim()}</p>
         </Section>
       )}
 
       {experience.length > 0 && (
-        <Section title="Deneyim">
+        <Section title={t.cvPreview.experience}>
           <div className="space-y-3">
             {experience.map((e, i) => (
               <div key={i}>
@@ -44,7 +48,7 @@ export function CvPreview({ data }: { data: CvData }) {
                     {[e.role, e.company].filter(Boolean).join(' · ')}
                   </p>
                   <p className="text-xs text-neutral-500">
-                    {[e.start, e.current ? 'Devam ediyor' : e.end].filter(Boolean).join(' – ')}
+                    {[e.start, e.current ? t.cvPreview.ongoing : e.end].filter(Boolean).join(' – ')}
                   </p>
                 </div>
                 {e.location && <p className="text-xs text-neutral-500">{e.location}</p>}
@@ -62,7 +66,7 @@ export function CvPreview({ data }: { data: CvData }) {
       )}
 
       {education.length > 0 && (
-        <Section title="Eğitim">
+        <Section title={t.cvPreview.education}>
           <div className="space-y-2">
             {education.map((ed, i) => (
               <div key={i}>
@@ -83,7 +87,7 @@ export function CvPreview({ data }: { data: CvData }) {
       )}
 
       {skills.length > 0 && (
-        <Section title="Beceriler">
+        <Section title={t.cvPreview.skills}>
           <div className="flex flex-wrap gap-1.5">
             {skills.map((s, i) => (
               <span key={i} className="rounded bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">
@@ -95,7 +99,7 @@ export function CvPreview({ data }: { data: CvData }) {
       )}
 
       {projects.length > 0 && (
-        <Section title="Projeler">
+        <Section title={t.cvPreview.projects}>
           <div className="space-y-2">
             {projects.map((pr, i) => (
               <div key={i}>
@@ -116,13 +120,13 @@ export function CvPreview({ data }: { data: CvData }) {
       )}
 
       {languages.length > 0 && (
-        <Section title="Diller">
+        <Section title={t.cvPreview.languages}>
           <p>{languages.map((l) => (l.level ? `${l.name} (${l.level})` : l.name)).join('   ·   ')}</p>
         </Section>
       )}
 
       {certifications.length > 0 && (
-        <Section title="Sertifikalar">
+        <Section title={t.cvPreview.certifications}>
           <div className="space-y-1">
             {certifications.map((c, i) => (
               <p key={i}>{[c.name, c.issuer, c.date].filter(Boolean).join(' · ')}</p>

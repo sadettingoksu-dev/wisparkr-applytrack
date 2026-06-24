@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { MockInterviewChat } from '@/components/interview/MockInterviewChat'
+import { getServerDict } from '@/lib/i18n-server'
 import type { Application, MockInterview, MockInterviewMessage } from '@/lib/types'
 
 export default async function MockInterviewPage({
@@ -10,6 +11,7 @@ export default async function MockInterviewPage({
 }: {
   params: { id: string; interviewId: string }
 }) {
+  const t = getServerDict()
   const supabase = createClient()
 
   const { data: interviewData } = await supabase
@@ -44,10 +46,10 @@ export default async function MockInterviewPage({
           className="inline-flex items-center gap-1 text-sm text-white/50 hover:text-white/90"
         >
           <ArrowLeft className="h-4 w-4" />
-          Başvuruya geri dön
+          {t.mockPage.back}
         </Link>
         <h1 className="mt-1 text-xl font-bold text-white">
-          {application.position_title} — Mock Mülakat
+          {application.position_title} — {t.mockPage.suffix}
         </h1>
         <p className="text-sm text-white/50">{application.company_name}</p>
       </div>

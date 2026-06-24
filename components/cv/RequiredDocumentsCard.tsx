@@ -5,17 +5,12 @@ import { FileSearch, Upload, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { RequiredDocument } from '@/lib/types'
 
 interface RequiredDocumentsCardProps {
   applicationId: string
   initialDocuments?: RequiredDocument[] | null
-}
-
-const IMPORTANCE_LABEL: Record<RequiredDocument['importance'], string> = {
-  critical: 'Kritik',
-  important: 'Önemli',
-  optional: 'Opsiyonel',
 }
 
 const IMPORTANCE_CLASS: Record<RequiredDocument['importance'], string> = {
@@ -25,6 +20,7 @@ const IMPORTANCE_CLASS: Record<RequiredDocument['importance'], string> = {
 }
 
 export function RequiredDocumentsCard({ applicationId, initialDocuments }: RequiredDocumentsCardProps) {
+  const { t } = useI18n()
   const [documents, setDocuments] = useState<RequiredDocument[] | null>(initialDocuments ?? null)
   const [loadingDocs, setLoadingDocs] = useState(false)
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null)
@@ -42,12 +38,12 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setDocuments(json.data.documents)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoadingDocs(false)
     }
@@ -63,12 +59,12 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setDocuments(json.data.documents)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     }
   }
 
@@ -86,12 +82,12 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       setDocuments(json.data.documents)
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setUploadingIndex(null)
     }
@@ -100,11 +96,9 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
   return (
     <Card className="space-y-4">
       <div>
-        <h2 className="text-sm font-semibold text-white">Sektöre Özel Belgeler</h2>
+        <h2 className="text-sm font-semibold text-white">{t.requiredDocs.title}</h2>
         <p className="text-sm text-white/50">
-          AI, bu ilanın sektörüne göre adaylardan genellikle istenen ek belge/sertifikaları
-          tespit eder. Elindeki belgeleri (PDF) yükle veya &quot;Yok&quot; olarak işaretle —
-          bu bilgiler CV optimizasyon skorunu ve önerileri etkiler.
+          {t.requiredDocs.desc}
         </p>
       </div>
 
@@ -115,7 +109,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
           ) : (
             <>
               <FileSearch className="h-4 w-4" />
-              Bu İlan İçin Gerekli Belgeleri Tespit Et
+              {t.requiredDocs.detect}
             </>
           )}
         </Button>
@@ -123,7 +117,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
 
       {documents && documents.length === 0 && (
         <p className="text-sm text-white/50">
-          Bu ilan için sektöre özel ek bir belge gerekmiyor gibi görünüyor.
+          {t.requiredDocs.none}
         </p>
       )}
 
@@ -138,7 +132,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-white/90">{doc.name}</span>
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${IMPORTANCE_CLASS[doc.importance]}`}>
-                    {IMPORTANCE_LABEL[doc.importance]}
+                    {t.requiredDocs.importance[doc.importance]}
                   </span>
                 </div>
                 <div className="flex gap-1">
@@ -149,7 +143,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
                       doc.has === true ? 'bg-emerald-600 text-white' : 'bg-white/10 text-white/70'
                     }`}
                   >
-                    Var
+                    {t.requiredDocs.has}
                   </button>
                   <button
                     type="button"
@@ -158,7 +152,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
                       doc.has === false ? 'bg-red-600 text-white' : 'bg-white/10 text-white/70'
                     }`}
                   >
-                    Yok
+                    {t.requiredDocs.hasNot}
                   </button>
                 </div>
               </div>
@@ -185,7 +179,7 @@ export function RequiredDocumentsCard({ applicationId, initialDocuments }: Requi
                   ) : (
                     <>
                       <Upload className="h-3.5 w-3.5" />
-                      {doc.filename ? 'Belgeyi Değiştir' : 'Belge Yükle (PDF)'}
+                      {doc.filename ? t.requiredDocs.replace : t.requiredDocs.upload}
                     </>
                   )}
                 </Button>

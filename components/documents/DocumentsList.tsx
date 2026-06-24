@@ -6,6 +6,7 @@ import { FileText, FileSignature, Lock } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 import { MIN_APPLY_SCORE } from '@/utils/constants'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 export interface DocumentItem {
   id: string
@@ -17,6 +18,7 @@ export interface DocumentItem {
 }
 
 export function DocumentsList({ items }: { items: DocumentItem[] }) {
+  const { t } = useI18n()
   const [template, setTemplate] = useState<CvTemplate>('classic')
 
   return (
@@ -48,11 +50,11 @@ export function DocumentsList({ items }: { items: DocumentItem[] }) {
                       href={`/api/applications/${it.id}/cv-pdf?type=cv&template=${template}`}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white transition-colors hover:bg-white/10"
                     >
-                      <FileText className="h-3.5 w-3.5" /> CV (PDF)
+                      <FileText className="h-3.5 w-3.5" /> {t.documents.cvPdf}
                     </a>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/30">
-                      <Lock className="h-3.5 w-3.5" /> CV skoru düşük
+                      <Lock className="h-3.5 w-3.5" /> {t.documents.lowScore}
                     </span>
                   ))}
                 {it.hasCoverLetter && (
@@ -60,7 +62,7 @@ export function DocumentsList({ items }: { items: DocumentItem[] }) {
                     href={`/api/applications/${it.id}/cv-pdf?type=cover_letter&template=${template}`}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white transition-colors hover:bg-white/10"
                   >
-                    <FileSignature className="h-3.5 w-3.5" /> Ön Yazı (PDF)
+                    <FileSignature className="h-3.5 w-3.5" /> {t.documents.coverLetterPdf}
                   </a>
                 )}
               </div>

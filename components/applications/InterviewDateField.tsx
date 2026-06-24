@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CalendarDays } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 function toInputValue(date: string | null): string {
   if (!date) return ''
@@ -19,6 +20,7 @@ export function InterviewDateField({
   applicationId: string
   initialDate: string | null
 }) {
+  const { t } = useI18n()
   const router = useRouter()
   const [value, setValue] = useState(toInputValue(initialDate))
   const [loading, setLoading] = useState(false)
@@ -37,12 +39,12 @@ export function InterviewDateField({
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error?.message ?? 'Bir hata oluştu.')
+        setError(json.error?.message ?? t.common.error)
         return
       }
       router.refresh()
     } catch {
-      setError('Bağlantı hatası.')
+      setError(t.common.connectionError)
     } finally {
       setLoading(false)
     }
@@ -52,17 +54,17 @@ export function InterviewDateField({
     <div className="flex items-center gap-2">
       <CalendarDays className="h-4 w-4 text-white/40" />
       <label htmlFor="interview_date" className="text-sm text-white/70">
-        Mülakat Tarihi
+        {t.appDetail.interviewDate}
       </label>
       <input
         id="interview_date"
         type="datetime-local"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className="rounded-lg border border-white/10 px-2 py-1 text-sm text-white/90 focus:border-amber-400 focus:outline-none"
+        className="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-sm text-white/90 focus:border-amber-400 focus:outline-none [color-scheme:dark]"
       />
       <Button variant="secondary" onClick={handleSave} disabled={loading}>
-        {loading ? <Spinner /> : 'Kaydet'}
+        {loading ? <Spinner /> : t.common.save}
       </Button>
       {error && <span className="text-xs text-red-500">{error}</span>}
     </div>

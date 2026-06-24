@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import { Bell } from 'lucide-react'
 import clsx from 'clsx'
 import { formatRelative } from '@/utils/format'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { Notification } from '@/lib/types'
 
 export function NotificationBell() {
+  const { t } = useI18n()
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [open, setOpen] = useState(false)
@@ -66,7 +68,7 @@ export function NotificationBell() {
       {open && (
         <div className="absolute right-0 z-10 mt-2 w-80 rounded-lg border border-white/10 bg-white/5 shadow-lg">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <p className="text-sm font-semibold text-white">Bildirimler</p>
+            <p className="text-sm font-semibold text-white">{t.notifications.title}</p>
             {unreadCount > 0 && (
               <button
                 onClick={async () => {
@@ -83,14 +85,14 @@ export function NotificationBell() {
                 }}
                 className="text-xs text-amber-500 hover:underline"
               >
-                Tümünü okundu işaretle
+                {t.notifications.markAllRead}
               </button>
             )}
           </div>
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-white/40">
-                Henüz bildirimin yok.
+                {t.notifications.empty}
               </p>
             ) : (
               notifications.map((n) => (

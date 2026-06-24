@@ -1,5 +1,8 @@
+'use client'
+
 import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { getInterviewReadiness } from '@/utils/constants'
+import { useI18n } from '@/components/i18n/I18nProvider'
 import type { MockInterviewFeedback } from '@/lib/types'
 
 interface InterviewFeedbackReportProps {
@@ -8,16 +11,17 @@ interface InterviewFeedbackReportProps {
 }
 
 export function InterviewFeedbackReport({ feedback, overallScore }: InterviewFeedbackReportProps) {
+  const { t } = useI18n()
   const readiness = getInterviewReadiness(overallScore)
 
   return (
     <div className="space-y-4 rounded-lg border border-white/10 bg-white/5 p-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Mülakat Geri Bildirim Raporu</h3>
+        <h3 className="text-sm font-semibold text-white">{t.interview.reportTitle}</h3>
         <span className="text-2xl font-bold text-amber-500">%{overallScore}</span>
       </div>
 
-      <p className={`text-sm font-medium ${readiness.className}`}>{readiness.label}</p>
+      <p className={`text-sm font-medium ${readiness.className}`}>{t.readiness[readiness.levelKey]}</p>
 
       <p className="text-sm text-white/70">{feedback.summary}</p>
 
@@ -41,7 +45,7 @@ export function InterviewFeedbackReport({ feedback, overallScore }: InterviewFee
 
       {feedback.strengths.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-white/50">Güçlü Yönler</p>
+          <p className="text-xs font-medium text-white/50">{t.interview.strengths}</p>
           <ul className="space-y-2">
             {feedback.strengths.map((s, i) => (
               <li key={i} className="flex gap-2 text-sm text-white/70">
@@ -55,7 +59,7 @@ export function InterviewFeedbackReport({ feedback, overallScore }: InterviewFee
 
       {feedback.improvements.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-white/50">Geliştirilmesi Gerekenler</p>
+          <p className="text-xs font-medium text-white/50">{t.interview.improvements}</p>
           <ul className="space-y-2">
             {feedback.improvements.map((s, i) => (
               <li key={i} className="flex gap-2 text-sm text-white/70">
