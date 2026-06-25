@@ -19,6 +19,9 @@ export const cvPersonalSchema = z.object({
   email: z.string().default(''),
   phone: z.string().default(''),
   location: z.string().default(''),
+  // Profesyonel vesikalık fotoğraf, "data:image/...;base64,..." biçiminde gömülü.
+  // Boş string = fotoğraf yok. İstemci tarafında küçültülüp sıkıştırılarak set edilir.
+  photo: z.string().default(''),
   links: z.array(cvLinkSchema).default([]),
 })
 

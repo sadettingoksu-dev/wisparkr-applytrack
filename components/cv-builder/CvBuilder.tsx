@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   Plus,
   Trash2,
@@ -10,6 +10,10 @@ import {
   Download,
   Check,
   X,
+  Sparkles,
+  ImageIcon,
+  ShieldCheck,
+  Upload,
 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -17,6 +21,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 import { CvPreview } from '@/components/cv-builder/CvPreview'
 import { useI18n } from '@/components/i18n/I18nProvider'
+import { hasCvContent } from '@/lib/cv'
 import type {
   CvData,
   CvExperience,
@@ -25,6 +30,7 @@ import type {
   CvLanguage,
   CvCertification,
 } from '@/lib/cv'
+import type { CvReviewResult } from '@/lib/anthropic'
 
 const inputClass =
   'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200 transition-colors'
@@ -35,6 +41,36 @@ function moveItem<T>(arr: T[], from: number, to: number): T[] {
   const [item] = copy.splice(from, 1)
   copy.splice(to, 0, item)
   return copy
+}
+
+/**
+ * Reads an image file, downscales it to a passport-sized square-ish thumbnail
+ * and re-encodes it as a compact JPEG data URL so it can live inside cv_data
+ * (jsonb) without bloating it. Runs entirely in the browser.
+ */
+async function fileToCompressedDataUrl(file: File, maxDim = 400, quality = 0.85): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = () => reject(new Error('read failed'))
+    reader.readAsDataURL(file)
+  })
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const im = new Image()
+    im.onload = () => resolve(im)
+    im.onerror = () => reject(new Error('decode failed'))
+    im.src = dataUrl
+  })
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+  const w = Math.max(1, Math.round(img.width * scale))
+  const h = Math.max(1, Math.round(img.height * scale))
+  const canvas = document.createElement('canvas')
+  canvas.width = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return dataUrl
+  ctx.drawImage(img, 0, 0, w, h)
+  return canvas.toDataURL('image/jpeg', quality)
 }
 
 const emptyExperience: CvExperience = { company: '', role: '', location: '', start: '', end: '', current: false, bullets: [] }
@@ -58,7 +94,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
   }
   const setPersonal = (p: Partial<CvData['personal']>) => patch({ personal: { ...cv.personal, ...p } })
 
-  async function handleSave() {
+  async function handleSave(): Promise<boolean> {
     setSaving(true)
     setError(null)
     try {
@@ -70,13 +106,105 @@ export function CvBuilder({ initial }: { initial: CvData }) {
       const json = await res.json()
       if (!res.ok) {
         setError(json.error?.message ?? t.newApp.saveError)
-        return
+        return false
       }
       setSaved(true)
+      return true
     } catch {
       setError(t.common.connectionError)
+      return false
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Mevcut CV dosyasını içe aktar: AI ile yapılandırılıp builder alanlarına dolar.
+  const importFileRef = useRef<HTMLInputElement>(null)
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
+
+  async function handleImportFile(file: File | null) {
+    if (!file) return
+    setImportError(null)
+    // Builder'da içerik varsa üzerine yazmadan önce onay al.
+    if (hasCvContent(cv) && !window.confirm(t.cvBuilder.importConfirm)) {
+      if (importFileRef.current) importFileRef.current.value = ''
+      return
+    }
+    setImporting(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/cv/import', { method: 'POST', body: fd })
+      const json = await res.json()
+      if (!res.ok) {
+        setImportError(json.error?.message ?? t.common.error)
+        return
+      }
+      const parsed = json.data as CvData
+      // Kullanıcı zaten fotoğraf eklediyse koru.
+      setCv({ ...parsed, personal: { ...parsed.personal, photo: cv.personal.photo || parsed.personal.photo } })
+      setSaved(false)
+    } catch {
+      setImportError(t.common.connectionError)
+    } finally {
+      setImporting(false)
+      if (importFileRef.current) importFileRef.current.value = ''
+    }
+  }
+
+  // Profesyonel fotoğraf yükleme: istemcide küçültülüp cv_data'ya gömülür.
+  const photoFileRef = useRef<HTMLInputElement>(null)
+  const [photoError, setPhotoError] = useState<string | null>(null)
+
+  async function handlePhotoFile(file: File | null) {
+    if (!file) return
+    setPhotoError(null)
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+      setPhotoError(t.cvBuilder.photoTypeError)
+      return
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setPhotoError(t.cvBuilder.photoSizeError)
+      return
+    }
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file)
+      setPersonal({ photo: dataUrl })
+    } catch {
+      setPhotoError(t.common.error)
+    } finally {
+      if (photoFileRef.current) photoFileRef.current.value = ''
+    }
+  }
+
+  // AI profesyonellik denetimi: önce kaydet, sonra kayıtlı CV'yi denetle.
+  const [reviewing, setReviewing] = useState(false)
+  const [review, setReview] = useState<CvReviewResult | null>(null)
+  const [reviewError, setReviewError] = useState<string | null>(null)
+
+  async function handleReview() {
+    setReviewing(true)
+    setReviewError(null)
+    setReview(null)
+    const ok = await handleSave()
+    if (!ok) {
+      setReviewError(t.cvBuilder.reviewSaveError)
+      setReviewing(false)
+      return
+    }
+    try {
+      const res = await fetch('/api/cv/review', { method: 'POST' })
+      const json = await res.json()
+      if (!res.ok) {
+        setReviewError(json.error?.message ?? t.common.error)
+        return
+      }
+      setReview(json.data as CvReviewResult)
+    } catch {
+      setReviewError(t.common.connectionError)
+    } finally {
+      setReviewing(false)
     }
   }
 
@@ -85,6 +213,42 @@ export function CvBuilder({ initial }: { initial: CvData }) {
     if (!value || cv.skills.includes(value)) return
     patch({ skills: [...cv.skills, value] })
     setSkillInput('')
+  }
+
+  const certFileRef = useRef<HTMLInputElement>(null)
+  const [certUploading, setCertUploading] = useState(false)
+  const [certError, setCertError] = useState<string | null>(null)
+
+  // Sertifika dosyası yükle → AI alanları + ilgili becerileri çıkarıp CV'ye ekler.
+  async function handleCertFile(file: File | null) {
+    if (!file) return
+    setCertUploading(true)
+    setCertError(null)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/cv/parse-certificate', { method: 'POST', body: fd })
+      const json = await res.json()
+      if (!res.ok) {
+        setCertError(json.error?.message ?? t.common.error)
+        return
+      }
+      const c = json.data as { name: string; issuer: string; date: string; skills: string[] }
+      setCv((prev) => {
+        const newSkills = (c.skills ?? []).filter((s) => s && !prev.skills.includes(s))
+        return {
+          ...prev,
+          certifications: [...prev.certifications, { name: c.name || '', issuer: c.issuer || '', date: c.date || '' }],
+          skills: [...prev.skills, ...newSkills],
+        }
+      })
+      setSaved(false)
+    } catch {
+      setCertError(t.common.connectionError)
+    } finally {
+      setCertUploading(false)
+      if (certFileRef.current) certFileRef.current.value = ''
+    }
   }
 
   return (
@@ -98,9 +262,65 @@ export function CvBuilder({ initial }: { initial: CvData }) {
           </p>
         </div>
 
+        {/* Mevcut CV'yi içe aktar */}
+        <Card className="space-y-2">
+          <input
+            ref={importFileRef}
+            type="file"
+            accept="application/pdf,image/png,image/jpeg,image/webp"
+            className="hidden"
+            onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)}
+          />
+          <button
+            type="button"
+            onClick={() => importFileRef.current?.click()}
+            disabled={importing}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-purple-300 bg-purple-50 px-3 py-2.5 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
+          >
+            {importing ? <Spinner /> : <Upload className="h-4 w-4" />}
+            {importing ? t.cvBuilder.importing : t.cvBuilder.importCv}
+          </button>
+          <p className="text-[11px] text-slate-400">{t.cvBuilder.importHint}</p>
+          {importError && <p className="text-xs text-red-500">{importError}</p>}
+        </Card>
+
         {/* Kişisel */}
         <Card className="space-y-3">
           <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.personal}</h2>
+
+          {/* Profesyonel fotoğraf */}
+          <div className="flex items-center gap-3">
+            {cv.personal.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={cv.personal.photo} alt={t.cvBuilder.photo} className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" />
+            ) : (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
+                <ImageIcon className="h-6 w-6" />
+              </div>
+            )}
+            <div className="space-y-1">
+              <input
+                ref={photoFileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => handlePhotoFile(e.target.files?.[0] ?? null)}
+              />
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => photoFileRef.current?.click()} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50">
+                  {cv.personal.photo ? t.cvBuilder.photoChange : t.cvBuilder.photoUpload}
+                </button>
+                {cv.personal.photo && (
+                  <button type="button" onClick={() => setPersonal({ photo: '' })} className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50">
+                    {t.cvBuilder.photoRemove}
+                  </button>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.photoHint}</p>
+            </div>
+          </div>
+          {photoError && <p className="text-xs text-red-500">{photoError}</p>}
+
           <input className={inputClass} placeholder={t.cvBuilder.fullName} value={cv.personal.fullName} onChange={(e) => setPersonal({ fullName: e.target.value })} />
           <input className={inputClass} placeholder={t.cvBuilder.headline} value={cv.personal.headline} onChange={(e) => setPersonal({ headline: e.target.value })} />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -120,6 +340,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
             ))}
             <AddButton label={t.cvBuilder.addLink} onClick={() => setPersonal({ links: [...cv.personal.links, { label: '', url: '' }] })} />
           </div>
+          <p className="text-[11px] text-slate-400">{t.cvBuilder.linkHint}</p>
         </Card>
 
         {/* Özet */}
@@ -131,6 +352,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
         {/* Deneyim */}
         <Card className="space-y-3">
           <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.experience}</h2>
+          <p className="text-[11px] text-slate-400">{t.cvBuilder.experienceHint}</p>
           {cv.experience.map((exp, i) => (
             <ItemFrame key={i} index={i} total={cv.experience.length} onMove={(to) => patch({ experience: moveItem(cv.experience, i, to) })} onRemove={() => patch({ experience: cv.experience.filter((_, idx) => idx !== i) })}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -155,6 +377,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
         {/* Eğitim */}
         <Card className="space-y-3">
           <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.education}</h2>
+          <p className="text-[11px] text-slate-400">{t.cvBuilder.educationHint}</p>
           {cv.education.map((ed, i) => (
             <ItemFrame key={i} index={i} total={cv.education.length} onMove={(to) => patch({ education: moveItem(cv.education, i, to) })} onRemove={() => patch({ education: cv.education.filter((_, idx) => idx !== i) })}>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -216,6 +439,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
         {/* Diller & Sertifikalar */}
         <Card className="space-y-3">
           <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.languages}</h2>
+          <p className="text-[11px] text-slate-400">{t.cvBuilder.languagesHint}</p>
           {cv.languages.map((l, i) => (
             <div key={i} className="flex gap-2">
               <input className={inputClass} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
@@ -241,6 +465,28 @@ export function CvBuilder({ initial }: { initial: CvData }) {
             </div>
           ))}
           <AddButton label={t.cvBuilder.addCertification} onClick={() => patch({ certifications: [...cv.certifications, { ...emptyCertification }] })} />
+
+          {/* Dosyadan AI ile ekle */}
+          <div className="space-y-1.5 border-t border-slate-100 pt-3">
+            <input
+              ref={certFileRef}
+              type="file"
+              accept="application/pdf,image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={(e) => handleCertFile(e.target.files?.[0] ?? null)}
+            />
+            <button
+              type="button"
+              onClick={() => certFileRef.current?.click()}
+              disabled={certUploading}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-purple-300 bg-purple-50 px-3 py-2.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
+            >
+              {certUploading ? <Spinner /> : <Sparkles className="h-4 w-4" />}
+              {certUploading ? t.cvBuilder.certParsing : t.cvBuilder.uploadCert}
+            </button>
+            <p className="text-[11px] text-slate-400">{t.cvBuilder.uploadCertHint}</p>
+            {certError && <p className="text-xs text-red-500">{certError}</p>}
+          </div>
         </Card>
       </div>
 
@@ -262,6 +508,60 @@ export function CvBuilder({ initial }: { initial: CvData }) {
         </div>
         {error && <p className="text-xs text-red-500">{error}</p>}
         <p className="text-xs text-slate-400">{t.cvBuilder.pdfNote}</p>
+
+        {/* Profesyonellik kontrolü (AI) */}
+        <Card className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+              <ShieldCheck className="h-4 w-4 text-purple-600" />
+              {t.cvBuilder.reviewTitle}
+            </h2>
+            <Button onClick={handleReview} disabled={reviewing} variant="secondary">
+              {reviewing ? <Spinner /> : <Sparkles className="h-4 w-4" />}
+              {reviewing ? t.cvBuilder.reviewing : t.cvBuilder.reviewCta}
+            </Button>
+          </div>
+          <p className="text-[11px] text-slate-400">{t.cvBuilder.reviewHint}</p>
+          {reviewError && <p className="text-xs text-red-500">{reviewError}</p>}
+          {review && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl font-bold text-slate-900">
+                  {review.score}
+                  <span className="text-sm font-medium text-slate-400">/100</span>
+                </div>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-full rounded-full bg-purple-500" style={{ width: `${review.score}%` }} />
+                </div>
+              </div>
+              {review.strengths.length > 0 && (
+                <div>
+                  <p className="mb-1 text-xs font-semibold text-emerald-600">{t.cvBuilder.reviewStrengths}</p>
+                  <ul className="space-y-1">
+                    {review.strengths.map((s, i) => (
+                      <li key={i} className="flex gap-1.5 text-xs text-slate-600">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {review.improvements.length > 0 && (
+                <div>
+                  <p className="mb-1 text-xs font-semibold text-amber-600">{t.cvBuilder.reviewImprovements}</p>
+                  <ul className="space-y-1.5">
+                    {review.improvements.map((im, i) => (
+                      <li key={i} className="text-xs text-slate-600">
+                        <span className="font-medium text-slate-800">{im.section}:</span> {im.tip}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
 
         <CvPreview data={cv} />
       </div>

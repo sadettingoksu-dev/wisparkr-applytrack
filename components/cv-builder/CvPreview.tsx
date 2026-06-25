@@ -22,13 +22,23 @@ export function CvPreview({ data }: { data: CvData }) {
   return (
     <div className="rounded-2xl bg-white p-8 text-[13px] leading-relaxed text-neutral-800 shadow-xl">
       {/* Header */}
-      <header className="border-b border-neutral-200 pb-4">
-        <h1 className="text-2xl font-bold text-neutral-900">{p.fullName || t.cvPreview.yourName}</h1>
-        {p.headline && <p className="mt-0.5 text-neutral-600">{p.headline}</p>}
-        {(contact.length > 0 || links.length > 0) && (
-          <p className="mt-2 text-xs text-neutral-500">
-            {[...contact, ...links.map((l) => l.url || l.label)].join('   ·   ')}
-          </p>
+      <header className="flex items-start justify-between gap-4 border-b border-neutral-200 pb-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-neutral-900">{p.fullName || t.cvPreview.yourName}</h1>
+          {p.headline && <p className="mt-0.5 text-neutral-600">{p.headline}</p>}
+          {(contact.length > 0 || links.length > 0) && (
+            <p className="mt-2 text-xs text-neutral-500">
+              {[...contact, ...links.map((l) => l.url || l.label)].join('   ·   ')}
+            </p>
+          )}
+        </div>
+        {p.photo && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={p.photo}
+            alt={p.fullName || t.cvPreview.yourName}
+            className="h-24 w-20 shrink-0 rounded-md object-cover ring-1 ring-neutral-200"
+          />
         )}
       </header>
 

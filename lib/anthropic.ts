@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { z } from 'zod'
 import type { EmailClassification } from '@/lib/types'
+import { cvDataSchema, type CvData } from '@/lib/cv'
 import { MOCK_INTERVIEW_QUESTION_COUNT } from '@/utils/constants'
 
 export const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001'
@@ -339,6 +340,233 @@ export async function analyzeSkillsGap(
   const jsonMatch = text.match(/\{[\s\S]*\}/)
   const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
   const validated = skillsGapSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
+const certificateSchema = z.object({
+  name: z.string().default(''),
+  issuer: z.string().default(''),
+  date: z.string().default(''),
+  skills: z.array(z.string()).max(12).default([]),
+})
+
+export interface CertificateExtraction {
+  name: string
+  issuer: string
+  date: string
+  skills: string[]
+}
+
+export type CertImageType = 'image/png' | 'image/jpeg' | 'image/webp'
+
+/**
+ * Reads an uploaded certificate/diploma and extracts its name, issuer and date,
+ * plus any skills it evidences — so the CV builder can auto-fill the entry and
+ * merge the skills. Images are read with vision; PDFs are passed as text
+ * (extracted upstream) since this SDK version has no document block.
+ */
+export async function extractCertificate(
+  anthropic: Anthropic,
+  input: { image?: { data: string; mediaType: CertImageType }; text?: string }
+): Promise<CertificateExtraction> {
+  const instruction = [
+    'Bu bir sertifika, diploma veya katılım belgesidir. İçindeki bilgileri çıkar:',
+    '- "name": sertifikanın/eğitimin adı',
+    '- "issuer": belgeyi veren kurum/kuruluş',
+    '- "date": veriliş/tamamlanma tarihi (yıl ya da AA.YYYY; yoksa boş)',
+    '- "skills": belgenin kanıtladığı en fazla 8 ilgili beceri/teknoloji (kısa adlar; yoksa boş liste)',
+    'Bir bilgi okunamıyorsa o alanı boş bırak. ' + TURKISH_WRITING_RULE,
+    'SADECE şu JSON ile cevap ver, başka metin ekleme:',
+    '{"name":"","issuer":"","date":"","skills":[]}',
+  ].join('\n')
+
+  const content: Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam> = input.image
+    ? [
+        { type: 'image', source: { type: 'base64', media_type: input.image.mediaType, data: input.image.data } },
+        { type: 'text', text: instruction },
+      ]
+    : [{ type: 'text', text: `${instruction}\n\nSertifika metni:\n${(input.text ?? '').slice(0, 6000)}` }]
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 512,
+    messages: [{ role: 'user', content }],
+  })
+
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = certificateSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
+/**
+ * Parses an existing CV (extracted PDF text, or an image read with vision)
+ * into the structured CvData shape used by the CV builder, so the user can
+ * import a CV they already have and then edit it field-by-field. Content is
+ * kept in its original language; nothing is invented. The photo is never
+ * filled here (the user adds it in the builder).
+ */
+export async function parseCvToStructured(
+  anthropic: Anthropic,
+  input: { image?: { data: string; mediaType: CertImageType }; text?: string }
+): Promise<CvData> {
+  const instruction = [
+    'Bu bir özgeçmiş (CV) belgesidir. İçeriğini AYNEN, yapılandırılmış JSON biçimine dök.',
+    '- Bilgiyi olduğu gibi al; yeni bilgi UYDURMA, çeviri YAPMA (özgün dilini koru).',
+    '- Bir alan belgede yoksa boş string ("") veya boş liste ([]) bırak.',
+    '- Deneyim/eğitimde tarihleri kısa yaz (örn. "2021", "06.2021"). Hâlâ devam eden işte',
+    '  "current": true yap ve "end" boş kalsın.',
+    '- "bullets": her madde ayrı bir string; başına işaret/• koyma.',
+    '- "skills": kısa beceri adları listesi. "links": {label,url} (örn. LinkedIn).',
+    '- "photo" alanını her zaman boş ("") bırak.',
+    TURKISH_WRITING_RULE,
+    'SADECE şu JSON şemasıyla cevap ver, başka hiçbir metin ekleme:',
+    '{"personal":{"fullName":"","headline":"","email":"","phone":"","location":"","photo":"","links":[{"label":"","url":""}]},',
+    '"summary":"","experience":[{"company":"","role":"","location":"","start":"","end":"","current":false,"bullets":[""]}],',
+    '"education":[{"school":"","degree":"","field":"","start":"","end":"","note":""}],"skills":[""],',
+    '"projects":[{"name":"","description":"","link":"","bullets":[""]}],"languages":[{"name":"","level":""}],',
+    '"certifications":[{"name":"","issuer":"","date":""}]}',
+  ].join('\n')
+
+  const content: Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam> = input.image
+    ? [
+        { type: 'image', source: { type: 'base64', media_type: input.image.mediaType, data: input.image.data } },
+        { type: 'text', text: instruction },
+      ]
+    : [{ type: 'text', text: `${instruction}\n\nCV metni:\n${(input.text ?? '').slice(0, 12000)}` }]
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 4096,
+    messages: [{ role: 'user', content }],
+  })
+
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = cvDataSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  // Güvenlik: foto bu akışta asla doldurulmaz.
+  return { ...validated.data, personal: { ...validated.data.personal, photo: '' } }
+}
+
+const cvReviewSchema = z.object({
+  score: z.number().min(0).max(100),
+  strengths: z.array(z.string()).max(8).default([]),
+  improvements: z
+    .array(z.object({ section: z.string().min(1), tip: z.string().min(1) }))
+    .max(10)
+    .default([]),
+})
+
+export interface CvReviewResult {
+  score: number
+  strengths: string[]
+  improvements: { section: string; tip: string }[]
+}
+
+/**
+ * Audits a CV against professional best practices (photo, 1-2 page length,
+ * reverse-chronological order, a clean header with contact + only LinkedIn,
+ * measurable bullet-point achievements, objective skills/language/cert
+ * listing) and returns a readiness score plus concrete, section-tagged tips.
+ */
+export async function reviewCvProfessionalism(
+  anthropic: Anthropic,
+  cvText: string,
+  opts: { hasPhoto: boolean }
+): Promise<CvReviewResult> {
+  const prompt = [
+    'Aşağıda bir adayın CV metni var. Bu CV\'yi PROFESYONELLİK ilkelerine göre denetle',
+    've geliştirme önerileri ver. Değerlendirme kriterleri:',
+    '- Fotoğraf: profesyonel bir vesikalık fotoğraf olmalı (tatil/selfie değil).',
+    `  (Bu CV\'de şu an fotoğraf ${opts.hasPhoto ? 'VAR' : 'YOK'}.)`,
+    '- Yapı/uzunluk: net, 1-2 sayfa, ters kronolojik (en yeni en üstte).',
+    '- Başlık: ad soyad, profesyonel ünvan, e-posta, telefon, konum net olmalı;',
+    '  sosyal medyadan yalnızca sektöre uygun LinkedIn olmalı.',
+    '- Deneyim: sadece ünvan değil, ÖLÇÜLEBİLİR başarılar/sorumluluklar madde madde.',
+    '- Yetkinlik/Dil: sertifikalar, beceriler ve yabancı dil seviyesi objektif listelenmeli.',
+    '',
+    '0-100 arası bir "profesyonellik skoru" ver. 2-5 güçlü nokta (strengths) ve',
+    'eksikler için somut öneriler (improvements) yaz. Her öneride "section" alanına',
+    'ilgili bölümü yaz (örn. "Fotoğraf", "Deneyim", "Başlık", "Diller", "Genel").',
+    'Var olmayan bilgiyi UYDURMA; yalnızca metinde gördüğüne dayan. ' + TURKISH_WRITING_RULE,
+    'SADECE şu JSON ile cevap ver, başka hiçbir metin ekleme:',
+    '{"score":<0-100>,"strengths":["..."],"improvements":[{"section":"...","tip":"..."}]}',
+    '',
+    'CV:',
+    cvText.slice(0, 10000),
+  ].join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 1536,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = cvReviewSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
+const jobExtractionSchema = z.object({
+  company_name: z.string().default(''),
+  position_title: z.string().default(''),
+  job_description: z.string().default(''),
+})
+
+export interface JobExtraction {
+  company_name: string
+  position_title: string
+  job_description: string
+}
+
+/**
+ * Reads the raw text of a job posting page and extracts the structured
+ * fields the user would otherwise type by hand: company name, position
+ * title and a clean job description. Throws on an invalid AI response so
+ * callers can fall back to heuristic meta-tag parsing.
+ */
+export async function extractJobPosting(
+  anthropic: Anthropic,
+  pageText: string,
+  url: string
+): Promise<JobExtraction> {
+  const prompt = [
+    'Aşağıda bir iş ilanı sayfasının ham metni var. Bu metinden ilanın bilgilerini çıkar:',
+    '- "company_name": ilanı veren şirketin/kurumun adı',
+    '- "position_title": açık pozisyonun/iş ilanının başlığı',
+    '- "job_description": ilanın açıklaması; görev tanımı, sorumluluklar, aranan',
+    '  nitelikler ve varsa yan haklar gibi ASIL içeriği derli toplu biçimde topla.',
+    '  Menü, çerez uyarısı, footer, "benzer ilanlar" gibi sayfa süslerini ALMA.',
+    'Bilgi gerçekten yoksa o alanı boş bırak; UYDURMA. ' + TURKISH_WRITING_RULE,
+    'SADECE şu JSON ile cevap ver, başka hiçbir metin ekleme:',
+    '{"company_name":"","position_title":"","job_description":""}',
+    '',
+    `İlan adresi: ${url}`,
+    '',
+    'Sayfa metni:',
+    pageText.slice(0, 12000),
+  ].join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 2048,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = jobExtractionSchema.safeParse(candidate)
   if (!validated.success) throw new Error('invalid AI response shape')
   return validated.data
 }

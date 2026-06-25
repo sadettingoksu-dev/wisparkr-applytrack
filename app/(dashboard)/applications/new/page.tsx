@@ -15,6 +15,7 @@ export default function NewApplicationPage() {
   const [companyName, setCompanyName] = useState('')
   const [positionTitle, setPositionTitle] = useState('')
   const [jobDescription, setJobDescription] = useState('')
+  const [parsed, setParsed] = useState(false)
   const [parsing, setParsing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,11 +45,12 @@ export default function NewApplicationPage() {
         body: JSON.stringify({ url }),
       })
       const json = await res.json()
-      if (!res.ok) { setError(json.error?.message ?? t.newApp.parseError); return }
+      if (!res.ok) { setError(json.error?.message ?? t.newApp.parseError); setParsed(false); return }
       setCompanyName(json.data.company_name)
       setPositionTitle(json.data.position_title)
       setJobDescription(json.data.job_description)
-    } catch { setError(t.common.connectionError) }
+      setParsed(true)
+    } catch { setError(t.common.connectionError); setParsed(false) }
     finally { setParsing(false) }
   }
 
@@ -96,36 +98,48 @@ export default function NewApplicationPage() {
       <Card className="space-y-3">
         <label className="text-sm font-medium text-slate-800">{t.newApp.urlLabel}</label>
         <div className="flex gap-2">
-          <Input type="url" placeholder="https://www.linkedin.com/jobs/view/..." value={url} onChange={(e) => setUrl(e.target.value)} />
+          <Input
+            type="url"
+            placeholder="https://www.linkedin.com/jobs/view/..."
+            value={url}
+            onChange={(e) => { setUrl(e.target.value); setParsed(false) }}
+          />
           <Button onClick={handleParse} disabled={parsing || !url} variant="secondary">
             {parsing ? <Spinner /> : t.newApp.fill}
           </Button>
         </div>
+        <p className="text-xs text-slate-500">{t.newApp.urlHint}</p>
+        {error && <p className="text-xs text-red-500">{error}</p>}
       </Card>
 
-      <form onSubmit={handleSave}>
-        <Card className="space-y-4">
-          {error && <p className="text-xs text-red-500">{error}</p>}
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-800">{t.newApp.companyLabel}</label>
-            <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-800">{t.newApp.positionLabel}</label>
-            <Input value={positionTitle} onChange={(e) => setPositionTitle(e.target.value)} required />
-          </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-800">{t.newApp.descLabel}</label>
-            <textarea
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-              rows={6} value={jobDescription} onChange={(e) => setJobDescription(e.target.value)}
-            />
-          </div>
-          <Button type="submit" disabled={saving || !companyName || !positionTitle}>
-            {saving ? <Spinner /> : t.common.save}
-          </Button>
-        </Card>
-      </form>
+      {parsed && (
+        <form onSubmit={handleSave}>
+          <Card className="space-y-4">
+            <p className="text-xs font-medium text-purple-600">{t.newApp.aiFilledHint}</p>
+            <div className="space-y-1">
+              <span className="text-sm font-medium text-slate-800">{t.newApp.companyLabel}</span>
+              <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-900">
+                {companyName || '—'}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <span className="text-sm font-medium text-slate-800">{t.newApp.positionLabel}</span>
+              <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-900">
+                {positionTitle || '—'}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <span className="text-sm font-medium text-slate-800">{t.newApp.descLabel}</span>
+              <p className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                {jobDescription || '—'}
+              </p>
+            </div>
+            <Button type="submit" disabled={saving || !companyName || !positionTitle}>
+              {saving ? <Spinner /> : t.common.save}
+            </Button>
+          </Card>
+        </form>
+      )}
     </div>
   )
 }

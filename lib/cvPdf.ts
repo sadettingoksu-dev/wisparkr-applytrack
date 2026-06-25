@@ -24,6 +24,22 @@ const THEMES: Record<CvPdfTemplate, Theme> = {
   creative: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#c026d3', sub: '#a21caf', nameSize: 28, rule: false, center: false },
 }
 
+/**
+ * Decodes a base64 data-URL photo to a Buffer PDFKit can embed. Only PNG/JPEG
+ * are supported by PDFKit, so other formats (or malformed data) yield null and
+ * the CV simply renders without a photo.
+ */
+function decodePhoto(photo: string): Buffer | null {
+  if (!photo) return null
+  const m = photo.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/i)
+  if (!m) return null
+  try {
+    return Buffer.from(m[2], 'base64')
+  } catch {
+    return null
+  }
+}
+
 function sectionHeading(doc: PDFKit.PDFDocument, t: Theme, title: string) {
   doc.moveDown(0.7)
   doc.font(t.bold).fontSize(11).fillColor(t.accent).text(title.toUpperCase())
@@ -42,14 +58,36 @@ function sectionHeading(doc: PDFKit.PDFDocument, t: Theme, title: string) {
 function renderCv(doc: PDFKit.PDFDocument, template: CvPdfTemplate, data: CvData) {
   const t = THEMES[template]
   const p = data.personal
-  const align: 'left' | 'center' = t.center ? 'center' : 'left'
+  let align: 'left' | 'center' = t.center ? 'center' : 'left'
 
-  doc.font(t.bold).fontSize(t.nameSize).fillColor(t.accent).text(p.fullName || 'Adınız Soyadınız', { align })
-  if (p.headline) doc.font(t.font).fontSize(12).fillColor(t.sub).text(p.headline, { align })
+  // Profesyonel vesikalık fotoğraf: başlığın sağ üst köşesine yerleştirilir.
+  // Foto varken metin sola hizalanır ve fotoğrafla çakışmaması için daraltılır.
+  const photoBuf = decodePhoto(p.photo)
+  const headerTop = doc.y
+  let textWidth: number | undefined
+  const imgW = 80
+  const imgH = 100
+  if (photoBuf) {
+    const x = doc.page.width - doc.page.margins.right - imgW
+    try {
+      doc.image(photoBuf, x, headerTop, { fit: [imgW, imgH], align: 'right' })
+      align = 'left'
+      textWidth =
+        doc.page.width - doc.page.margins.left - doc.page.margins.right - imgW - 18
+    } catch {
+      // bozuk görsel — fotoğrafsız devam et
+    }
+  }
+
+  doc.font(t.bold).fontSize(t.nameSize).fillColor(t.accent).text(p.fullName || 'Adınız Soyadınız', { align, width: textWidth })
+  if (p.headline) doc.font(t.font).fontSize(12).fillColor(t.sub).text(p.headline, { align, width: textWidth })
   const contact = [p.email, p.phone, p.location, ...p.links.map((l) => l.url || l.label)]
     .filter(Boolean)
     .join('   ·   ')
-  if (contact) doc.moveDown(0.2).font(t.font).fontSize(9).fillColor(t.sub).text(contact, { align })
+  if (contact) doc.moveDown(0.2).font(t.font).fontSize(9).fillColor(t.sub).text(contact, { align, width: textWidth })
+
+  // İçerik, fotoğraf metinden uzunsa fotoğrafın altından devam etsin.
+  if (photoBuf && doc.y < headerTop + imgH) doc.y = headerTop + imgH
 
   if (data.summary.trim()) {
     sectionHeading(doc, t, 'Özet')

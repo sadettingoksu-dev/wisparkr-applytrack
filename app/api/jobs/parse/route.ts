@@ -29,7 +29,7 @@ export async function POST(request: Request) {
         error: {
           code: 'FETCH_FAILED',
           message:
-            'İlan sayfası okunamadı (site engelliyor olabilir). Bilgileri manuel girebilirsiniz.',
+            'İlan sayfası okunamadı (site sunucu erişimini engelliyor olabilir). Lütfen başka bir ilan linki deneyin.',
         },
       },
       { status: 502 }
