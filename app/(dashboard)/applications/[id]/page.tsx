@@ -42,12 +42,12 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
-        <div className="flex items-start justify-between">
-          <div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <h1 className="text-2xl font-bold text-slate-900">{app.position_title}</h1>
             <p className="text-sm text-slate-500">{app.company_name}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             <StatusSelector applicationId={app.id} initialStatus={app.status} />
             <DeleteApplicationButton applicationId={app.id} />
           </div>
