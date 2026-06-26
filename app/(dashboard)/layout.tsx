@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { NotificationBell } from '@/components/layout/NotificationBell'
-import { getEffectivePlanId } from '@/lib/plans'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -13,11 +12,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('plan, trial_ends_at')
+      .select('plan')
       .eq('id', user.id)
       .single()
-    // Deneme aktifse rozet "free" yerine efektif planı (Pro) göstersin.
-    plan = getEffectivePlanId(profile as { plan?: string; trial_ends_at?: string | null } | null)
+    // Rozet GERÇEK planı gösterir: yalnızca ödeme yapan hesaplar Pro/Career Coach,
+    // deneme hesapları "Deneme" görünür (landing navbar ile tutarlı).
+    plan = (profile as { plan?: string } | null)?.plan ?? 'free'
   }
 
   return (
