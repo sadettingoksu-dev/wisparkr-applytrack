@@ -331,6 +331,7 @@ const tr = {
     elegant: 'Zarif',
     professional: 'Profesyonel',
     creative: 'Yaratıcı',
+    bold: 'Cesur',
   },
   expiredCv: {
     title: 'Bu CV bağlantısı şu an görüntülenemiyor',
@@ -569,6 +570,7 @@ const tr = {
     projects: 'Projeler',
     languages: 'Diller',
     certifications: 'Sertifikalar',
+    contact: 'İletişim',
   },
   share: {
     title: 'Paylaşılabilir CV Linki',
@@ -957,6 +959,7 @@ const en: Dictionary = {
     elegant: 'Elegant',
     professional: 'Professional',
     creative: 'Creative',
+    bold: 'Bold',
   },
   expiredCv: {
     title: 'This CV link is currently unavailable',
@@ -1195,6 +1198,7 @@ const en: Dictionary = {
     projects: 'Projects',
     languages: 'Languages',
     certifications: 'Certifications',
+    contact: 'Contact',
   },
   share: {
     title: 'Shareable CV Link',

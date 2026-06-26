@@ -53,7 +53,7 @@ const H = {
 }
 
 // --- Şablon teması ----------------------------------------------------------
-type Layout = 'single' | 'sidebar'
+type Layout = 'single' | 'sidebar' | 'band'
 interface Theme {
   layout: Layout
   accent: string
@@ -69,6 +69,7 @@ const THEMES: Record<CvTemplate, Theme> = {
   elegant: { layout: 'single', accent: '#6d28d9', headerAlign: 'center', sidebarFilled: false, nameSize: 23 },
   modern: { layout: 'sidebar', accent: '#7c3aed', headerAlign: 'left', sidebarFilled: false, nameSize: 23 },
   creative: { layout: 'sidebar', accent: '#c026d3', headerAlign: 'left', sidebarFilled: true, nameSize: 24 },
+  bold: { layout: 'band', accent: '#0d9488', headerAlign: 'left', sidebarFilled: false, nameSize: 24 },
 }
 
 function period(start: string, end: string, current?: boolean): string {
@@ -398,11 +399,170 @@ function SidebarCv({ data, t }: { data: CvData; t: Theme }) {
   )
 }
 
+// ---------------------------------------------------------------------------
+// BAND (üstte renkli bant başlık) layout
+// ---------------------------------------------------------------------------
+function BandCv({ data, t }: { data: CvData; t: Theme }) {
+  const p = data.personal
+  const photo = photoSrc(p.photo)
+  const contact = [p.email, p.phone, p.location].filter(Boolean)
+  const links = p.links.map((l) => l.url || l.label).filter(Boolean)
+  const accent = t.accent
+
+  const s = StyleSheet.create({
+    page: { fontFamily: 'Roboto', fontSize: 10, color: '#1f2937' },
+    band: { backgroundColor: accent, paddingVertical: 28, paddingHorizontal: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    name: { fontSize: t.nameSize, fontWeight: 'bold', color: '#ffffff', lineHeight: 1.15 },
+    headline: { fontSize: 12, color: '#e6fffb', marginTop: 2 },
+    contact: { fontSize: 9, color: '#d6fbf4', marginTop: 5 },
+    photo: { width: 78, height: 78, borderRadius: 39, marginLeft: 16, objectFit: 'cover' },
+    body: { paddingVertical: 26, paddingHorizontal: 44 },
+    section: { marginTop: 14 },
+    heading: { fontSize: 10.5, fontWeight: 'bold', color: accent, letterSpacing: 1.1, marginBottom: 6, borderBottomWidth: 0.7, borderBottomColor: '#d1d5db', paddingBottom: 3 },
+    itemTitle: { fontSize: 11, fontWeight: 'bold', color: '#111827' },
+    itemMeta: { fontSize: 9, color: '#64748b', marginTop: 1 },
+    rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+    period: { fontSize: 9, color: accent, fontWeight: 'bold' },
+    bullet: { flexDirection: 'row', marginTop: 2.5, paddingRight: 8 },
+    bulletDot: { width: 10, fontSize: 10, color: accent },
+    bulletText: { flexGrow: 1, fontSize: 10, color: '#374151', lineHeight: 1.4 },
+    bodyText: { fontSize: 10, color: '#374151', lineHeight: 1.4 },
+    chips: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 1 },
+    chip: { fontSize: 9.5, color: '#374151', backgroundColor: '#f1f5f9', borderRadius: 3, paddingVertical: 2.5, paddingHorizontal: 7, marginRight: 5, marginBottom: 5 },
+    item: { marginBottom: 9 },
+  })
+
+  const Heading = ({ children }: { children: string }) => <Text style={s.heading}>{children}</Text>
+
+  return (
+    <Page size="A4" style={s.page}>
+      <View style={s.band}>
+        <View>
+          <Text style={s.name}>{p.fullName || 'Ad Soyad'}</Text>
+          {!!p.headline && <Text style={s.headline}>{p.headline}</Text>}
+          {(contact.length > 0 || links.length > 0) && (
+            <Text style={s.contact}>{[...contact, ...links].join('   •   ')}</Text>
+          )}
+        </View>
+        {photo && <Image src={photo} style={s.photo} />}
+      </View>
+
+      <View style={s.body}>
+        {!!data.summary.trim() && (
+          <View style={s.section}>
+            <Heading>{H.summary}</Heading>
+            <Text style={s.bodyText}>{data.summary.trim()}</Text>
+          </View>
+        )}
+
+        {data.experience.some((e) => e.role || e.company) && (
+          <View style={s.section}>
+            <Heading>{H.experience}</Heading>
+            {data.experience.map((e, i) =>
+              !e.role && !e.company ? null : (
+                <View key={i} style={s.item} wrap={false}>
+                  <View style={s.rowBetween}>
+                    <Text style={s.itemTitle}>{[e.role, e.company].filter(Boolean).join(' · ')}</Text>
+                    <Text style={s.period}>{period(e.start, e.end, e.current)}</Text>
+                  </View>
+                  {!!e.location && <Text style={s.itemMeta}>{e.location}</Text>}
+                  {e.bullets.filter((b) => b.trim()).map((b, j) => (
+                    <View key={j} style={s.bullet}>
+                      <Text style={s.bulletDot}>•</Text>
+                      <Text style={s.bulletText}>{b.trim()}</Text>
+                    </View>
+                  ))}
+                </View>
+              )
+            )}
+          </View>
+        )}
+
+        {data.education.some((e) => e.school || e.degree) && (
+          <View style={s.section}>
+            <Heading>{H.education}</Heading>
+            {data.education.map((ed, i) =>
+              !ed.school && !ed.degree ? null : (
+                <View key={i} style={s.item} wrap={false}>
+                  <View style={s.rowBetween}>
+                    <Text style={s.itemTitle}>{[ed.degree, ed.field].filter(Boolean).join(' - ')}</Text>
+                    <Text style={s.period}>{period(ed.start, ed.end)}</Text>
+                  </View>
+                  {!!ed.school && <Text style={s.itemMeta}>{ed.school}</Text>}
+                  {!!ed.note.trim() && <Text style={[s.bodyText, { marginTop: 2 }]}>{ed.note.trim()}</Text>}
+                </View>
+              )
+            )}
+          </View>
+        )}
+
+        {data.skills.filter(Boolean).length > 0 && (
+          <View style={s.section}>
+            <Heading>{H.skills}</Heading>
+            <View style={s.chips}>
+              {data.skills.filter(Boolean).map((sk, i) => (
+                <Text key={i} style={s.chip}>{sk}</Text>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {data.projects.some((pr) => pr.name) && (
+          <View style={s.section}>
+            <Heading>{H.projects}</Heading>
+            {data.projects.map((pr, i) =>
+              !pr.name ? null : (
+                <View key={i} style={s.item} wrap={false}>
+                  <Text style={s.itemTitle}>{pr.name}</Text>
+                  {!!pr.link && <Text style={s.itemMeta}>{pr.link}</Text>}
+                  {!!pr.description.trim() && <Text style={[s.bodyText, { marginTop: 2 }]}>{pr.description.trim()}</Text>}
+                  {pr.bullets.filter((b) => b.trim()).map((b, j) => (
+                    <View key={j} style={s.bullet}>
+                      <Text style={s.bulletDot}>•</Text>
+                      <Text style={s.bulletText}>{b.trim()}</Text>
+                    </View>
+                  ))}
+                </View>
+              )
+            )}
+          </View>
+        )}
+
+        {data.languages.filter((l) => l.name).length > 0 && (
+          <View style={s.section}>
+            <Heading>{H.languages}</Heading>
+            <Text style={s.bodyText}>
+              {data.languages.filter((l) => l.name).map((l) => (l.level ? `${l.name} (${l.level})` : l.name)).join('   •   ')}
+            </Text>
+          </View>
+        )}
+
+        {data.certifications.filter((c) => c.name).length > 0 && (
+          <View style={s.section}>
+            <Heading>{H.certifications}</Heading>
+            {data.certifications.filter((c) => c.name).map((c, i) => (
+              <Text key={i} style={[s.bodyText, { marginBottom: 2 }]}>
+                {[c.name, c.issuer, c.date].filter(Boolean).join(' · ')}
+              </Text>
+            ))}
+          </View>
+        )}
+      </View>
+    </Page>
+  )
+}
+
 function CvDocument({ data, template }: { data: CvData; template: CvTemplate }) {
   const t = THEMES[template]
   return (
     <Document author="Wisparkr" title={data.personal.fullName || 'CV'}>
-      {t.layout === 'sidebar' ? <SidebarCv data={data} t={t} /> : <SingleCv data={data} t={t} />}
+      {t.layout === 'sidebar' ? (
+        <SidebarCv data={data} t={t} />
+      ) : t.layout === 'band' ? (
+        <BandCv data={data} t={t} />
+      ) : (
+        <SingleCv data={data} t={t} />
+      )}
     </Document>
   )
 }

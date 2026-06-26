@@ -19,7 +19,6 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
-import { TEMPLATE_ACCENTS, TEMPLATE_CENTERED } from '@/lib/cvTemplates'
 import { CvPreview } from '@/components/cv-builder/CvPreview'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { hasCvContent } from '@/lib/cv'
@@ -519,7 +518,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
 
         {/* Canlı önizleme — seçilen şablonun vurgu rengiyle */}
         <div>
-          <CvPreview data={cv} accent={TEMPLATE_ACCENTS[template]} centered={TEMPLATE_CENTERED[template]} />
+          <CvPreview data={cv} template={template} />
           <p className="mt-2 text-center text-[11px] text-slate-400">{t.cvBuilder.pdfNote}</p>
         </div>
 
