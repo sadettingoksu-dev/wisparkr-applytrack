@@ -7,8 +7,8 @@ const nextConfig = {
     // PDF rotaları (CV indir / paylaşılan CV PDF) 500 veriyordu. Aşağıda bu
     // dosyaları ilgili rotaların bundle'ına açıkça dahil ediyoruz.
     outputFileTracingIncludes: {
-      '/cv/[token]/pdf': ['./node_modules/pdfkit/js/data/**/*'],
-      '/api/cv/pdf': ['./node_modules/pdfkit/js/data/**/*'],
+      '/cv/[token]/pdf': ['./node_modules/pdfkit/js/data/**/*', './assets/fonts/**/*'],
+      '/api/cv/pdf': ['./node_modules/pdfkit/js/data/**/*', './assets/fonts/**/*'],
     },
   },
 }

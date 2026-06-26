@@ -1,9 +1,19 @@
+import fs from 'fs'
+import path from 'path'
 import PDFDocument from 'pdfkit'
 import type { CvData } from '@/lib/cv'
 import { CV_TEMPLATE_IDS, normalizeTemplate, type CvTemplate } from '@/lib/cvTemplates'
 
 export { CV_TEMPLATE_IDS, normalizeTemplate }
 export type CvPdfTemplate = CvTemplate
+
+// Gömülü Unicode font (Roboto) — pdfkit'in standart fontları Türkçe ş/ğ/İ/ı'yı
+// bozuyordu. Roboto tam Türkçe destekler. Dosyalar bir kez okunup önbelleğe alınır.
+const FONT_DIR = path.join(process.cwd(), 'assets', 'fonts')
+let _regular: Buffer | null = null
+let _bold: Buffer | null = null
+const fontRegular = () => (_regular ??= fs.readFileSync(path.join(FONT_DIR, 'Roboto-Regular.ttf')))
+const fontBold = () => (_bold ??= fs.readFileSync(path.join(FONT_DIR, 'Roboto-Bold.ttf')))
 
 interface Theme {
   font: string
@@ -15,13 +25,15 @@ interface Theme {
   center: boolean
 }
 
+// Tüm şablonlar gömülü Roboto'yu kullanır ('body'/'bold' doc'a kayıtlı).
+// Şablonlar renk, boyut, hizalama ve çizgi ile ayrışır.
 const THEMES: Record<CvPdfTemplate, Theme> = {
-  classic: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#111827', sub: '#475569', nameSize: 22, rule: true, center: false },
-  modern: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#7c3aed', sub: '#6d28d9', nameSize: 26, rule: true, center: false },
-  minimal: { font: 'Times-Roman', bold: 'Times-Bold', accent: '#000000', sub: '#444444', nameSize: 20, rule: false, center: true },
-  elegant: { font: 'Times-Roman', bold: 'Times-Bold', accent: '#6d28d9', sub: '#7c3aed', nameSize: 24, rule: true, center: true },
-  professional: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#1e3a8a', sub: '#475569', nameSize: 22, rule: true, center: false },
-  creative: { font: 'Helvetica', bold: 'Helvetica-Bold', accent: '#c026d3', sub: '#a21caf', nameSize: 28, rule: false, center: false },
+  classic: { font: 'body', bold: 'bold', accent: '#111827', sub: '#475569', nameSize: 22, rule: true, center: false },
+  modern: { font: 'body', bold: 'bold', accent: '#7c3aed', sub: '#6d28d9', nameSize: 26, rule: true, center: false },
+  minimal: { font: 'body', bold: 'bold', accent: '#000000', sub: '#444444', nameSize: 20, rule: false, center: true },
+  elegant: { font: 'body', bold: 'bold', accent: '#6d28d9', sub: '#7c3aed', nameSize: 24, rule: true, center: true },
+  professional: { font: 'body', bold: 'bold', accent: '#1e3a8a', sub: '#475569', nameSize: 22, rule: true, center: false },
+  creative: { font: 'body', bold: 'bold', accent: '#c026d3', sub: '#a21caf', nameSize: 28, rule: false, center: false },
 }
 
 /**
@@ -169,6 +181,9 @@ function renderCv(doc: PDFKit.PDFDocument, template: CvPdfTemplate, data: CvData
 /** Renders structured CV data to a PDF buffer. Shared by master + share routes. */
 export async function renderCvPdf(data: CvData, template: CvPdfTemplate): Promise<Buffer> {
   const doc = new PDFDocument({ margin: 50 })
+  // Türkçe destekli gömülü fontları bu belgeye kaydet.
+  doc.registerFont('body', fontRegular())
+  doc.registerFont('bold', fontBold())
   const chunks: Buffer[] = []
   doc.on('data', (chunk) => chunks.push(chunk as Buffer))
   const done = new Promise<Buffer>((resolve) => {
