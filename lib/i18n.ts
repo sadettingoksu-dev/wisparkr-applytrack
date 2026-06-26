@@ -66,6 +66,8 @@ const tr = {
   },
   footer: {
     rights: 'Tüm hakları saklıdır.',
+    privacy: 'Gizlilik Politikası',
+    terms: 'Kullanım Şartları',
   },
   showcase: {
     subtitle: 'Kariyerini hızlandıran AI destekli başvuru asistanı',
@@ -694,6 +696,8 @@ const en: Dictionary = {
   },
   footer: {
     rights: 'All rights reserved.',
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Use',
   },
   showcase: {
     subtitle: 'The AI-powered application assistant that accelerates your career',

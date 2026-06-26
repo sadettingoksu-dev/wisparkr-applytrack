@@ -144,8 +144,14 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      <footer className="bg-slate-50 py-8 text-center text-sm text-slate-400">
-        © {new Date().getFullYear()} Wisparkr. {t.footer.rights}
+      <footer className="bg-slate-50 py-8 text-sm text-slate-400">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 sm:flex-row sm:justify-between">
+          <span>© {new Date().getFullYear()} Wisparkr. {t.footer.rights}</span>
+          <nav className="flex items-center gap-4">
+            <Link href="/privacy" className="transition-colors hover:text-slate-700">{t.footer.privacy}</Link>
+            <Link href="/terms" className="transition-colors hover:text-slate-700">{t.footer.terms}</Link>
+          </nav>
+        </div>
       </footer>
     </div>
   )
