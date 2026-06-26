@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
+import { TEMPLATE_ACCENTS, TEMPLATE_CENTERED } from '@/lib/cvTemplates'
 import { CvPreview } from '@/components/cv-builder/CvPreview'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { hasCvContent } from '@/lib/cv'
@@ -252,15 +253,37 @@ export function CvBuilder({ initial }: { initial: CvData }) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      {/* Editor */}
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.cvBuilder.title}</h1>
-          <p className="text-sm text-slate-500">
-            {t.cvBuilder.subtitle}
-          </p>
+    <div className="space-y-5">
+      {/* Üst araç çubuğu — başlık + her zaman görünür aksiyonlar */}
+      <div className="sticky top-0 z-20 -mx-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/90 px-4 py-3 backdrop-blur sm:-mx-8 sm:px-8">
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-bold text-slate-900 sm:text-xl">{t.cvBuilder.title}</h1>
+          <p className="hidden text-xs text-slate-500 sm:block">{t.cvBuilder.subtitle}</p>
         </div>
+        <div className="flex items-center gap-2">
+          {saved && (
+            <span className="hidden items-center gap-1 text-xs font-medium text-emerald-600 sm:flex">
+              <Check className="h-3.5 w-3.5" />
+              {t.common.saved}
+            </span>
+          )}
+          <Button onClick={handleSave} disabled={saving} variant="primary">
+            {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {t.common.save}
+          </Button>
+          <a href={`/api/cv/pdf?template=${template}`}>
+            <Button variant="secondary">
+              <Download className="h-4 w-4" />
+              {t.cvBuilder.downloadPdf}
+            </Button>
+          </a>
+        </div>
+      </div>
+      {error && <p className="text-xs text-red-500">{error}</p>}
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Editor */}
+        <div className="space-y-4">
 
         {/* Mevcut CV'yi içe aktar */}
         <Card className="space-y-2">
@@ -490,24 +513,15 @@ export function CvBuilder({ initial }: { initial: CvData }) {
         </Card>
       </div>
 
-      {/* Preview + actions */}
-      <div className="lg:sticky lg:top-4 lg:h-fit space-y-4">
+      {/* Önizleme + şablon + AI */}
+      <div className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
         <TemplatePicker value={template} onChange={setTemplate} />
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={handleSave} disabled={saving} variant="primary">
-            {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            {saved ? t.common.saved : t.common.save}
-          </Button>
-          <a href={`/api/cv/pdf?template=${template}`}>
-            <Button variant="secondary">
-              <Download className="h-4 w-4" />
-              {t.cvBuilder.downloadPdf}
-            </Button>
-          </a>
+        {/* Canlı önizleme — seçilen şablonun vurgu rengiyle */}
+        <div>
+          <CvPreview data={cv} accent={TEMPLATE_ACCENTS[template]} centered={TEMPLATE_CENTERED[template]} />
+          <p className="mt-2 text-center text-[11px] text-slate-400">{t.cvBuilder.pdfNote}</p>
         </div>
-        {error && <p className="text-xs text-red-500">{error}</p>}
-        <p className="text-xs text-slate-400">{t.cvBuilder.pdfNote}</p>
 
         {/* Profesyonellik kontrolü (AI) */}
         <Card className="space-y-3">
@@ -562,8 +576,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
             </div>
           )}
         </Card>
-
-        <CvPreview data={cv} />
+      </div>
       </div>
     </div>
   )

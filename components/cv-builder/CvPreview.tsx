@@ -4,11 +4,22 @@ import { useI18n } from '@/components/i18n/I18nProvider'
 import type { CvData } from '@/lib/cv'
 
 /**
- * Renders structured CV data as a clean "paper" document. Used both in the
- * builder's live preview and (later) the public shareable CV page.
+ * Renders structured CV data as a clean "paper" document, themed to match the
+ * selected PDF template (accent color + alignment). Used in the builder's live
+ * preview so what you see ≈ the downloaded PDF.
  */
-export function CvPreview({ data }: { data: CvData }) {
-  const { t } = useI18n()
+export function CvPreview({
+  data,
+  accent = '#1f2937',
+  centered = false,
+}: {
+  data: CvData
+  accent?: string
+  centered?: boolean
+}) {
+  const { t, locale } = useI18n()
+  // Locale-duyarlı büyük harf: TR 'i'→'İ' korunur, EN doğru kalır.
+  const up = (s: string) => s.toLocaleUpperCase(locale === 'tr' ? 'tr-TR' : 'en-US')
   const p = data.personal
   const contact = [p.email, p.phone, p.location].filter(Boolean)
   const links = p.links.filter((l) => l.url || l.label)
@@ -22,9 +33,14 @@ export function CvPreview({ data }: { data: CvData }) {
   return (
     <div className="rounded-2xl bg-white p-8 text-[13px] leading-relaxed text-neutral-800 shadow-xl">
       {/* Header */}
-      <header className="flex items-start justify-between gap-4 border-b border-neutral-200 pb-4">
+      <header
+        className={`flex gap-4 border-b-2 pb-4 ${centered ? 'flex-col items-center text-center' : 'items-start justify-between'}`}
+        style={{ borderColor: accent }}
+      >
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-neutral-900">{p.fullName || t.cvPreview.yourName}</h1>
+          <h1 className="text-2xl font-bold" style={{ color: accent }}>
+            {p.fullName || t.cvPreview.yourName}
+          </h1>
           {p.headline && <p className="mt-0.5 text-neutral-600">{p.headline}</p>}
           {(contact.length > 0 || links.length > 0) && (
             <p className="mt-2 text-xs text-neutral-500">
@@ -32,7 +48,7 @@ export function CvPreview({ data }: { data: CvData }) {
             </p>
           )}
         </div>
-        {p.photo && (
+        {p.photo && !centered && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={p.photo}
@@ -43,13 +59,13 @@ export function CvPreview({ data }: { data: CvData }) {
       </header>
 
       {data.summary.trim() && (
-        <Section title={t.cvPreview.summary}>
+        <Section title={up(t.cvPreview.summary)} accent={accent}>
           <p className="whitespace-pre-line">{data.summary.trim()}</p>
         </Section>
       )}
 
       {experience.length > 0 && (
-        <Section title={t.cvPreview.experience}>
+        <Section title={up(t.cvPreview.experience)} accent={accent}>
           <div className="space-y-3">
             {experience.map((e, i) => (
               <div key={i}>
@@ -57,7 +73,7 @@ export function CvPreview({ data }: { data: CvData }) {
                   <p className="font-semibold text-neutral-900">
                     {[e.role, e.company].filter(Boolean).join(' · ')}
                   </p>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs font-medium" style={{ color: accent }}>
                     {[e.start, e.current ? t.cvPreview.ongoing : e.end].filter(Boolean).join(' – ')}
                   </p>
                 </div>
@@ -76,7 +92,7 @@ export function CvPreview({ data }: { data: CvData }) {
       )}
 
       {education.length > 0 && (
-        <Section title={t.cvPreview.education}>
+        <Section title={up(t.cvPreview.education)} accent={accent}>
           <div className="space-y-2">
             {education.map((ed, i) => (
               <div key={i}>
@@ -84,7 +100,7 @@ export function CvPreview({ data }: { data: CvData }) {
                   <p className="font-semibold text-neutral-900">
                     {[ed.degree, ed.field].filter(Boolean).join(' - ')}
                   </p>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs font-medium" style={{ color: accent }}>
                     {[ed.start, ed.end].filter(Boolean).join(' – ')}
                   </p>
                 </div>
@@ -97,10 +113,14 @@ export function CvPreview({ data }: { data: CvData }) {
       )}
 
       {skills.length > 0 && (
-        <Section title={t.cvPreview.skills}>
+        <Section title={up(t.cvPreview.skills)} accent={accent}>
           <div className="flex flex-wrap gap-1.5">
             {skills.map((s, i) => (
-              <span key={i} className="rounded bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">
+              <span
+                key={i}
+                className="rounded px-2 py-0.5 text-xs"
+                style={{ backgroundColor: `${accent}14`, color: accent }}
+              >
                 {s}
               </span>
             ))}
@@ -109,12 +129,12 @@ export function CvPreview({ data }: { data: CvData }) {
       )}
 
       {projects.length > 0 && (
-        <Section title={t.cvPreview.projects}>
+        <Section title={up(t.cvPreview.projects)} accent={accent}>
           <div className="space-y-2">
             {projects.map((pr, i) => (
               <div key={i}>
                 <p className="font-semibold text-neutral-900">{pr.name}</p>
-                {pr.link && <p className="text-xs text-blue-700">{pr.link}</p>}
+                {pr.link && <p className="text-xs" style={{ color: accent }}>{pr.link}</p>}
                 {pr.description && <p className="text-neutral-700">{pr.description}</p>}
                 {pr.bullets.filter((b) => b.trim()).length > 0 && (
                   <ul className="mt-1 list-disc space-y-0.5 pl-5">
@@ -130,13 +150,13 @@ export function CvPreview({ data }: { data: CvData }) {
       )}
 
       {languages.length > 0 && (
-        <Section title={t.cvPreview.languages}>
+        <Section title={up(t.cvPreview.languages)} accent={accent}>
           <p>{languages.map((l) => (l.level ? `${l.name} (${l.level})` : l.name)).join('   ·   ')}</p>
         </Section>
       )}
 
       {certifications.length > 0 && (
-        <Section title={t.cvPreview.certifications}>
+        <Section title={up(t.cvPreview.certifications)} accent={accent}>
           <div className="space-y-1">
             {certifications.map((c, i) => (
               <p key={i}>{[c.name, c.issuer, c.date].filter(Boolean).join(' · ')}</p>
@@ -148,10 +168,15 @@ export function CvPreview({ data }: { data: CvData }) {
   )
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) {
   return (
     <section className="mt-5">
-      <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-neutral-400">{title}</h2>
+      <h2
+        className="mb-2 border-b border-neutral-200 pb-1 text-xs font-bold tracking-wide"
+        style={{ color: accent }}
+      >
+        {title}
+      </h2>
       {children}
     </section>
   )
