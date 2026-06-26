@@ -172,7 +172,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
   return (
     <div className="flex h-full flex-col rounded-lg border border-slate-200 bg-white">
       <div className="border-b border-slate-200 px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-slate-900">{t.interview.chatTitle}</h3>
           <div className="flex items-center gap-2">
             {speechSupported && voiceMode && (
@@ -266,6 +266,7 @@ export function MockInterviewChat({ interview, initialMessages }: MockInterviewC
       {status === 'in_progress' && (
         <div className="flex gap-2 border-t border-slate-200 p-3">
           <Input
+            className="flex-1 min-w-0"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
