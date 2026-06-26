@@ -15,14 +15,16 @@ interface DashboardShellProps {
 }
 
 /**
- * Dashboard kabuğu. Masaüstünde sidebar sabit; mobilde hamburger ile açılan
- * kaydırmalı (drawer) sidebar. İçerik padding'i mobilde küçük, masaüstünde geniş.
+ * Dashboard kabuğu.
+ * - Masaüstü: kabuk ekran yüksekliğinde sabit; sol sidebar + üst bar sabit kalır,
+ *   yalnızca sağdaki içerik alanı (main) kendi içinde kaydırılır.
+ * - Mobil: normal sayfa kaydırması; sidebar hamburger ile açılan drawer.
  */
 export function DashboardShell({ name, email, avatarUrl, plan, children }: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-slate-50 lg:h-screen lg:overflow-hidden">
       <Sidebar
         name={name}
         email={email}
@@ -31,9 +33,9 @@ export function DashboardShell({ name, email, avatarUrl, plan, children }: Dashb
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Üst bar: mobilde hamburger, her zaman bildirim zili */}
-        <div className="flex items-center gap-3 px-4 py-3 sm:px-8 sm:py-4">
+      <div className="flex min-w-0 flex-1 flex-col lg:overflow-hidden">
+        {/* Üst bar: mobilde hamburger, her zaman bildirim zili — masaüstünde sabit kalır */}
+        <div className="flex shrink-0 items-center gap-3 px-4 py-3 sm:px-8 sm:py-4">
           <button
             onClick={() => setMobileOpen(true)}
             aria-label="Menü"
@@ -45,7 +47,8 @@ export function DashboardShell({ name, email, avatarUrl, plan, children }: Dashb
             <NotificationBell />
           </div>
         </div>
-        <main className="px-4 pb-8 sm:px-8">{children}</main>
+        {/* Yalnızca bu alan kaydırılır (masaüstünde) */}
+        <main className="px-4 pb-8 sm:px-8 lg:flex-1 lg:overflow-y-auto">{children}</main>
       </div>
     </div>
   )

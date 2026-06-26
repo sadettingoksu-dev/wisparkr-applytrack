@@ -84,7 +84,7 @@ export function Sidebar({ name, email, avatarUrl, plan, mobileOpen = false, onMo
 
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-slate-200 bg-white transition-[transform,width] duration-200 lg:sticky lg:top-0 lg:z-auto lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r border-slate-200 bg-white transition-[transform,width] duration-200 lg:static lg:z-auto lg:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
           effCollapsed ? 'w-16' : 'w-64'
         )}
