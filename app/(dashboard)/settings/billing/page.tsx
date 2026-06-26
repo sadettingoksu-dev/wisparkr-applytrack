@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
-import { getPlan, getEffectivePlan, isTrialActive, PLANS, PLAN_ORDER } from '@/lib/plans'
+import { getPlan, getEffectivePlan, isTrialActive, PLANS } from '@/lib/plans'
 import { formatDate } from '@/utils/format'
 import { format } from '@/lib/i18n'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
@@ -65,7 +65,6 @@ export default async function BillingPage() {
   const plan = getEffectivePlan(profile)
   const isPaid = realPlan.id === 'pro' || realPlan.id === 'career_coach'
   const onTrial = !isPaid && isTrialActive(profile)
-  const trialExpired = !isPaid && !onTrial
   const isCancelled = sub?.status === 'cancelled' || sub?.status === 'expired'
 
   const trialDaysLeft = profile?.trial_ends_at
@@ -81,6 +80,34 @@ export default async function BillingPage() {
     'salaryNegotiationCoach',
     'unlimitedAi',
   ]
+
+  // Plan seçimi: Pro mu Career Coach mı — kullanıcı karar versin (tek "Pro" butonu yerine).
+  const planChooser = (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {(['pro', 'career_coach'] as const).map((pid) => {
+        const p = PLANS[pid]
+        const popular = pid === 'pro'
+        return (
+          <div
+            key={pid}
+            className={`relative rounded-xl border p-4 ${popular ? 'border-purple-400 bg-purple-50/50' : 'border-slate-200'}`}
+          >
+            {popular && (
+              <span className="absolute right-3 top-3 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-700">
+                {t.pricing.popular}
+              </span>
+            )}
+            <p className="text-sm font-semibold text-slate-900">{p.name}</p>
+            <p className="mb-3 text-2xl font-bold text-slate-900">
+              ${p.priceMonthly}
+              <span className="text-xs font-normal text-slate-400">{t.billing.perMonth}</span>
+            </p>
+            <UpgradeButton planId={pid} label={t.billing.upgradeNow} />
+          </div>
+        )
+      })}
+    </div>
+  )
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -137,7 +164,7 @@ export default async function BillingPage() {
                 </p>
               </div>
             </div>
-            <UpgradeButton planId="pro" label={t.billing.upgradeNow} />
+            {planChooser}
           </>
         ) : (
           <>
@@ -145,7 +172,7 @@ export default async function BillingPage() {
               <p className="text-2xl font-bold text-slate-900">{t.billing.trialTitle}</p>
               <p className="mt-1 text-sm text-slate-500">{t.billing.trialExpired}</p>
             </div>
-            <UpgradeButton planId="pro" label={t.billing.upgradeNow} />
+            {planChooser}
           </>
         )}
       </Card>
@@ -188,33 +215,6 @@ export default async function BillingPage() {
           ))}
         </div>
       </Card>
-
-      {/* Diğer planlar karşılaştırma */}
-      {realPlan.id !== 'career_coach' && (
-        <Card className="space-y-4">
-          <h2 className="text-sm font-semibold text-slate-900">{t.billing.comparePlans}</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {PLAN_ORDER.filter((pid) => pid !== 'free').map((pid) => {
-              const p = PLANS[pid]
-              const isCurrent = isPaid && pid === realPlan.id
-              return (
-                <div
-                  key={pid}
-                  className={`rounded-lg border p-3 text-center ${isCurrent ? 'border-purple-400 bg-purple-50' : 'border-slate-200'}`}
-                >
-                  <p className={`text-sm font-semibold ${isCurrent ? 'text-purple-700' : 'text-slate-700'}`}>{p.name}</p>
-                  <p className="text-lg font-bold text-slate-900">${p.priceMonthly}<span className="text-xs font-normal text-slate-400">{t.billing.perMonth}</span></p>
-                  {isCurrent ? (
-                    <span className="mt-1 inline-block rounded-full bg-purple-100 px-2 py-0.5 text-xs text-purple-700">{t.billing.current}</span>
-                  ) : (
-                    <a href="/pricing" className="mt-1 inline-block text-xs text-purple-600 hover:underline">{t.billing.upgradeArrow}</a>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </Card>
-      )}
     </div>
   )
 }

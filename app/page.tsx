@@ -1,14 +1,20 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles, Check } from 'lucide-react'
 import { PLANS, PLAN_ORDER } from '@/lib/plans'
 import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
 
 const FEATURE_ICONS = [LinkIcon, FileSearch, MessageSquareText]
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Giriş yapmış kullanıcı pazarlama sayfasında oyalanmasın; doğrudan panele.
+  const { data: { user } } = await createClient().auth.getUser()
+  if (user) redirect('/dashboard')
+
   const locale = normalizeLocale(cookies().get(LOCALE_COOKIE)?.value)
   const t = getDictionary(locale)
   const featureLists = t.pricing.lists as Record<string, string[]>
