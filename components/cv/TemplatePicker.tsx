@@ -6,46 +6,92 @@ import { CV_TEMPLATE_IDS, type CvTemplate } from '@/lib/cvTemplates'
 
 export type { CvTemplate }
 
+// PDF motoru (lib/cvDocument.tsx THEMES) ile eşleşen görsel ipuçları.
 interface TemplateStyle {
+  layout: 'single' | 'sidebar'
   accent: string
   align: 'left' | 'center'
   rule: boolean
-  block: boolean
+  photo: boolean
+  filled: boolean // sidebar dolu renk mi (creative)
 }
 
-// Görsel ipucu: PDF'teki vurgu rengi ve yerleşimle eşleşir.
 const STYLES: Record<CvTemplate, TemplateStyle> = {
-  classic: { accent: '#111827', align: 'left', rule: true, block: false },
-  modern: { accent: '#7c3aed', align: 'left', rule: true, block: false },
-  minimal: { accent: '#000000', align: 'center', rule: false, block: false },
-  elegant: { accent: '#6d28d9', align: 'center', rule: true, block: false },
-  professional: { accent: '#1e3a8a', align: 'left', rule: true, block: true },
-  creative: { accent: '#c026d3', align: 'left', rule: false, block: true },
+  classic: { layout: 'single', accent: '#1f2937', align: 'left', rule: true, photo: true, filled: false },
+  professional: { layout: 'single', accent: '#1e3a8a', align: 'left', rule: true, photo: true, filled: false },
+  minimal: { layout: 'single', accent: '#111111', align: 'center', rule: false, photo: false, filled: false },
+  elegant: { layout: 'single', accent: '#6d28d9', align: 'center', rule: true, photo: false, filled: false },
+  modern: { layout: 'sidebar', accent: '#7c3aed', align: 'left', rule: true, photo: true, filled: false },
+  creative: { layout: 'sidebar', accent: '#c026d3', align: 'left', rule: true, photo: true, filled: true },
 }
 
-/** Şablon kartının içindeki küçük CV önizleme taslağı. */
-function Thumb({ style }: { style: TemplateStyle }) {
-  const itemsAlign = style.align === 'center' ? 'items-center' : 'items-start'
+const Line = ({ w, color }: { w: string; color?: string }) => (
+  <div className={`h-1 rounded-sm ${w}`} style={{ backgroundColor: color ?? '#e2e8f0' }} />
+)
+
+/** Bir bölüm: küçük renkli başlık + (varsa) çizgi + gri içerik satırları. */
+function Section({ accent, rule, lines = 3 }: { accent: string; rule: boolean; lines?: number }) {
+  const widths = ['w-full', 'w-5/6', 'w-11/12', 'w-2/3']
   return (
-    <div className="flex aspect-[3/4] w-full flex-col gap-1.5 overflow-hidden rounded-md bg-white p-3 shadow-inner">
-      {style.block && (
-        <div className="-mx-3 -mt-3 mb-1 h-4" style={{ backgroundColor: style.accent }} />
-      )}
-      <div className={`flex w-full flex-col gap-1 ${itemsAlign}`}>
-        <div className="h-1.5 w-2/3 rounded-sm" style={{ backgroundColor: style.accent }} />
-        <div className="h-1 w-1/2 rounded-sm bg-slate-300" />
+    <div className="space-y-1">
+      <div className="h-1 w-1/3 rounded-sm" style={{ backgroundColor: accent }} />
+      {rule && <div className="h-px w-full bg-slate-200" />}
+      {Array.from({ length: lines }).map((_, i) => (
+        <Line key={i} w={widths[i % widths.length]} />
+      ))}
+    </div>
+  )
+}
+
+function SingleThumb({ st }: { st: TemplateStyle }) {
+  const center = st.align === 'center'
+  return (
+    <div className="flex aspect-[3/4] w-full flex-col gap-2 overflow-hidden rounded-md bg-white p-3 shadow-inner">
+      <div className="flex items-start justify-between gap-2">
+        <div className={`flex flex-1 flex-col gap-1 ${center ? 'items-center' : 'items-start'}`}>
+          <div className="h-2 w-2/3 rounded-sm" style={{ backgroundColor: st.accent }} />
+          <div className="h-1 w-1/2 rounded-sm bg-slate-300" />
+          <div className="h-1 w-3/4 rounded-sm bg-slate-200" />
+        </div>
+        {st.photo && !center && (
+          <div className="h-7 w-6 shrink-0 rounded-sm bg-slate-300" />
+        )}
       </div>
-      {style.rule && <div className="my-1 h-px w-full" style={{ backgroundColor: style.accent }} />}
-      <div className="mt-1 space-y-1">
-        <div className="h-1 w-1/3 rounded-sm" style={{ backgroundColor: style.accent }} />
-        <div className="h-1 w-full rounded-sm bg-slate-200" />
-        <div className="h-1 w-5/6 rounded-sm bg-slate-200" />
-        <div className="h-1 w-11/12 rounded-sm bg-slate-200" />
+      {st.rule && <div className="h-[2px] w-full rounded" style={{ backgroundColor: st.accent }} />}
+      <Section accent={st.accent} rule={st.rule} lines={3} />
+      <Section accent={st.accent} rule={st.rule} lines={2} />
+    </div>
+  )
+}
+
+function SidebarThumb({ st }: { st: TemplateStyle }) {
+  const sideBg = st.filled ? st.accent : '#f3effb'
+  const sideAccent = st.filled ? 'rgba(255,255,255,0.92)' : st.accent
+  const sideLine = st.filled ? 'rgba(255,255,255,0.55)' : '#cdbef0'
+  const photoBg = st.filled ? 'rgba(255,255,255,0.85)' : '#cdbef0'
+  return (
+    <div className="flex aspect-[3/4] w-full overflow-hidden rounded-md bg-white shadow-inner">
+      {/* Sidebar */}
+      <div className="flex w-[37%] flex-col gap-2 p-2" style={{ backgroundColor: sideBg }}>
+        <div className="mx-auto h-7 w-7 rounded-full" style={{ backgroundColor: photoBg }} />
+        <div className="space-y-1">
+          <div className="h-1 w-2/3 rounded-sm" style={{ backgroundColor: sideAccent }} />
+          <div className="h-1 w-full rounded-sm" style={{ backgroundColor: sideLine }} />
+          <div className="h-1 w-5/6 rounded-sm" style={{ backgroundColor: sideLine }} />
+        </div>
+        <div className="space-y-1">
+          <div className="h-1 w-2/3 rounded-sm" style={{ backgroundColor: sideAccent }} />
+          <div className="h-1 w-full rounded-sm" style={{ backgroundColor: sideLine }} />
+        </div>
       </div>
-      <div className="mt-1 space-y-1">
-        <div className="h-1 w-1/3 rounded-sm" style={{ backgroundColor: style.accent }} />
-        <div className="h-1 w-full rounded-sm bg-slate-200" />
-        <div className="h-1 w-2/3 rounded-sm bg-slate-200" />
+      {/* Main */}
+      <div className="flex flex-1 flex-col gap-2 p-2.5">
+        <div className="flex flex-col gap-1">
+          <div className="h-2 w-3/4 rounded-sm" style={{ backgroundColor: st.accent }} />
+          <div className="h-1 w-1/2 rounded-sm bg-slate-300" />
+        </div>
+        <Section accent={st.accent} rule lines={3} />
+        <Section accent={st.accent} rule lines={2} />
       </div>
     </div>
   )
@@ -65,6 +111,7 @@ export function TemplatePicker({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {CV_TEMPLATE_IDS.map((id) => {
           const selected = value === id
+          const st = STYLES[id]
           return (
             <button
               key={id}
@@ -81,7 +128,7 @@ export function TemplatePicker({
                   <Check className="h-3 w-3" />
                 </span>
               )}
-              <Thumb style={STYLES[id]} />
+              {st.layout === 'sidebar' ? <SidebarThumb st={st} /> : <SingleThumb st={st} />}
               <p className={`mt-2 text-center text-xs font-medium ${selected ? 'text-purple-700' : 'text-slate-600'}`}>
                 {t.templatePicker[id]}
               </p>
