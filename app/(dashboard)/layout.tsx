@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/layout/Sidebar'
-import { NotificationBell } from '@/components/layout/NotificationBell'
+import { DashboardShell } from '@/components/layout/DashboardShell'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -21,19 +20,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar
-        name={meta.full_name ?? meta.name ?? user?.email ?? ''}
-        email={user?.email ?? ''}
-        avatarUrl={meta.avatar_url ?? meta.picture ?? null}
-        plan={plan}
-      />
-      <div className="flex-1">
-        <div className="flex justify-end px-8 py-4">
-          <NotificationBell />
-        </div>
-        <main className="px-8 pb-8">{children}</main>
-      </div>
-    </div>
+    <DashboardShell
+      name={meta.full_name ?? meta.name ?? user?.email ?? ''}
+      email={user?.email ?? ''}
+      avatarUrl={meta.avatar_url ?? meta.picture ?? null}
+      plan={plan}
+    >
+      {children}
+    </DashboardShell>
   )
 }
