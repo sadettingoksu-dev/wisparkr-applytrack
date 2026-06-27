@@ -38,7 +38,10 @@ async function loadShare(token: string) {
 
 export async function generateMetadata({ params }: { params: { token: string } }): Promise<Metadata> {
   const result = await loadShare(params.token)
-  if (!result) return { title: 'CV — Wisparkr' }
+  // Olmayan token → gerçek 404 (yumuşak 200-404 yerine doğru durum kodu).
+  if (!result) notFound()
+  // Süresi dolmuş/iptal edilmiş link → sahibin adı/başlığı meta'ya SIZMASIN.
+  if (!isShareActive(result.row, result.ownerPlan)) return { title: 'CV — Wisparkr' }
   const cv = parseCvData(result.row.cv_snapshot)
   const name = cv.personal.fullName || 'CV'
   return {
