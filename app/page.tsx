@@ -18,9 +18,12 @@ import { HeroDemo } from '@/components/landing/HeroDemo'
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
 import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
+import addShot from '@/public/shots/add.png'
+import cvShot from '@/public/shots/cv.png'
+import boardShot from '@/public/shots/board.png'
 
 const FEATURE_ICONS = [LayoutGrid, FileText, FileSearch, PenLine, MessageSquareText, CalendarDays]
-const SHOWCASE_SHOTS = ['/shots/add.png', '/shots/cv.png', '/shots/board.png']
+const SHOWCASE_SHOTS = [addShot, cvShot, boardShot]
 
 export default async function LandingPage() {
   // Giriş yapmış kullanıcı pazarlama sayfasında oyalanmasın; doğrudan panele.

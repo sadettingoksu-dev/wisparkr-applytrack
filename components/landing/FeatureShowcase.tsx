@@ -1,7 +1,8 @@
+import Image, { type StaticImageData } from 'next/image'
 import { Reveal } from '@/components/landing/Reveal'
 
 interface Shot {
-  src: string
+  src: StaticImageData
   title: string
   description: string
 }
@@ -39,7 +40,7 @@ export function FeatureShowcase({
             const right = i % 2 === 1
             return (
               <div
-                key={shot.src}
+                key={shot.title}
                 className={`relative flex flex-col items-center gap-8 lg:flex-row ${
                   right ? 'lg:flex-row-reverse' : ''
                 }`}
@@ -52,8 +53,13 @@ export function FeatureShowcase({
                       <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
                     </div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={shot.src} alt={shot.title} className="block h-auto w-full" loading="lazy" />
+                    <Image
+                      src={shot.src}
+                      alt={shot.title}
+                      placeholder="blur"
+                      sizes="(min-width: 1024px) 60vw, 100vw"
+                      className="block h-auto w-full"
+                    />
                   </div>
                 </Reveal>
 
