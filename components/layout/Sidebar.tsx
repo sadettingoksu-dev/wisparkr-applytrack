@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard } from 'lucide-react'
+import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, Bot } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { APP_NAME } from '@/utils/constants'
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { href: '/calendar', key: 'calendar', icon: CalendarDays },
   { href: '/board', key: 'board', icon: Kanban },
   { href: '/applications', key: 'applications', icon: FileText },
+  { href: '/assistant', key: 'assistant', icon: Bot },
   { href: '/cv-builder', key: 'cvBuilder', icon: FilePlus },
   { href: '/documents', key: 'documents', icon: Files },
   { href: '/settings', key: 'settings', icon: Settings },

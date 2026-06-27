@@ -193,6 +193,7 @@ const tr = {
     calendar: 'Takvim',
     board: 'Kanban Board',
     applications: 'Başvurular',
+    assistant: 'AI Asistan',
     cvBuilder: 'CV Oluştur',
     documents: 'Belgelerim',
     settings: 'Ayarlar',
@@ -314,6 +315,12 @@ const tr = {
       'Bu şirket hakkında bilmem gereken önemli noktalar neler?',
       "CV'mdeki hangi deneyimleri bu mülakatta öne çıkarmalıyım?",
     ],
+  },
+  assistant: {
+    title: 'AI Asistan',
+    subtitle: 'Başvurularına özel mülakat ve hazırlık sorularını AI asistana sor.',
+    pickLabel: 'Başvuru:',
+    noApps: 'Henüz başvurun yok. Önce bir başvuru ekle; ardından AI asistan o başvuruya özel sana yardımcı olabilir.',
   },
   fitScore: {
     title: 'CV Uyum Skoru',
@@ -882,6 +889,7 @@ const en: Dictionary = {
     calendar: 'Calendar',
     board: 'Kanban Board',
     applications: 'Applications',
+    assistant: 'AI Assistant',
     cvBuilder: 'Build CV',
     documents: 'My Documents',
     settings: 'Settings',
@@ -1003,6 +1011,12 @@ const en: Dictionary = {
       'What key things should I know about this company?',
       'Which experiences in my CV should I highlight in this interview?',
     ],
+  },
+  assistant: {
+    title: 'AI Assistant',
+    subtitle: 'Ask the AI assistant interview and prep questions specific to your applications.',
+    pickLabel: 'Application:',
+    noApps: 'You have no applications yet. Add one first, then the AI assistant can help you with it.',
   },
   fitScore: {
     title: 'CV Match Score',
