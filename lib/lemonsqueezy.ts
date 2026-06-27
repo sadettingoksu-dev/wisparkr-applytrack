@@ -1,5 +1,10 @@
 import { lemonSqueezySetup, createCheckout, cancelSubscription as lsCancelSubscription } from '@lemonsqueezy/lemonsqueezy.js'
 
+// LemonSqueezy mutlak bir redirect URL ister; NEXT_PUBLIC_APP_URL boş/eksik
+// kalırsa (Vercel'de boş set edilmişti) göreli URL üretmemek için canlı
+// domaine düş.
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://wisparkr.com'
+
 export function isLemonSqueezyConfigured(): boolean {
   return Boolean(process.env.LEMONSQUEEZY_API_KEY && process.env.LEMONSQUEEZY_STORE_ID)
 }
@@ -27,7 +32,7 @@ export async function createCheckoutUrl(params: {
       custom: { user_id: params.userId },
     },
     productOptions: {
-      redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`,
+      redirectUrl: `${APP_URL}/settings/billing`,
     },
   })
 
