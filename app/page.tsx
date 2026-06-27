@@ -15,10 +15,12 @@ import { PLANS, PLAN_ORDER } from '@/lib/plans'
 import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { HeroDemo } from '@/components/landing/HeroDemo'
+import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
 import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
 
 const FEATURE_ICONS = [LayoutGrid, FileText, FileSearch, PenLine, MessageSquareText, CalendarDays]
+const SHOWCASE_SHOTS = ['/shots/add.png', '/shots/cv.png', '/shots/board.png']
 
 export default async function LandingPage() {
   // Giriş yapmış kullanıcı pazarlama sayfasında oyalanmasın; doğrudan panele.
@@ -113,26 +115,12 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* Nasıl çalışır? */}
-        <section id="how" className="bg-white py-24">
-          <div className="mx-auto max-w-6xl px-6">
-            <h2 className="mb-3 text-center text-3xl font-bold text-slate-900">
-              {t.howItWorks.heading}
-            </h2>
-            <p className="mb-12 text-center text-slate-500">{t.howItWorks.subtitle}</p>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              {t.howItWorks.steps.map((stepItem, i) => (
-                <div key={stepItem.title} className="relative rounded-2xl border border-slate-200 bg-slate-50 p-6">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 text-sm font-bold text-white">
-                    {i + 1}
-                  </div>
-                  <h3 className="mb-2 text-lg font-semibold text-slate-900">{stepItem.title}</h3>
-                  <p className="text-sm leading-relaxed text-slate-500">{stepItem.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Nasıl çalışır? — gerçek sayfa görselleriyle kademeli vitrin */}
+        <FeatureShowcase
+          heading={t.howItWorks.heading}
+          subtitle={t.howItWorks.subtitle}
+          shots={t.howItWorks.steps.map((s, i) => ({ ...s, src: SHOWCASE_SHOTS[i] }))}
+        />
 
         {/* Fiyatlandırma */}
         <section id="pricing" className="bg-slate-50 py-24">
