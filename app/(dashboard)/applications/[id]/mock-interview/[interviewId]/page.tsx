@@ -42,7 +42,7 @@ export default async function MockInterviewPage({
     <div className="space-y-4">
       <div>
         <Link
-          href={`/applications/${params.id}`}
+          href={`/interview?app=${params.id}`}
           className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
         >
           <ArrowLeft className="h-4 w-4" />

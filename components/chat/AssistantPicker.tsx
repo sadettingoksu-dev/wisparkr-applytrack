@@ -6,10 +6,17 @@ interface AssistantPickerProps {
   applications: { id: string; company_name: string; position_title: string }[]
   selectedId?: string
   label: string
+  /** Seçim değişince yönlenecek sayfa (varsayılan /assistant). */
+  basePath?: string
 }
 
-/** Başvuru seçtiren küçük dropdown; seçim değişince /assistant?app=<id> ile yeniden yükler. */
-export function AssistantPicker({ applications, selectedId, label }: AssistantPickerProps) {
+/** Başvuru seçtiren küçük dropdown; seçim değişince <basePath>?app=<id> ile yeniden yükler. */
+export function AssistantPicker({
+  applications,
+  selectedId,
+  label,
+  basePath = '/assistant',
+}: AssistantPickerProps) {
   const router = useRouter()
 
   return (
@@ -17,7 +24,7 @@ export function AssistantPicker({ applications, selectedId, label }: AssistantPi
       <span className="shrink-0 text-slate-500">{label}</span>
       <select
         value={selectedId ?? ''}
-        onChange={(e) => router.push(`/assistant?app=${e.target.value}`)}
+        onChange={(e) => router.push(`${basePath}?app=${e.target.value}`)}
         className="max-w-[18rem] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100"
       >
         {applications.map((a) => (

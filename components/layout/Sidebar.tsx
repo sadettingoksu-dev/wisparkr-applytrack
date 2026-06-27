@@ -5,24 +5,36 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, Bot } from 'lucide-react'
+import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, GraduationCap, Bot, Mic, ChevronDown } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { APP_NAME } from '@/utils/constants'
 import type { PlanId } from '@/lib/plans'
 
+type NavLeaf = { href: string; key: string; icon: LucideIcon }
+type NavGroup = { key: string; icon: LucideIcon; children: NavLeaf[] }
+type NavItem = NavLeaf | NavGroup
+
 // Analitik dashboard'a taşındı; takvim ayrı kaldı.
-const NAV_ITEMS = [
+const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', key: 'dashboard', icon: LayoutDashboard },
   { href: '/calendar', key: 'calendar', icon: CalendarDays },
   { href: '/board', key: 'board', icon: Kanban },
   { href: '/applications', key: 'applications', icon: FileText },
-  { href: '/assistant', key: 'assistant', icon: Bot },
+  {
+    key: 'careerCoach',
+    icon: GraduationCap,
+    children: [
+      { href: '/assistant', key: 'assistant', icon: Bot },
+      { href: '/interview', key: 'interviewSim', icon: Mic },
+    ],
+  },
   { href: '/cv-builder', key: 'cvBuilder', icon: FilePlus },
   { href: '/documents', key: 'documents', icon: Files },
   { href: '/settings', key: 'settings', icon: Settings },
   { href: '/settings/billing', key: 'billing', icon: CreditCard },
-] as const
+]
 
 const STORAGE_KEY = 'wisparkr-sidebar-collapsed'
 
@@ -55,6 +67,10 @@ export function Sidebar({ name, email, avatarUrl, plan, mobileOpen = false, onMo
   const { t } = useI18n()
   const isDesktop = useIsDesktop()
   const [collapsed, setCollapsed] = useState(false)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({})
+
+  // i18n etiketi (NAV_ITEMS anahtarları string olduğundan güvenli erişim).
+  const navLabel = (key: string) => (t.sidebar as Record<string, string>)[key]
 
   // Kullanıcının daraltma tercihini hatırla.
   useEffect(() => {
@@ -104,26 +120,85 @@ export function Sidebar({ name, email, avatarUrl, plan, mobileOpen = false, onMo
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
-          {NAV_ITEMS.map(({ href, key, icon: Icon }) => {
-            const active = pathname === href
-            const label = t.sidebar[key]
+          {NAV_ITEMS.map((item) => {
+            // Tekil link (alt menüsü olmayan)
+            if (!('children' in item)) {
+              const { href, key, icon: Icon } = item
+              const active = pathname === href
+              const label = navLabel(key)
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={onMobileClose}
+                  title={effCollapsed ? label : undefined}
+                  className={clsx(
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    effCollapsed && 'justify-center',
+                    active
+                      ? 'bg-purple-50 text-purple-600'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {!effCollapsed && label}
+                </Link>
+              )
+            }
+
+            // Açılır grup (ör. Kariyer Koçu → AI Asistan, Mülakat Simülatörü)
+            const { key, icon: Icon, children } = item
+            const groupActive = children.some((c) => pathname === c.href)
+
+            const renderChild = (child: NavLeaf) => {
+              const active = pathname === child.href
+              const ChildIcon = child.icon
+              const childLabel = navLabel(child.key)
+              return (
+                <Link
+                  key={child.href}
+                  href={child.href}
+                  onClick={onMobileClose}
+                  title={effCollapsed ? childLabel : undefined}
+                  className={clsx(
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    effCollapsed ? 'justify-center' : 'pl-9',
+                    active
+                      ? 'bg-purple-50 text-purple-600'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                  )}
+                >
+                  <ChildIcon className="h-4 w-4 shrink-0" />
+                  {!effCollapsed && childLabel}
+                </Link>
+              )
+            }
+
+            // Daraltılmış sidebar: grubu açıp kapamak yerine çocukları düz ikon göster.
+            if (effCollapsed) {
+              return <div key={key} className="space-y-1">{children.map(renderChild)}</div>
+            }
+
+            const open = openGroups[key] ?? groupActive
             return (
-              <Link
-                key={href}
-                href={href}
-                onClick={onMobileClose}
-                title={effCollapsed ? label : undefined}
-                className={clsx(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  effCollapsed && 'justify-center',
-                  active
-                    ? 'bg-purple-50 text-purple-600'
-                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
-                )}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                {!effCollapsed && label}
-              </Link>
+              <div key={key}>
+                <button
+                  onClick={() => setOpenGroups((p) => ({ ...p, [key]: !open }))}
+                  className={clsx(
+                    'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    groupActive
+                      ? 'text-purple-600'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="flex-1 text-left">{navLabel(key)}</span>
+                  <ChevronDown
+                    className={clsx('h-4 w-4 shrink-0 transition-transform', open && 'rotate-180')}
+                  />
+                </button>
+                {open && <div className="mt-1 space-y-1">{children.map(renderChild)}</div>}
+              </div>
             )
           })}
         </nav>

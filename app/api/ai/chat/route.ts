@@ -4,6 +4,7 @@ import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
 import { getAnthropicClient, DEFAULT_MODEL, TURKISH_WRITING_RULE } from '@/lib/anthropic'
+import { APP_NAME } from '@/utils/constants'
 import type { Application } from '@/lib/types'
 
 const bodySchema = z.object({
@@ -82,7 +83,8 @@ export async function POST(request: Request) {
   messages.push({ role: 'user', content: message })
 
   const systemPrompt = [
-    'Sen ApplyTrack uygulamasında bir mülakat hazırlık asistanısın.',
+    `Sen ${APP_NAME} uygulamasında bir kariyer koçu ve mülakat hazırlık asistanısın.`,
+    `Ürünün/uygulamanın adı ${APP_NAME}'dır. Başka bir ürün adı (örn. "ApplyTrack") asla kullanma.`,
     'Kullanıcıya başvurduğu pozisyon için mülakat hazırlığında yardımcı oluyorsun.',
     `Şirket: ${application.company_name}`,
     `Pozisyon: ${application.position_title}`,
