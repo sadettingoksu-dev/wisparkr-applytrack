@@ -1,14 +1,24 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles, Check } from 'lucide-react'
+import {
+  LayoutGrid,
+  FileText,
+  FileSearch,
+  PenLine,
+  MessageSquareText,
+  CalendarDays,
+  Sparkles,
+  Check,
+} from 'lucide-react'
 import { PLANS, PLAN_ORDER } from '@/lib/plans'
 import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { HeroDemo } from '@/components/landing/HeroDemo'
 import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
 
-const FEATURE_ICONS = [LinkIcon, FileSearch, MessageSquareText]
+const FEATURE_ICONS = [LayoutGrid, FileText, FileSearch, PenLine, MessageSquareText, CalendarDays]
 
 export default async function LandingPage() {
   // Giriş yapmış kullanıcı pazarlama sayfasında oyalanmasın; doğrudan panele.
@@ -41,33 +51,51 @@ export default async function LandingPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero */}
+        {/* Hero — solda metin+CTA, sağda animasyonlu ürün demosu */}
         <section className="relative overflow-hidden bg-slate-50">
-          <div className="relative mx-auto flex max-w-3xl flex-col items-center px-6 py-28 text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-sm text-purple-700">
-              <Sparkles className="h-3.5 w-3.5" />
-              {t.hero.badge}
+          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:py-28">
+            <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-sm text-purple-700">
+                <Sparkles className="h-3.5 w-3.5" />
+                {t.hero.badge}
+              </div>
+              <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                {t.hero.titleA}{' '}
+                <span className="bg-gradient-to-r from-purple-600 to-fuchsia-500 bg-clip-text text-transparent">
+                  Wisparkr
+                </span>{' '}
+                {t.hero.titleB}
+              </h1>
+              <p className="mt-5 max-w-xl text-lg text-slate-500">{t.hero.subtitle}</p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                <Link href="/signup">
+                  <button className="rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-opacity hover:opacity-90">
+                    {t.hero.ctaPrimary}
+                  </button>
+                </Link>
+                <Link href="/#features">
+                  <button className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100">
+                    {t.hero.ctaSecondary}
+                  </button>
+                </Link>
+              </div>
             </div>
-            <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-              {t.hero.titleA}{' '}
-              <span className="bg-gradient-to-r from-purple-600 to-fuchsia-500 bg-clip-text text-transparent">
-                Wisparkr
-              </span>{' '}
-              {t.hero.titleB}
-            </h1>
-            <p className="mt-5 max-w-xl text-lg text-slate-500">{t.hero.subtitle}</p>
+            <div className="flex justify-center lg:justify-end">
+              <HeroDemo labels={t.hero.demo} />
+            </div>
           </div>
         </section>
 
         {/* Features */}
         <section id="features" className="bg-slate-50 py-24">
           <div className="mx-auto max-w-6xl px-6">
-            <h2 className="mb-12 text-center text-3xl font-bold text-slate-900">
+            <h2 className="mb-3 text-center text-3xl font-bold text-slate-900">
               {t.features.heading}
             </h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <p className="mb-12 text-center text-slate-500">{t.features.subtitle}</p>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {t.features.items.map((feature, i) => {
-                const Icon = FEATURE_ICONS[i]
+                const Icon = FEATURE_ICONS[i] ?? Sparkles
                 return (
                 <div
                   key={feature.title}
@@ -81,6 +109,27 @@ export default async function LandingPage() {
                 </div>
                 )
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* Nasıl çalışır? */}
+        <section id="how" className="bg-white py-24">
+          <div className="mx-auto max-w-6xl px-6">
+            <h2 className="mb-3 text-center text-3xl font-bold text-slate-900">
+              {t.howItWorks.heading}
+            </h2>
+            <p className="mb-12 text-center text-slate-500">{t.howItWorks.subtitle}</p>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {t.howItWorks.steps.map((stepItem, i) => (
+                <div key={stepItem.title} className="relative rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-500 text-sm font-bold text-white">
+                    {i + 1}
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-slate-900">{stepItem.title}</h3>
+                  <p className="text-sm leading-relaxed text-slate-500">{stepItem.description}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>

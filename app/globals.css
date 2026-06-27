@@ -39,16 +39,41 @@ body {
   to { opacity: 1; transform: translateX(0) }
 }
 
+/* Hero demo maketi — sürekli "canlı" his veren döngüsel animasyonlar */
+@keyframes wisparkr-demo-progress {
+  0% { width: 6% }
+  55% { width: 80% }
+  100% { width: 6% }
+}
+
+@keyframes wisparkr-demo-scan {
+  0% { transform: translateY(-2.5rem); opacity: 0 }
+  15% { opacity: 1 }
+  85% { opacity: 1 }
+  100% { transform: translateY(11rem); opacity: 0 }
+}
+
+@keyframes wisparkr-demo-pop {
+  0%, 100% { transform: scale(1) }
+  50% { transform: scale(1.18) }
+}
+
 .wisparkr-float { animation: wisparkr-float 6s ease-in-out infinite }
 .wisparkr-spin-slow { animation: wisparkr-spin-slow 40s linear infinite }
 .wisparkr-pulse-ring { animation: wisparkr-pulse-ring 4s ease-out infinite }
 .wisparkr-fade-up { animation: wisparkr-fade-up 0.7s ease-out both }
 .wisparkr-step { animation: wisparkr-step 0.35s ease-out both }
+.wisparkr-demo-progress { animation: wisparkr-demo-progress 3.2s ease-in-out infinite }
+.wisparkr-demo-scan { animation: wisparkr-demo-scan 3.5s ease-in-out infinite }
+.wisparkr-demo-pop { animation: wisparkr-demo-pop 1.6s ease-in-out infinite }
 
 @media (prefers-reduced-motion: reduce) {
   .wisparkr-float,
   .wisparkr-spin-slow,
   .wisparkr-pulse-ring,
   .wisparkr-fade-up,
-  .wisparkr-step { animation: none }
+  .wisparkr-step,
+  .wisparkr-demo-progress,
+  .wisparkr-demo-scan,
+  .wisparkr-demo-pop { animation: none }
 }

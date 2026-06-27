@@ -24,22 +24,62 @@ const tr = {
     titleB: 'ile yönet',
     subtitle:
       '“Başvurdum, ne oldu?” sorusuna son. Wisparkr tüm başvuru sürecini tek bir yerden yönetmeni sağlar.',
+    ctaPrimary: 'Ücretsiz Başla',
+    ctaSecondary: 'Özellikleri Gör',
+    demo: {
+      title: 'Başvurularım',
+      interview: 'Mülakat',
+      offer: 'Teklif',
+      pending: 'Bekliyor',
+      aiWriting: 'AI ön yazı hazırlıyor…',
+    },
   },
   features: {
     heading: 'Tüm ihtiyacın tek yerde',
+    subtitle: 'Başvurudan teklife kadar tüm süreci tek panelden yönet.',
     items: [
       {
-        title: 'Kanban ile takip',
+        title: 'Kanban ile başvuru takibi',
         description:
-          'İş ilanı linkini yapıştır, başvurunu otomatik oluştur ve Beklemede / Mülakat / Teklif / Reddedildi sütunlarında takip et.',
+          'İş ilanı linkini yapıştır, başvurun otomatik oluşsun; Bekliyor / Mülakat / Teklif / Reddedildi sütunlarında sürükle-bırak ile yönet.',
       },
       {
-        title: 'AI ile CV uyum skoru',
-        description: "CV'ni yükle, AI ilana uyum oranını hesaplasın ve seni güçlendirecek önerileri sunsun.",
+        title: 'CV Builder + paylaşılabilir link',
+        description: 'CV’ni adım adım oluştur, profesyonel şablonlardan seç, PDF indir veya tek linkle paylaş.',
       },
       {
-        title: 'Mülakat hazırlık asistanı',
-        description: "Mülakat öncesi AI'a sorularını sor, şirkete özel hazırlık tüyoları al.",
+        title: 'AI CV uyum skoru',
+        description: "CV'ni ilana göre puanlat; eksikleri ve seni güçlendirecek önerileri anında gör.",
+      },
+      {
+        title: 'AI ön yazı',
+        description: 'Her ilana özel, ikna edici ön yazıyı saniyeler içinde AI ile oluştur.',
+      },
+      {
+        title: 'Mülakat simülasyonu',
+        description: "Şirkete özel sorularla AI mülakat provası yap; geri bildirim ve hazırlık tüyoları al.",
+      },
+      {
+        title: 'Takvim & hatırlatmalar',
+        description: 'Mülakat ve takip tarihlerini takvimde gör, hiçbir adımı kaçırma.',
+      },
+    ],
+  },
+  howItWorks: {
+    heading: 'Nasıl çalışır?',
+    subtitle: 'Üç adımda başvurudan teklife.',
+    steps: [
+      {
+        title: 'İlanı ekle',
+        description: 'İş ilanı linkini yapıştır; Wisparkr başvuruyu senin için otomatik oluştursun.',
+      },
+      {
+        title: 'CV’ni hazırla & uyumla',
+        description: 'CV Builder ile CV’ni oluştur, AI uyum skoruyla ilana göre güçlendir.',
+      },
+      {
+        title: 'Takip et & kazan',
+        description: 'Kanban’da süreci yönet, mülakat simülasyonuyla hazırlan, hatırlatmalarla takipte kal.',
       },
     ],
   },
@@ -673,22 +713,62 @@ const en: Dictionary = {
     titleB: 'with',
     subtitle:
       'No more “I applied — now what?”. Wisparkr lets you manage your entire application process from one place.',
+    ctaPrimary: 'Start Free',
+    ctaSecondary: 'See Features',
+    demo: {
+      title: 'My Applications',
+      interview: 'Interview',
+      offer: 'Offer',
+      pending: 'Pending',
+      aiWriting: 'AI writing cover letter…',
+    },
   },
   features: {
     heading: 'Everything you need in one place',
+    subtitle: 'Manage the whole journey from application to offer in one dashboard.',
     items: [
       {
         title: 'Track with Kanban',
         description:
-          'Paste a job posting link, auto-create your application and track it across Pending / Interview / Offer / Rejected columns.',
+          'Paste a job posting link, auto-create your application and manage it across Pending / Interview / Offer / Rejected columns with drag & drop.',
+      },
+      {
+        title: 'CV Builder + shareable link',
+        description: 'Build your CV step by step, pick a professional template, download a PDF or share it with one link.',
       },
       {
         title: 'AI CV match score',
-        description: 'Upload your CV, let AI calculate how well it matches the job and suggest improvements.',
+        description: 'Score your CV against the job; instantly see gaps and suggestions that make you stronger.',
       },
       {
-        title: 'Interview prep assistant',
-        description: 'Ask the AI your questions before an interview and get company-specific prep tips.',
+        title: 'AI cover letter',
+        description: 'Generate a persuasive, job-specific cover letter in seconds with AI.',
+      },
+      {
+        title: 'Mock interview',
+        description: 'Run an AI mock interview with company-specific questions; get feedback and prep tips.',
+      },
+      {
+        title: 'Calendar & reminders',
+        description: 'See interview and follow-up dates on a calendar so you never miss a step.',
+      },
+    ],
+  },
+  howItWorks: {
+    heading: 'How it works',
+    subtitle: 'From application to offer in three steps.',
+    steps: [
+      {
+        title: 'Add the job',
+        description: 'Paste a job posting link and let Wisparkr create the application for you automatically.',
+      },
+      {
+        title: 'Build & match your CV',
+        description: 'Create your CV with the CV Builder and strengthen it against the job with the AI match score.',
+      },
+      {
+        title: 'Track & win',
+        description: 'Manage the process on the Kanban board, prepare with the mock interview, and stay on top with reminders.',
       },
     ],
   },
