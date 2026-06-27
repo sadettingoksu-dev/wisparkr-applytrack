@@ -2,7 +2,19 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import type { Database } from '@/types/database.types'
 
-const PROTECTED_PREFIXES = ['/dashboard', '/board', '/applications', '/settings']
+const PROTECTED_PREFIXES = [
+  '/dashboard',
+  '/board',
+  '/applications',
+  '/settings',
+  '/assistant',
+  '/interview',
+  '/cv-builder',
+  '/documents',
+  '/calendar',
+  '/analytics',
+  '/compare',
+]
 
 /**
  * Refreshes the Supabase auth session on every request and redirects

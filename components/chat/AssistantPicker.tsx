@@ -26,7 +26,7 @@ export function AssistantPicker({
         value={selectedId ?? ''}
         onChange={(e) => {
           // Seçimi cookie'ye yaz: AI Asistan ve Mülakat sayfaları aynı başvuruyu hatırlasın.
-          document.cookie = `coach_app=${e.target.value}; path=/; max-age=31536000; samesite=lax`
+          document.cookie = `coach_app=${e.target.value}; path=/; max-age=31536000; samesite=lax; secure`
           router.push(`${basePath}?app=${e.target.value}`)
         }}
         className="max-w-[18rem] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-100"

@@ -9,8 +9,9 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: { code: 'UNAUTHORIZED', message: 'Giriş gerekli.' } } satisfies ApiResponse<never>, { status: 401 })
 
-  const { status } = await req.json()
-  if (!VALID_STATUSES.includes(status)) {
+  const body = (await req.json().catch(() => null)) as { status?: ApplicationStatus } | null
+  const status = body?.status
+  if (!status || !VALID_STATUSES.includes(status)) {
     return NextResponse.json({ error: { code: 'INVALID_STATUS', message: 'Geçersiz durum.' } } satisfies ApiResponse<never>, { status: 400 })
   }
 
