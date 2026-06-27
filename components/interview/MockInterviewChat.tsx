@@ -61,10 +61,10 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   const [voiceGender, setVoiceGender] = useState<VoiceGender>('female')
   const [speechSupported, setSpeechSupported] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [started, setStarted] = useState(false)
+  const [micBlocked, setMicBlocked] = useState(false)
   const speech = useSpeechRecognition()
   const prevMessageCountRef = useRef(initialMessages.length)
-
-  const autoStartedRef = useRef(false)
 
   function speak(text: string) {
     if (!isSpeechSynthesisSupported()) return
@@ -74,33 +74,57 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
 
   // Soruyu sesli oku, bittiğinde mikrofonu otomatik dinlemeye başlat (el değmeden).
   function speakThenListen(text: string) {
-    if (!isSpeechSynthesisSupported()) return
+    if (!isSpeechSynthesisSupported()) {
+      try {
+        speech.start()
+      } catch {
+        /* yoksay */
+      }
+      return
+    }
     setIsSpeaking(true)
     speakText(text, voiceGender, () => {
       setIsSpeaking(false)
       try {
         speech.start()
       } catch {
-        /* tarayıcı otomatik mikrofonu engellerse kullanıcı butona basabilir */
+        /* izin verilmemişse kullanıcı mikrofon butonuna basabilir */
       }
     })
+  }
+
+  // Görüşmeyi başlat: tek dokunuş (kullanıcı hareketi) ile mikrofon iznini al,
+  // sesli modu aç, ilk soruyu oku ve dinlemeye geç. Tarayıcılar izinsiz/otomatik
+  // mikrofon başlatmayı engellediği için bu jest şart.
+  async function beginInterview() {
+    setStarted(true)
+    setMicBlocked(false)
+    setVoiceMode(true)
+    try {
+      if (navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        stream.getTracks().forEach((tr) => tr.stop()) // sadece izin gerekiyordu
+      }
+    } catch {
+      setMicBlocked(true)
+      setVoiceMode(false)
+      return
+    }
+    const firstQuestion = [...messages].reverse().find((m) => m.role === 'interviewer')?.content
+    if (firstQuestion) speakThenListen(firstQuestion)
   }
 
   useEffect(() => {
     setSpeechSupported(isSpeechSynthesisSupported() && speech.isSupported)
   }, [speech.isSupported])
 
-  // Sayfa açılınca: sesli modu aç, ilk soruyu otomatik oku ve dinlemeye geç.
+  // Mikrofon izni reddedilirse: sesli modu kapat, kullanıcıyı bilgilendir, yazıya düş.
   useEffect(() => {
-    if (autoStartedRef.current) return
-    if (status !== 'in_progress') return
-    if (!(isSpeechSynthesisSupported() && speech.isSupported)) return
-    autoStartedRef.current = true
-    setVoiceMode(true)
-    const firstQuestion = [...messages].reverse().find((m) => m.role === 'interviewer')?.content
-    if (firstQuestion) speakThenListen(firstQuestion)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [speech.isSupported, status])
+    if (speech.error === 'not-allowed' || speech.error === 'service-not-allowed') {
+      setMicBlocked(true)
+      setVoiceMode(false)
+    }
+  }, [speech.error])
 
   // Süre sayacı: mülakat devam ederken çalışır.
   useEffect(() => {
@@ -286,6 +310,42 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
         }}
       />
 
+      {/* BAŞLANGIÇ KAPISI — tarayıcı izni için tek dokunuş gerekir */}
+      {speechSupported && !started && (
+        <div
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-5 px-6 text-center"
+          style={{ background: 'rgba(7,4,17,0.78)', backdropFilter: 'blur(4px)' }}
+        >
+          <div
+            className="flex h-24 w-24 items-center justify-center rounded-full"
+            style={{
+              background: 'linear-gradient(135deg,#b07cff,#6d28d9 60%,#3b1d80)',
+              boxShadow: '0 0 50px rgba(124,58,237,0.45)',
+            }}
+          >
+            <Mic className="h-10 w-10 text-white/90" strokeWidth={1.5} />
+          </div>
+          <div>
+            <div className="text-lg font-semibold text-purple-50">{jobTitle}</div>
+            <div className="text-sm text-purple-300">{company}</div>
+          </div>
+          <p className="max-w-sm text-sm leading-relaxed text-purple-200/80">
+            {t.interview.beginHint}
+          </p>
+          <button
+            onClick={beginInterview}
+            className="flex items-center gap-2.5 rounded-full px-8 py-3.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
+            style={{
+              background: 'linear-gradient(135deg,#a855f7,#6d28d9)',
+              boxShadow: '0 8px 26px rgba(124,58,237,0.5)',
+            }}
+          >
+            <Mic className="h-5 w-5" />
+            {t.interview.begin}
+          </button>
+        </div>
+      )}
+
       {/* HEADER */}
       <header className="relative z-10 flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div className="flex min-w-0 items-center gap-3">
@@ -443,6 +503,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
       {/* ANSWER DOCK */}
       <footer className="relative z-10 flex flex-col items-center gap-3 px-5 pb-6 pt-2">
         {error && <p className="text-xs text-rose-300">{error}</p>}
+        {micBlocked && <p className="text-xs text-amber-300">{t.interview.micBlocked}</p>}
 
         {/* döküm (toggle) */}
         {messages.length > 1 && (
