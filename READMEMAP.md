@@ -74,7 +74,7 @@
 - [x] **Migrationlar uygulandı (DOĞRULANDI 2026-06-27):** `0006`–`0012` arası TÜM migration'lar uzak Supabase'de mevcut. Service-role ile REST üzerinden her migration'ın kolon/tabloları tek tek yoklanarak teyit edildi (tailored_cv_text, mock_interviews, cover_letter_text, skills_gap, cv_data, cv_shares, trial_ends_at, plan_started_at vb. hepsi VAR). Şema güncel; CV builder/paylaşım/ön yazı/deneme DB tarafı hazır.
 - [ ] **Hesap menüsü + CV/AI özellikleri canlı testi:** ön yazı üret/indir, CV cila, skills gap, Belgelerim PDF şablonları (DB hazır, fonksiyonel uçtan uca test kaldı)
 - [ ] **Google OAuth uçtan uca test:** Redirect zinciri doğru görünüyor (Google login sayfasına kadar hatasız gidiyor, test ettik) ama gerçek bir Google hesabıyla tam giriş hiç denenmedi
-- [ ] **NEXT_PUBLIC_APP_URL** Vercel'de wisparkr.com olarak güncelle (şu an localhost olabilir) — LemonSqueezy checkout redirect'i bunu kullanıyor (`lib/lemonsqueezy.ts:30`)
+- [~] **NEXT_PUBLIC_APP_URL** (2026-06-27): Vercel Production'da BOŞ (`""`) set edilmişti. Kod tarafı dayanıklı hale getirildi — `lib/lemonsqueezy.ts` artık `process.env.NEXT_PUBLIC_APP_URL || 'https://wisparkr.com'` fallback'i kullanıyor (checkout redirect düzeldi), paylaşım rotası zaten `|| origin` kullanıyor. KALAN: env'i panelden `https://wisparkr.com` yapmak (CLI bu shell'de değeri kaydedemedi; temizlik amaçlı, fonksiyonel acil değil).
 
 ### Ödeme / Gelir
 - [ ] LemonSqueezy entegrasyonu (API key, store ID, variant ID'ler boş)
