@@ -34,14 +34,21 @@ body {
   to { opacity: 1; transform: translateY(0) }
 }
 
+@keyframes wisparkr-step {
+  from { opacity: 0; transform: translateX(18px) }
+  to { opacity: 1; transform: translateX(0) }
+}
+
 .wisparkr-float { animation: wisparkr-float 6s ease-in-out infinite }
 .wisparkr-spin-slow { animation: wisparkr-spin-slow 40s linear infinite }
 .wisparkr-pulse-ring { animation: wisparkr-pulse-ring 4s ease-out infinite }
 .wisparkr-fade-up { animation: wisparkr-fade-up 0.7s ease-out both }
+.wisparkr-step { animation: wisparkr-step 0.35s ease-out both }
 
 @media (prefers-reduced-motion: reduce) {
   .wisparkr-float,
   .wisparkr-spin-slow,
   .wisparkr-pulse-ring,
-  .wisparkr-fade-up { animation: none }
+  .wisparkr-fade-up,
+  .wisparkr-step { animation: none }
 }
