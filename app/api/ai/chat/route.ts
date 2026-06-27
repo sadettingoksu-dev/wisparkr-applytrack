@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
 import { getAnthropicClient, DEFAULT_MODEL, TURKISH_WRITING_RULE } from '@/lib/anthropic'
 import { APP_NAME } from '@/utils/constants'
-import type { Application } from '@/lib/types'
+import type { Application, RequiredDocument } from '@/lib/types'
 
 const bodySchema = z.object({
   application_id: z.string().uuid(),
@@ -82,15 +82,44 @@ export async function POST(request: Request) {
     .map((m) => ({ role: m.role, content: m.content }))
   messages.push({ role: 'user', content: message })
 
+  // Sohbet AI'ının başvuruya özel tam bağlamı: CV, uygunluk skoru, beceri analizi ve belgeler.
+  const cvText = application.tailored_cv_text ?? profile.cv_text
+  const skillsGap = application.skills_gap as
+    | { matched?: string[]; missing?: string[]; summary?: string }
+    | null
+  const requiredDocs = Array.isArray(application.required_documents)
+    ? (application.required_documents as unknown as RequiredDocument[])
+    : []
+
   const systemPrompt = [
     `Sen ${APP_NAME} uygulamasında bir kariyer koçu ve mülakat hazırlık asistanısın.`,
     `Ürünün/uygulamanın adı ${APP_NAME}'dır. Başka bir ürün adı (örn. "ApplyTrack") asla kullanma.`,
-    'Kullanıcıya başvurduğu pozisyon için mülakat hazırlığında yardımcı oluyorsun.',
+    'Kullanıcıya başvurduğu pozisyon için mülakat hazırlığı, CV iyileştirme ve genel',
+    'kariyer konularında yardımcı oluyorsun. Aşağıdaki başvuru bilgilerini kullan.',
+    '',
     `Şirket: ${application.company_name}`,
     `Pozisyon: ${application.position_title}`,
     application.job_description
       ? `İlan açıklaması: ${application.job_description.slice(0, 4000)}`
       : null,
+    application.fit_score != null ? `CV uygunluk skoru: %${application.fit_score}` : null,
+    skillsGap
+      ? `Beceri analizi — Eşleşen: ${(skillsGap.matched ?? []).join(', ') || '-'} | ` +
+        `Eksik: ${(skillsGap.missing ?? []).join(', ') || '-'}`
+      : null,
+    requiredDocs.length
+      ? 'Gerekli belgeler: ' +
+        requiredDocs
+          .map(
+            (d) =>
+              `${d.name} (${d.has === true ? 'var' : d.has === false ? 'yok' : 'belirsiz'})`
+          )
+          .join(', ')
+      : null,
+    '',
+    'Adayın CV\'si:',
+    (cvText || 'CV yüklenmemiş.').slice(0, 4000),
+    '',
     'Cevaplarını Türkçe, kısa, anlaşılır ve aksiyon odaklı ver; gerektiğinde madde',
     'işaretleri kullanarak yapılandır. ' + TURKISH_WRITING_RULE,
   ]

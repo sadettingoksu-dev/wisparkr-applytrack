@@ -1,8 +1,10 @@
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { AIChatPanel } from '@/components/chat/AIChatPanel'
 import { AssistantPicker } from '@/components/chat/AssistantPicker'
 import { getServerDict } from '@/lib/i18n-server'
+import { resolveSelectedApp } from '@/lib/selectedApp'
 import type { Application, AiMessage } from '@/lib/types'
 
 export default async function AssistantPage({
@@ -23,11 +25,8 @@ export default async function AssistantPage({
     'id' | 'company_name' | 'position_title'
   >[]
 
-  // Seçili başvuru: query param geçerliyse onu, değilse en yeni başvuruyu kullan.
-  const selectedId =
-    searchParams.app && apps.some((a) => a.id === searchParams.app)
-      ? searchParams.app
-      : apps[0]?.id
+  // Seçili başvuru: query param > cookie (sayfalar arası ortak) > en yeni başvuru.
+  const selectedId = resolveSelectedApp(apps, searchParams.app, cookies().get('coach_app')?.value)
 
   let messages: AiMessage[] = []
   if (selectedId) {
@@ -41,19 +40,20 @@ export default async function AssistantPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.assistant.title}</h1>
-          <p className="text-sm text-slate-500">{t.assistant.subtitle}</p>
-        </div>
-        {apps.length > 0 && (
-          <AssistantPicker
-            applications={apps}
-            selectedId={selectedId}
-            label={t.assistant.pickLabel}
-          />
-        )}
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">{t.assistant.title}</h1>
+        <p className="text-sm text-slate-500">{t.assistant.subtitle}</p>
       </div>
+
+      {apps.length > 0 && (
+        <Card className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-900">{t.assistant.pickPrompt}</p>
+            <p className="text-xs text-slate-500">{t.assistant.pickHint}</p>
+          </div>
+          <AssistantPicker applications={apps} selectedId={selectedId} label="" />
+        </Card>
+      )}
 
       {apps.length === 0 ? (
         <Card>

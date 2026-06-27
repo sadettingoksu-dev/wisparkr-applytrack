@@ -39,25 +39,21 @@ export default async function MockInterviewPage({
     .order('created_at', { ascending: true })
 
   return (
-    <div className="space-y-4">
-      <div>
-        <Link
-          href={`/interview?app=${params.id}`}
-          className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t.mockPage.back}
-        </Link>
-        <h1 className="mt-1 text-xl font-bold text-slate-900">
-          {application.position_title} — {t.mockPage.suffix}
-        </h1>
-        <p className="text-sm text-slate-500">{application.company_name}</p>
-      </div>
+    <div className="space-y-3">
+      <Link
+        href={`/interview?app=${params.id}`}
+        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        {t.mockPage.back}
+      </Link>
 
-      <div className="h-[600px]">
+      <div className="h-[calc(100vh-150px)] min-h-[640px]">
         <MockInterviewChat
           interview={interview}
           initialMessages={(messagesData ?? []) as MockInterviewMessage[]}
+          jobTitle={application.position_title}
+          company={application.company_name}
         />
       </div>
     </div>
