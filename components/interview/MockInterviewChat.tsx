@@ -64,15 +64,43 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   const speech = useSpeechRecognition()
   const prevMessageCountRef = useRef(initialMessages.length)
 
+  const autoStartedRef = useRef(false)
+
   function speak(text: string) {
     if (!isSpeechSynthesisSupported()) return
     setIsSpeaking(true)
     speakText(text, voiceGender, () => setIsSpeaking(false))
   }
 
+  // Soruyu sesli oku, bittiğinde mikrofonu otomatik dinlemeye başlat (el değmeden).
+  function speakThenListen(text: string) {
+    if (!isSpeechSynthesisSupported()) return
+    setIsSpeaking(true)
+    speakText(text, voiceGender, () => {
+      setIsSpeaking(false)
+      try {
+        speech.start()
+      } catch {
+        /* tarayıcı otomatik mikrofonu engellerse kullanıcı butona basabilir */
+      }
+    })
+  }
+
   useEffect(() => {
     setSpeechSupported(isSpeechSynthesisSupported() && speech.isSupported)
   }, [speech.isSupported])
+
+  // Sayfa açılınca: sesli modu aç, ilk soruyu otomatik oku ve dinlemeye geç.
+  useEffect(() => {
+    if (autoStartedRef.current) return
+    if (status !== 'in_progress') return
+    if (!(isSpeechSynthesisSupported() && speech.isSupported)) return
+    autoStartedRef.current = true
+    setVoiceMode(true)
+    const firstQuestion = [...messages].reverse().find((m) => m.role === 'interviewer')?.content
+    if (firstQuestion) speakThenListen(firstQuestion)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [speech.isSupported, status])
 
   // Süre sayacı: mülakat devam ederken çalışır.
   useEffect(() => {
@@ -81,11 +109,11 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     return () => clearInterval(id)
   }, [status])
 
-  // Yeni mülakatçı sorusu geldiğinde sesli modda seslendir.
+  // Yeni mülakatçı sorusu geldiğinde sesli modda oku ve ardından dinlemeye geç.
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current) {
       const last = messages[messages.length - 1]
-      if (voiceMode && last.role === 'interviewer') speak(last.content)
+      if (voiceMode && last.role === 'interviewer') speakThenListen(last.content)
     }
     prevMessageCountRef.current = messages.length
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -241,7 +269,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
 
   return (
     <div
-      className="relative flex h-full min-h-[640px] flex-col overflow-hidden rounded-2xl text-purple-50"
+      className="relative flex h-full min-h-[460px] flex-col overflow-hidden rounded-2xl text-purple-50"
       style={{ background: STAGE_BG, fontFamily: "'Space Grotesk', system-ui, sans-serif" }}
     >
       <style>{KEYFRAMES}</style>
@@ -333,10 +361,10 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
       </header>
 
       {/* STAGE */}
-      <main className="relative z-[5] flex flex-1 flex-col items-center justify-center gap-5 px-6 py-2 text-center">
+      <main className="relative z-[5] flex flex-1 flex-col items-center justify-center gap-3 px-6 py-2 text-center">
         {/* avatar */}
         <div
-          className="relative flex h-44 w-44 shrink-0 items-center justify-center sm:h-52 sm:w-52"
+          className="relative flex h-28 w-28 shrink-0 items-center justify-center sm:h-32 sm:w-32"
           style={{ animation: 'mi-bob 4.5s ease-in-out infinite' }}
         >
           {aiActive && (
@@ -352,18 +380,18 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
             </>
           )}
           <div
-            className="relative flex h-40 w-40 items-center justify-center rounded-full sm:h-44 sm:w-44"
+            className="relative flex h-24 w-24 items-center justify-center rounded-full sm:h-28 sm:w-28"
             style={{
               background: 'linear-gradient(135deg,#b07cff,#6d28d9 60%,#3b1d80)',
               boxShadow: '0 0 50px rgba(124,58,237,0.45)',
             }}
           >
-            <Bot className="h-16 w-16 text-white/90" strokeWidth={1.5} />
+            <Bot className="h-11 w-11 text-white/90" strokeWidth={1.5} />
 
             {/* konuşurken ağız ekolayzeri */}
             {isSpeaking && (
               <div
-                className="absolute bottom-6 left-1/2 flex h-7 -translate-x-1/2 items-end gap-[3px] rounded-xl px-2.5 py-1.5"
+                className="absolute bottom-3.5 left-1/2 flex h-6 -translate-x-1/2 items-end gap-[3px] rounded-xl px-2 py-1"
                 style={{ background: 'rgba(11,7,22,0.62)', backdropFilter: 'blur(3px)' }}
               >
                 {MOUTH_BARS.map((b, i) => (
@@ -371,7 +399,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
                     key={i}
                     className="block w-[3px] rounded-sm"
                     style={{
-                      height: '14px',
+                      height: '12px',
                       background: '#f0d9ff',
                       transformOrigin: 'center bottom',
                       animation: `mi-eqbar ${b.dur} ease-in-out infinite`,
@@ -395,15 +423,21 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
           </span>
         </div>
 
-        {/* soru */}
-        <div className="max-w-2xl px-3">
-          <div className="mb-3 font-mono text-[11px] uppercase tracking-[0.14em] text-purple-300/70">
+        {/* soru: yalnızca sesli mod kapalıyken yazılı gösterilir (sesli modda AI okur) */}
+        {!voiceMode ? (
+          <div className="max-w-2xl px-3">
+            <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-purple-300/70">
+              {t.interview.aiInterviewer}
+            </div>
+            <div className="text-pretty text-lg font-medium leading-relaxed text-purple-50 sm:text-xl">
+              {currentQuestion}
+            </div>
+          </div>
+        ) : (
+          <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-purple-300/70">
             {t.interview.aiInterviewer}
           </div>
-          <div className="text-pretty text-xl font-medium leading-relaxed text-purple-50 sm:text-2xl">
-            {currentQuestion}
-          </div>
-        </div>
+        )}
       </main>
 
       {/* ANSWER DOCK */}
@@ -423,7 +457,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
           </button>
         )}
         {showTranscript && (
-          <div className="max-h-52 w-full max-w-2xl space-y-3 overflow-y-auto rounded-xl border border-white/10 bg-black/20 p-4">
+          <div className="max-h-36 w-full max-w-2xl space-y-3 overflow-y-auto rounded-xl border border-white/10 bg-black/20 p-4">
             {messages.map((m, i) => (
               <div key={i} className={m.role === 'candidate' ? 'text-right' : 'text-left'}>
                 <div className="mb-1 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-purple-300/60">

@@ -48,7 +48,7 @@ export default async function MockInterviewPage({
         {t.mockPage.back}
       </Link>
 
-      <div className="h-[calc(100vh-150px)] min-h-[640px]">
+      <div className="h-[calc(100vh-140px)] min-h-[460px]">
         <MockInterviewChat
           interview={interview}
           initialMessages={(messagesData ?? []) as MockInterviewMessage[]}
