@@ -388,6 +388,8 @@ const tr = {
     recentApps: 'Son Başvurular',
     all: 'Tümü',
     noApps: 'Henüz başvuru yok.',
+    noAppsDesc: 'İlk başvurunu ekleyince en son eklediklerin burada görünecek.',
+    noAppsCta: 'Başvuru ekle',
   },
   onboarding: {
     welcome: "Wisparkr'e Hoş Geldin! 👋",
@@ -411,6 +413,7 @@ const tr = {
     subtitle: 'Başvurularını sürükleyip durumunu güncelle',
     newApplication: 'Yeni Başvuru',
     empty: 'Henüz başvuru yok.',
+    emptyDesc: 'Başvuru ekledikçe kartların burada durumlarına göre sütunlara dizilecek.',
     matchLabel: '%{score} uyum',
   },
   applications: {
@@ -418,6 +421,8 @@ const tr = {
     subtitle: 'Tüm başvurularının listesi',
     newApplication: 'Yeni Başvuru',
     empty: 'Henüz başvuru eklemediniz.',
+    emptyTitle: 'İlk başvurunu ekle',
+    emptyDesc: 'Bir iş ilanının linkini yapıştır; Wisparkr şirket, pozisyon ve açıklamayı senin için otomatik doldursun.',
   },
   newApp: {
     title: 'Yeni Başvuru',
@@ -1261,6 +1266,8 @@ const en: Dictionary = {
     recentApps: 'Recent Applications',
     all: 'View all',
     noApps: 'No applications yet.',
+    noAppsDesc: 'Once you add your first application, your most recent ones will show here.',
+    noAppsCta: 'Add application',
   },
   onboarding: {
     welcome: 'Welcome to Wisparkr! 👋',
@@ -1284,6 +1291,7 @@ const en: Dictionary = {
     subtitle: 'Drag your applications to update their status',
     newApplication: 'New Application',
     empty: 'No applications yet.',
+    emptyDesc: 'As you add applications, your cards will line up here in columns by status.',
     matchLabel: '{score}% match',
   },
   applications: {
@@ -1291,6 +1299,8 @@ const en: Dictionary = {
     subtitle: 'List of all your applications',
     newApplication: 'New Application',
     empty: "You haven't added any applications yet.",
+    emptyTitle: 'Add your first application',
+    emptyDesc: 'Paste a job posting link and Wisparkr auto-fills the company, role and description for you.',
   },
   newApp: {
     title: 'New Application',

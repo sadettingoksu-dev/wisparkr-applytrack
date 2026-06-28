@@ -1,10 +1,11 @@
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getPlan } from '@/lib/plans'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { CompareSelector } from '@/components/applications/CompareSelector'
 import { LimitBanner } from '@/components/applications/LimitBanner'
@@ -60,9 +61,13 @@ export default async function ApplicationsPage({
       {showBanner && <LimitBanner used={apps.length} max={max ?? 2} />}
 
       {apps.length === 0 ? (
-        <Card>
-          <p className="text-sm text-slate-500">{t.applications.empty}</p>
-        </Card>
+        <EmptyState
+          icon={FileText}
+          title={t.applications.emptyTitle}
+          description={t.applications.emptyDesc}
+          ctaLabel={t.applications.newApplication}
+          ctaHref="/applications/new"
+        />
       ) : (
         <div className="space-y-3">
           {apps.map((app) => (

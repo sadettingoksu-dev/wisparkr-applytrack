@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Briefcase, MessageSquare, Trophy, TrendingUp, Send, ListChecks, ArrowRight, BarChart2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { MetricCard } from '@/components/dashboard/MetricCard'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { OnboardingBanner } from '@/components/dashboard/OnboardingBanner'
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
 import { PageInfo } from '@/components/ui/PageInfo'
@@ -105,9 +106,13 @@ export default async function DashboardPage() {
             </Link>
           </div>
           {recentApps.length === 0 ? (
-            <Card>
-              <p className="text-sm text-slate-500">{t.dashboard.noApps}</p>
-            </Card>
+            <EmptyState
+              icon={Briefcase}
+              title={t.dashboard.noApps}
+              description={t.dashboard.noAppsDesc}
+              ctaLabel={t.dashboard.noAppsCta}
+              ctaHref="/applications/new"
+            />
           ) : (
             <Card className="divide-y divide-slate-200">
               {recentApps.map((app) => (
