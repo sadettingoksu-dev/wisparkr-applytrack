@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, Eye, EyeOff, CheckCircle2, KeyRound } from 'lucide-react'
 import { AuthShowcase } from '@/components/auth/AuthShowcase'
@@ -14,7 +13,6 @@ type Step = 'email' | 'code' | 'done'
 
 export default function ForgotPasswordPage() {
   const { t } = useI18n()
-  const router = useRouter()
   const [step, setStep] = useState<Step>('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -87,8 +85,8 @@ export default function ForgotPasswordPage() {
 
     setStep('done')
     setLoading(false)
-    // Oturum zaten açık; kısa bir onay sonrası panele al.
-    setTimeout(() => router.push('/dashboard'), 1500)
+    // Oturum zaten açık; kısa bir onay sonrası sert yönlendirme ile panele al.
+    setTimeout(() => window.location.assign('/dashboard'), 1500)
   }
 
   async function handleResend() {

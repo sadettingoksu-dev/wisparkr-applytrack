@@ -45,7 +45,9 @@ export default function LoginPage() {
       return
     }
 
-    router.push(postAuthPath)
+    // Sert yönlendirme: sunucu oturum çerezini hemen görsün ve kullanıcı doğrudan
+    // panele insin (router.push bazen çerez işlenmeden gezinip landing'e düşürüyordu).
+    window.location.assign(postAuthPath)
   }
 
   async function handleGoogleLogin() {

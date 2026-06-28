@@ -132,8 +132,8 @@ export default function SignupPage() {
     }
 
     // Kayıt tamamlandı ve oturum açık (OTP aynı cihazda doğrulandı, PKCE sorunu
-    // yok): kullanıcıyı uğraştırmadan doğrudan panele/ödemeye yönlendir.
-    router.push(postAuthPath)
+    // yok): sert yönlendirme ile sunucu oturumu görsün, doğrudan panele/ödemeye git.
+    window.location.assign(postAuthPath)
   }
 
   async function handleResendOtp() {
