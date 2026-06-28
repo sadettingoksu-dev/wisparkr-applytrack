@@ -13,9 +13,9 @@
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
 ### 2026-06-28 oturumu — Güvenlik sertleştirme + Mülakat insanlaştırma + "10 eksik" paketi + çoklu dil
-> ⚠️ **BEKLEYEN MANUEL ADIMLAR (canlıda tam çalışması için):**
-> - **SQL (Supabase SQL Editor'de bir kez çalıştır):** `0013_feedback.sql` (feedback tablosu + `profiles.notify_status_change/notify_interview/notify_product`) ve `0014_referral.sql` (`profiles.referral_code/referred_by/referral_count`). Çalıştırılana kadar feedback gönderimi, bildirim toggle'ları ve referans ödülü hata verir.
-> - **Reset Password e-posta şablonu:** Supabase → Authentication → Emails → "Reset Password" şablonuna `{{ .Token }}` eklenmeli (signup'taki gibi), yoksa şifre sıfırlama kodu maili boş gelir.
+> ✅ **MANUEL ADIMLAR TAMAMLANDI (2026-06-28):**
+> - **SQL uygulandı:** `0013_feedback.sql` (feedback tablosu + `profiles.notify_*`) ve `0014_referral.sql` (`profiles.referral_code/referred_by/referral_count`) Supabase'de çalıştırıldı — REST probe + geçici hesapla uçtan uca doğrulandı (#10/#8/#9 ✅, RLS doğru).
+> - **Reset Password e-posta şablonu:** "Reset Password" şablonuna `{{ .Token }}` eklenip kaydedildi; gerçek e-postayla test edildi — 6 haneli kod gelip yeni şifreyle giriş yapıldı ✅ (recovery akışı admin generate_link ile de doğrulandı: eski şifre engellenir, yeni şifre çalışır).
 
 - [x] **Güvenlik başlıkları:** `next.config.mjs` `async headers()` — CSP (Supabase + LemonSqueezy + Google izinli, makul-geçirgen), HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy (`microphone=(self)` — mülakat için), X-DNS-Prefetch-Control. Canlıda doğrulandı. CSP gözle test (Google login / checkout / mülakat mikrofonu) önerilir; engellenen origin çıkarsa CSP'ye eklenmeli.
 - [x] **Rate limit:** `lib/rateLimit.ts` bellek-içi sliding-window (kullanıcı başına dk'da 20 istek, 429+Retry-After). 15 AI/CV/mülakat route'una auth sonrası uygulandı. NOT: instance-içi (Vercel yatay ölçeklenir) → burst koruması; asıl maliyet tavanı `lib/usage.ts` aylık kota. Dağıtık istenirse imza aynı bırakıldı → Upstash'e geç.
@@ -35,7 +35,7 @@
 - [x] **Landing'den demo kaldırıldı:** hero'daki "Demo" CTA butonu + ürün maketinin `/demo`'ya tıklanabilir linki/baloncuğu silindi (`app/page.tsx`). Animasyonlu maket görsel olarak kaldı (artık link değil). `/demo` sayfası kodda duruyor ama hiçbir yerden link verilmiyor.
 - [x] **"Nasıl çalışır" vitrini dil-duyarlı yapıldı (DB-SIZ ÖNEMLİ DÜZELTME):** Statik TR ekran görüntüleri (`public/shots/add|cv|board.png`) dil değişince çevrilmiyordu. Yerine i18n metniyle çalışan `components/landing/ShowcaseMock.tsx` (3 HTML maket: ilan ekle+AI doldur / CV uyum skoru+beceriler / Kanban takip) kondu; `FeatureShowcase.tsx` artık `Image` yerine `shot.mock` render eder. Dil değişince maket içeriği de otomatik çevrilir. (Eski `public/shots/*.png` artık kullanılmıyor.)
 - [x] **Giriş→panel yönlendirmesi doğrulandı (kod değişikliği yok):** Hem e-posta (login + signup-OTP) hem Google (OAuth→`/auth/callback?next=/dashboard`) zaten panele yönlendiriyor. Google sorun çıkarırsa sebep **Supabase URL Configuration** (Redirect URLs'e `https://www.wisparkr.com/**` + `https://wisparkr.com/**` eklenmeli; site apex→www 308 yönlendiriyor). NOT: canonical domain **www.wisparkr.com**.
-- **Durum: Tüm kod canlıda (her özellik ayrı commit + `vercel --prod`). DB tarafı: yukarıdaki 2 SQL + Reset Password şablonu BEKLİYOR. Backend test EDİLDİ (geçici hesapla #5/#8/#9/#10 ✅, RLS doğru).**
+- **Durum: TAMAMLANDI ve canlıda. Tüm kod deploy edildi, 2 SQL uygulandı, Reset Password şablonu eklendi. Backend uçtan uca test edildi (geçici hesapla #5/#8/#9/#10 + şifre sıfırlama ✅, RLS doğru). Bekleyen manuel adım kalmadı.**
 
 ### Büyük UI + Monetizasyon revizyonu (beyaz+mor tema, 5 gün deneme, plan iptal, şablon galerisi)
 - [x] **Ücretsiz plan → 5 günlük deneme:** `profiles.trial_ends_at` (default now()+5g) + `plan_started_at` (mig `0012_trial.sql`). `lib/plans.ts` `isTrialActive`/`getEffectivePlanId`/`getEffectivePlan` (deneme = Pro seviyesi tam erişim, süre dolunca free/kilitli). `requireAuth` (lib/apiAuth) artık `profile.plan`'ı efektif plana çevirir + `realPlanId` taşır (link kalıcılığı gerçek plana bağlı). Paylaşım linki: TTL 5 gün, deneme linki tam **deneme bitiminde** sona erer; Pro+Career Coach kalıcı (public `/cv/[token]` owner efektif planına bakar).
