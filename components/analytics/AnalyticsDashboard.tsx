@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { BarChart2, TrendingUp, Target, Award, X } from 'lucide-react'
+import { BarChart2, TrendingUp, Target, Award, X, Filter } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { STATUS_BADGE_CLASSES } from '@/utils/constants'
@@ -103,6 +103,17 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
   }
   const interviewRate = total > 0 ? Math.round(((byStatus.interview + byStatus.offer) / total) * 100) : 0
   const offerRate = total > 0 ? Math.round((byStatus.offer / total) * 100) : 0
+
+  // Yanıt oranı: beklemede olmayanlar (mülakat + teklif + reddedildi).
+  const responded = byStatus.interview + byStatus.offer + byStatus.rejected
+  const responseRate = total > 0 ? Math.round((responded / total) * 100) : 0
+  // Dönüşüm hunisi aşamaları: Başvuru → Mülakata ulaşan → Teklif.
+  const reachedInterview = byStatus.interview + byStatus.offer
+  const funnelStages = [
+    { label: t.analytics.stageApplied, count: total },
+    { label: t.analytics.stageInterview, count: reachedInterview },
+    { label: t.analytics.stageOffer, count: byStatus.offer },
+  ]
   const scores = apps.map((a) => a.fit_score).filter((s): s is number => s !== null)
   const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null
   const maxScore = scores.length ? Math.max(...scores) : null
@@ -198,6 +209,51 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
                     onClick={() => handleStatusClick(status)}
                   />
                 ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Dönüşüm hunisi + yanıt oranı */}
+          <Card className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-purple-600" />
+              <h2 className="text-sm font-semibold text-slate-900">{t.analytics.funnelTitle}</h2>
+              <span className="ml-auto rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700">
+                {t.analytics.responseRate}: %{responseRate}
+              </span>
+            </div>
+            {total === 0 ? (
+              <p className="text-sm text-slate-400">{t.analytics.noApps}</p>
+            ) : (
+              <div className="space-y-2">
+                {funnelStages.map((stage, i) => {
+                  const widthPct = total > 0 ? Math.max((stage.count / total) * 100, 4) : 0
+                  const prev = i > 0 ? funnelStages[i - 1].count : null
+                  const conv = prev && prev > 0 ? Math.round((stage.count / prev) * 100) : null
+                  return (
+                    <div key={stage.label} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium text-slate-600">{stage.label}</span>
+                        <span className="font-medium text-slate-900">
+                          {stage.count}
+                          {conv !== null && (
+                            <span className="ml-1 text-xs text-slate-400">
+                              (%{conv} {t.analytics.conversionFrom})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      <div className="h-6 w-full overflow-hidden rounded-md bg-slate-100">
+                        <div
+                          className="flex h-6 items-center justify-end rounded-md bg-gradient-to-r from-purple-500 to-fuchsia-400 px-2 text-[11px] font-semibold text-white transition-all"
+                          style={{ width: `${widthPct}%` }}
+                        >
+                          {widthPct > 12 ? `%${Math.round((stage.count / total) * 100)}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </Card>
