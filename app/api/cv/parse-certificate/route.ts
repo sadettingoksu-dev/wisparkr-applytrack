@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
+import { rateLimit, rateLimitResponse, AI_RATE_LIMIT } from '@/lib/rateLimit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
 import { getAnthropicClient, extractCertificate, type CertImageType } from '@/lib/anthropic'
@@ -22,6 +23,9 @@ export async function POST(request: Request) {
 
   const ctx = await requireAuth()
   if (!isAuthedContext(ctx)) return ctx
+
+  const rl = rateLimit('ai:' + ctx.userId, AI_RATE_LIMIT)
+  if (!rl.allowed) return rateLimitResponse(rl)
   const { userId, profile } = ctx
 
   const formData = await request.formData().catch(() => null)

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseCvData, isShareActive } from '@/lib/cv'
-import { renderCvPdf, normalizeTemplate, cvPdfFilename } from '@/lib/cvPdf'
+import { renderCvPdf, normalizeTemplate, cvPdfFilename } from '@/lib/cvDocument'
 
 export const runtime = 'nodejs'
 

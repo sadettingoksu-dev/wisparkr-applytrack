@@ -21,16 +21,16 @@
 - [x] **Sidebar:** logoya basınca daral/genişle (`localStorage`), Analitik nav kaldırıldı.
 - [x] **Analitik → Dashboard'a gömüldü** (`/analytics` → `/dashboard` redirect), Takvim ayrı.
 - [x] **Her sayfada "i" bilgi butonu:** `components/ui/PageInfo` + `i18n.pageInfo.*` (tr/en).
-- [ ] **⚠️ DB:** `0012_trial.sql` Supabase'de ÇALIŞTIRILMALI (0009/0010/0011 ile birlikte) — yoksa deneme/şablon/paylaşım hata verir.
-- **Durum: Kod hazır, build geçiyor. Migration 0012 + manuel `vercel --prod` deploy bekliyor.**
+- [x] **DB:** `0012_trial.sql` uygulandı (0009/0010/0011 ile birlikte) — 2026-06-27 REST probe ile doğrulandı.
+- **Durum: Canlıda, migration'lar uygulandı.**
 
 
 ### Yapılandırılmış CV Oluşturucu + Akıllı Paylaşılabilir Link (Faz A + F)
 - [x] **CV Oluşturucu (Faz A):** `profiles.cv_data` (jsonb) yapılandırılmış CV; `lib/cv.ts` (`CvData` Zod + `flattenCvData`→`cv_text` türetimi, mevcut 7 AI tüketicisi bozulmaz); `/cv-builder` bölüm bölüm form + canlı önizleme (`CvPreview`) + kaydet; `/api/cv/builder` GET/PUT; `/api/cv/pdf` gerçek yerleşimli PDF (3 şablon, `lib/cvPdf.ts`); sidebar "CV Oluştur" + onboarding.
 - [x] **Akıllı Paylaşılabilir Link (Faz F — monetizasyon):** `cv_shares` tablosu (token + dondurulmuş snapshot + expires_at + görüntülenme). Public `/cv/[token]` owner planına **canlı** bakar (cron yok): free **7 gün**, Pro **kalıcı**; Pro'ya geçince tüm linkler **anında canlanır**. Pasif durum profesyonel (`ExpiredCv`, itibar korunur). `/cv/[token]/pdf` public indirme. `/api/cv/share` POST/GET + `[id]` PATCH/DELETE; özel slug Pro+. 7 gün ücretsiz indirme penceresi (`cv_trial_started_at`). `SharePanel` (oluştur + Linklerim). **Google Drive/Dropbox bilinçli eklenmedi** (paywall'ı bypass eder).
 - [x] Commit'ler: c53b943 (Faz A), fb47555 (Faz F)
-- [ ] **⚠️ DB:** `0010_cv_data.sql` + `0011_cv_shares.sql` Supabase'de ÇALIŞTIRILMALI — yoksa builder kaydetme ve link oluşturma hata verir.
-- **Durum: Kod canlıda, migration 0010 + 0011 bekliyor. Backlog: Faz B (builder AI), C (PDF içe aktar), D (ATS skoru).**
+- [x] **DB:** `0010_cv_data.sql` + `0011_cv_shares.sql` uygulandı (2026-06-27 doğrulandı). Builder kaydetme + link oluşturma DB tarafı hazır.
+- **Durum: Kod canlıda, migration'lar uygulandı. Backlog: Faz B (builder AI), C (PDF içe aktar), D (ATS skoru).**
 
 ### claude.ai tarzı hesap menüsü + Flowcase'den ilhamla CV/AI paketi (5 faz)
 - [x] **Hesap menüsü (`UserMenu` + `NavbarAuth`):** avatar+isim+plan rozeti; açılır menü (Ayarlar, Planı yükselt, Uygulama & eklentiler, Yardım, **Google ile hesap değiştir**, **Çıkış**). Sidebar altı, landing navbar ve `/pricing` artık oturumu tanıyor. Çıkış → `/` (web'e dönüş). Giriş yapan kullanıcı `/login` & `/signup`'tan dashboard'a yönlendirilir.
@@ -39,8 +39,8 @@
 - [x] **Beceri açığı (skills gap):** ilan vs CV becerileri var/eksik (`analyzeSkillsGap`, `/api/ai/skills-gap`, `SkillsGapCard`). Tüm planlara açık, fit_score sayacıyla metered.
 - [x] **Çoklu CV/ön yazı PDF şablonu + Belgelerim:** cv-pdf rotası `?type=cv|cover_letter&template=classic|modern|minimal`; `TemplatePicker`; `/documents` (Belgelerim) sayfası tüm hazır belgeleri tek yerden indirir.
 - [x] Her faz ayrı commit, build geçince master'a push edildi (canlı). Commit'ler: 3e5a00a, 14b8cf9, e7fb659, a11bd63, d901941
-- [ ] **⚠️ DB ön koşulu:** `0009_cv_ai_suite.sql` Supabase'de ÇALIŞTIRILMALI (yeni kolonlar: applications.cover_letter_text/skills_gap, ai_usage.cover_letters_used/cv_polish_used). 0006-0008'in de uygulandığı doğrulanmalı — yoksa ön yazı/skills gap sonuçları kaydolmaz (oturum içinde görünür ama persist etmez).
-- **Durum: Kod canlıda, migration 0009 bekliyor.**
+- [x] **DB ön koşulu:** `0009_cv_ai_suite.sql` uygulandı (applications.cover_letter_text/skills_gap, ai_usage.cover_letters_used/cv_polish_used) + 0006-0008 de uygulanmış — 2026-06-27 doğrulandı. Ön yazı/skills gap sonuçları persist eder.
+- **Durum: Kod canlıda, migration'lar uygulandı.**
 
 ### Navbar düzeni (masaüstü + mobil)
 - [x] Logo / menü / giriş-avatar grid ile dengeli dağıtıldı (`col-start-1/2/3`)
@@ -71,17 +71,17 @@
 ## Yapılacaklar (Sıradaki)
 
 ### Öncelikli
-- [ ] **⚠️ Migrationları çalıştır (Supabase SQL editörü):** `0009_cv_ai_suite` (ön yazı/skills gap), `0010_cv_data` (CV builder), `0011_cv_shares` (paylaşım linki). 0006/0007/0008'in de uygulandığını doğrula. Bunlar olmadan ilgili özellikler kaydetmede sessiz/açık hata verir.
-- [ ] **Hesap menüsü + CV/AI özellikleri canlı testi** (migration sonrası): ön yazı üret/indir, CV cila, skills gap, Belgelerim PDF şablonları
+- [x] **Migrationlar uygulandı (DOĞRULANDI 2026-06-27):** `0006`–`0012` arası TÜM migration'lar uzak Supabase'de mevcut. Service-role ile REST üzerinden her migration'ın kolon/tabloları tek tek yoklanarak teyit edildi (tailored_cv_text, mock_interviews, cover_letter_text, skills_gap, cv_data, cv_shares, trial_ends_at, plan_started_at vb. hepsi VAR). Şema güncel; CV builder/paylaşım/ön yazı/deneme DB tarafı hazır.
+- [ ] **Hesap menüsü + CV/AI özellikleri canlı testi:** ön yazı üret/indir, CV cila, skills gap, Belgelerim PDF şablonları (DB hazır, fonksiyonel uçtan uca test kaldı)
 - [ ] **Google OAuth uçtan uca test:** Redirect zinciri doğru görünüyor (Google login sayfasına kadar hatasız gidiyor, test ettik) ama gerçek bir Google hesabıyla tam giriş hiç denenmedi
-- [ ] **NEXT_PUBLIC_APP_URL** Vercel'de wisparkr.com olarak güncelle (şu an localhost olabilir) — LemonSqueezy checkout redirect'i bunu kullanıyor (`lib/lemonsqueezy.ts:30`)
+- [~] **NEXT_PUBLIC_APP_URL** (2026-06-27): Vercel Production'da BOŞ (`""`) set edilmişti. Kod tarafı dayanıklı hale getirildi — `lib/lemonsqueezy.ts` artık `process.env.NEXT_PUBLIC_APP_URL || 'https://wisparkr.com'` fallback'i kullanıyor (checkout redirect düzeldi), paylaşım rotası zaten `|| origin` kullanıyor. KALAN: env'i panelden `https://wisparkr.com` yapmak (CLI bu shell'de değeri kaydedemedi; temizlik amaçlı, fonksiyonel acil değil).
 
 ### Ödeme / Gelir
 - [ ] LemonSqueezy entegrasyonu (API key, store ID, variant ID'ler boş)
 - [ ] Vercel Pro'ya geç (ticari kullanım için $20/ay) — ekiple karar verilecek
 
 ### Supabase
-- [ ] Migration 0006-0009 çalıştır/doğrula (CV optimizasyon, gerekli belgeler, mock mülakat, CV/AI paketi)
+- [x] Migration 0006-0012 çalıştırıldı/doğrulandı (2026-06-27, REST probe ile)
 
 ### Diğer
 - [ ] Mobil görünüm — navbar düzeltildi ama dashboard/diğer sayfalar test edilmedi

@@ -6,13 +6,11 @@ import { CvTailorCard } from '@/components/cv/CvTailorCard'
 import { CoverLetterCard } from '@/components/cv/CoverLetterCard'
 import { SkillsGapCard } from '@/components/cv/SkillsGapCard'
 import { RequiredDocumentsCard } from '@/components/cv/RequiredDocumentsCard'
-import { AIChatPanel } from '@/components/chat/AIChatPanel'
-import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { InterviewDateField } from '@/components/applications/InterviewDateField'
 import { NotesCard } from '@/components/applications/NotesCard'
 import { StatusSelector } from '@/components/applications/StatusSelector'
-import type { Application, AiMessage, MockInterview, RequiredDocument } from '@/lib/types'
+import type { Application, RequiredDocument } from '@/lib/types'
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -27,75 +25,50 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
 
   const app = application as Application
 
-  const { data: messages } = await supabase
-    .from('ai_messages')
-    .select('*')
-    .eq('application_id', params.id)
-    .order('created_at', { ascending: true })
-
-  const { data: mockInterviewSessions } = await supabase
-    .from('mock_interviews')
-    .select('*')
-    .eq('application_id', params.id)
-    .order('created_at', { ascending: false })
-
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <div className="space-y-4 lg:col-span-2">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">{app.position_title}</h1>
-            <p className="text-sm text-slate-500">{app.company_name}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <StatusSelector applicationId={app.id} initialStatus={app.status} />
-            <DeleteApplicationButton applicationId={app.id} />
-          </div>
+    <div className="mx-auto max-w-3xl space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-slate-900">{app.position_title}</h1>
+          <p className="text-sm text-slate-500">{app.company_name}</p>
         </div>
-
-        <Card>
-          <InterviewDateField applicationId={app.id} initialDate={app.interview_date} />
-        </Card>
-
-        <RequiredDocumentsCard
-          applicationId={app.id}
-          initialDocuments={app.required_documents as RequiredDocument[] | null}
-        />
-
-        <FitScoreCard
-          applicationId={app.id}
-          initialScore={app.fit_score}
-          initialSuggestions={(app.fit_suggestions as string[] | null) ?? null}
-        />
-
-        <SkillsGapCard
-          applicationId={app.id}
-          initialData={
-            app.skills_gap as { matched: string[]; missing: string[]; summary: string } | null
-          }
-        />
-
-        <CvTailorCard
-          applicationId={app.id}
-          initialScore={app.tailored_fit_score}
-          hasTailoredCv={Boolean(app.tailored_cv_text)}
-        />
-
-        <CoverLetterCard applicationId={app.id} initialText={app.cover_letter_text} />
-
-        <MockInterviewCard
-          applicationId={app.id}
-          sessions={(mockInterviewSessions ?? []) as MockInterview[]}
-        />
-
-        <NotesCard applicationId={app.id} initialNotes={app.notes} />
-      </div>
-
-      <div className="lg:col-span-1">
-        <div className="h-[600px]">
-          <AIChatPanel applicationId={app.id} initialMessages={(messages ?? []) as AiMessage[]} />
+        <div className="flex shrink-0 items-center gap-3">
+          <StatusSelector applicationId={app.id} initialStatus={app.status} />
+          <DeleteApplicationButton applicationId={app.id} />
         </div>
       </div>
+
+      <Card>
+        <InterviewDateField applicationId={app.id} initialDate={app.interview_date} />
+      </Card>
+
+      <RequiredDocumentsCard
+        applicationId={app.id}
+        initialDocuments={app.required_documents as RequiredDocument[] | null}
+      />
+
+      <FitScoreCard
+        applicationId={app.id}
+        initialScore={app.fit_score}
+        initialSuggestions={(app.fit_suggestions as string[] | null) ?? null}
+      />
+
+      <SkillsGapCard
+        applicationId={app.id}
+        initialData={
+          app.skills_gap as { matched: string[]; missing: string[]; summary: string } | null
+        }
+      />
+
+      <CvTailorCard
+        applicationId={app.id}
+        initialScore={app.tailored_fit_score}
+        hasTailoredCv={Boolean(app.tailored_cv_text)}
+      />
+
+      <CoverLetterCard applicationId={app.id} initialText={app.cover_letter_text} />
+
+      <NotesCard applicationId={app.id} initialNotes={app.notes} />
     </div>
   )
 }

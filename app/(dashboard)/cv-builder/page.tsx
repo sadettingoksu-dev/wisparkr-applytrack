@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { CvBuilder } from '@/components/cv-builder/CvBuilder'
-import { SharePanel } from '@/components/cv-builder/SharePanel'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { parseCvData, emptyCvData } from '@/lib/cv'
 import type { Profile } from '@/lib/types'
@@ -24,10 +23,7 @@ export default async function CvBuilderPage() {
       <div className="flex justify-end">
         <PageInfo page="cvBuilder" />
       </div>
-      <CvBuilder initial={initial} />
-      <div className="mx-auto max-w-3xl">
-        <SharePanel plan={profile?.plan ?? 'free'} />
-      </div>
+      <CvBuilder initial={initial} plan={profile?.plan ?? 'free'} />
     </div>
   )
 }

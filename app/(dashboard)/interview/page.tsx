@@ -1,0 +1,76 @@
+import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
+import { Card } from '@/components/ui/Card'
+import { AssistantPicker } from '@/components/chat/AssistantPicker'
+import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
+import { getServerDict } from '@/lib/i18n-server'
+import { resolveSelectedApp } from '@/lib/selectedApp'
+import type { Application, MockInterview } from '@/lib/types'
+
+export default async function InterviewPage({
+  searchParams,
+}: {
+  searchParams: { app?: string }
+}) {
+  const t = getServerDict()
+  const supabase = createClient()
+
+  const { data: appsData } = await supabase
+    .from('applications')
+    .select('id, company_name, position_title')
+    .order('created_at', { ascending: false })
+
+  const apps = (appsData ?? []) as Pick<
+    Application,
+    'id' | 'company_name' | 'position_title'
+  >[]
+
+  // Seçili başvuru: query param > cookie (sayfalar arası ortak) > en yeni başvuru.
+  const selectedId = resolveSelectedApp(apps, searchParams.app, cookies().get('coach_app')?.value)
+
+  let sessions: MockInterview[] = []
+  if (selectedId) {
+    const { data } = await supabase
+      .from('mock_interviews')
+      .select('*')
+      .eq('application_id', selectedId)
+      .order('created_at', { ascending: false })
+    sessions = (data ?? []) as MockInterview[]
+  }
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">{t.interview.pageTitle}</h1>
+        <p className="text-sm text-slate-500">{t.interview.pageSubtitle}</p>
+      </div>
+
+      {apps.length > 0 && (
+        <Card className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-900">{t.assistant.pickPrompt}</p>
+            <p className="text-xs text-slate-500">{t.assistant.pickHint}</p>
+          </div>
+          <AssistantPicker
+            applications={apps}
+            selectedId={selectedId}
+            label=""
+            basePath="/interview"
+          />
+        </Card>
+      )}
+
+      {apps.length === 0 ? (
+        <Card>
+          <p className="text-sm text-slate-500">{t.assistant.noApps}</p>
+        </Card>
+      ) : selectedId ? (
+        <MockInterviewCard
+          key={selectedId}
+          applicationId={selectedId}
+          sessions={sessions}
+        />
+      ) : null}
+    </div>
+  )
+}

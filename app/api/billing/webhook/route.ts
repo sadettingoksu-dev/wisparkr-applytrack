@@ -15,8 +15,16 @@ const SUBSCRIPTION_EVENTS = new Set([
 
 function verifySignature(rawBody: string, signature: string | null, secret: string): boolean {
   if (!signature) return false
-  const digest = crypto.createHmac('sha256', secret).update(rawBody).digest('hex')
-  return crypto.timingSafeEqual(Buffer.from(digest, 'hex'), Buffer.from(signature, 'hex'))
+  try {
+    const digest = crypto.createHmac('sha256', secret).update(rawBody).digest('hex')
+    const digestBuf = Buffer.from(digest, 'hex')
+    const sigBuf = Buffer.from(signature, 'hex')
+    // Geçersiz/eksik hex imzalarda timingSafeEqual RangeError fırlatır; uzunluk eşit değilse reddet.
+    if (digestBuf.length !== sigBuf.length) return false
+    return crypto.timingSafeEqual(digestBuf, sigBuf)
+  } catch {
+    return false
+  }
 }
 
 export async function POST(request: Request) {

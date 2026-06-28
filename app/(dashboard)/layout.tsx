@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/layout/Sidebar'
-import { NotificationBell } from '@/components/layout/NotificationBell'
-import { getEffectivePlanId } from '@/lib/plans'
+import { DashboardShell } from '@/components/layout/DashboardShell'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
@@ -13,27 +11,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('plan, trial_ends_at')
+      .select('plan')
       .eq('id', user.id)
       .single()
-    // Deneme aktifse rozet "free" yerine efektif planı (Pro) göstersin.
-    plan = getEffectivePlanId(profile as { plan?: string; trial_ends_at?: string | null } | null)
+    // Rozet GERÇEK planı gösterir: yalnızca ödeme yapan hesaplar Pro/Career Coach,
+    // deneme hesapları "Deneme" görünür (landing navbar ile tutarlı).
+    plan = (profile as { plan?: string } | null)?.plan ?? 'free'
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar
-        name={meta.full_name ?? meta.name ?? user?.email ?? ''}
-        email={user?.email ?? ''}
-        avatarUrl={meta.avatar_url ?? meta.picture ?? null}
-        plan={plan}
-      />
-      <div className="flex-1">
-        <div className="flex justify-end px-8 py-4">
-          <NotificationBell />
-        </div>
-        <main className="px-8 pb-8">{children}</main>
-      </div>
-    </div>
+    <DashboardShell
+      name={meta.full_name ?? meta.name ?? user?.email ?? ''}
+      email={user?.email ?? ''}
+      avatarUrl={meta.avatar_url ?? meta.picture ?? null}
+      plan={plan}
+    >
+      {children}
+    </DashboardShell>
   )
 }

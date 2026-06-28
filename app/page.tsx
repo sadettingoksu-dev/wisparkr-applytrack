@@ -1,14 +1,35 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
-import { Link as LinkIcon, FileSearch, MessageSquareText, Sparkles, Check } from 'lucide-react'
+import { redirect } from 'next/navigation'
+import {
+  LayoutGrid,
+  FileText,
+  FileSearch,
+  PenLine,
+  MessageSquareText,
+  CalendarDays,
+  Sparkles,
+  Check,
+} from 'lucide-react'
 import { PLANS, PLAN_ORDER } from '@/lib/plans'
 import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { HeroDemo } from '@/components/landing/HeroDemo'
+import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
+import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
+import addShot from '@/public/shots/add.png'
+import cvShot from '@/public/shots/cv.png'
+import boardShot from '@/public/shots/board.png'
 
-const FEATURE_ICONS = [LinkIcon, FileSearch, MessageSquareText]
+const FEATURE_ICONS = [LayoutGrid, FileText, FileSearch, PenLine, MessageSquareText, CalendarDays]
+const SHOWCASE_SHOTS = [addShot, cvShot, boardShot]
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  // Giriş yapmış kullanıcı pazarlama sayfasında oyalanmasın; doğrudan panele.
+  const { data: { user } } = await createClient().auth.getUser()
+  if (user) redirect('/dashboard')
+
   const locale = normalizeLocale(cookies().get(LOCALE_COOKIE)?.value)
   const t = getDictionary(locale)
   const featureLists = t.pricing.lists as Record<string, string[]>
@@ -35,33 +56,51 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero */}
+        {/* Hero — solda metin+CTA, sağda animasyonlu ürün demosu */}
         <section className="relative overflow-hidden bg-slate-50">
-          <div className="relative mx-auto flex max-w-3xl flex-col items-center px-6 py-28 text-center">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-sm text-purple-700">
-              <Sparkles className="h-3.5 w-3.5" />
-              {t.hero.badge}
+          <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-6 py-20 lg:grid-cols-2 lg:py-28">
+            <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-sm text-purple-700">
+                <Sparkles className="h-3.5 w-3.5" />
+                {t.hero.badge}
+              </div>
+              <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
+                {t.hero.titleA}{' '}
+                <span className="bg-gradient-to-r from-purple-600 to-fuchsia-500 bg-clip-text text-transparent">
+                  AI
+                </span>{' '}
+                {t.hero.titleB}
+              </h1>
+              <p className="mt-5 max-w-xl text-lg text-slate-500">{t.hero.subtitle}</p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                <Link href="/signup">
+                  <button className="rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-opacity hover:opacity-90">
+                    {t.hero.ctaPrimary}
+                  </button>
+                </Link>
+                <Link href="/#features">
+                  <button className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100">
+                    {t.hero.ctaSecondary}
+                  </button>
+                </Link>
+              </div>
             </div>
-            <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-              {t.hero.titleA}{' '}
-              <span className="bg-gradient-to-r from-purple-600 to-fuchsia-500 bg-clip-text text-transparent">
-                Sado
-              </span>{' '}
-              {t.hero.titleB}
-            </h1>
-            <p className="mt-5 max-w-xl text-lg text-slate-500">{t.hero.subtitle}</p>
+            <div className="flex justify-center lg:justify-end">
+              <HeroDemo labels={t.hero.demo} />
+            </div>
           </div>
         </section>
 
         {/* Features */}
         <section id="features" className="bg-slate-50 py-24">
           <div className="mx-auto max-w-6xl px-6">
-            <h2 className="mb-12 text-center text-3xl font-bold text-slate-900">
+            <h2 className="mb-3 text-center text-3xl font-bold text-slate-900">
               {t.features.heading}
             </h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <p className="mb-12 text-center text-slate-500">{t.features.subtitle}</p>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {t.features.items.map((feature, i) => {
-                const Icon = FEATURE_ICONS[i]
+                const Icon = FEATURE_ICONS[i] ?? Sparkles
                 return (
                 <div
                   key={feature.title}
@@ -78,6 +117,13 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* Nasıl çalışır? — gerçek sayfa görselleriyle kademeli vitrin */}
+        <FeatureShowcase
+          heading={t.howItWorks.heading}
+          subtitle={t.howItWorks.subtitle}
+          shots={t.howItWorks.steps.map((s, i) => ({ ...s, src: SHOWCASE_SHOTS[i] }))}
+        />
 
         {/* Fiyatlandırma */}
         <section id="pricing" className="bg-slate-50 py-24">
@@ -138,8 +184,14 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="bg-slate-50 py-8 text-center text-sm text-slate-400">
-        © {new Date().getFullYear()} Wisparkr. {t.footer.rights}
+      <footer className="bg-slate-50 py-8 text-sm text-slate-400">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 sm:flex-row sm:justify-between">
+          <span>© {new Date().getFullYear()} Wisparkr. {t.footer.rights}</span>
+          <nav className="flex items-center gap-4">
+            <Link href="/privacy" className="transition-colors hover:text-slate-700">{t.footer.privacy}</Link>
+            <Link href="/terms" className="transition-colors hover:text-slate-700">{t.footer.terms}</Link>
+          </nav>
+        </div>
       </footer>
     </div>
   )

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
+import { rateLimit, rateLimitResponse, AI_RATE_LIMIT } from '@/lib/rateLimit'
 import {
   getAnthropicClient,
   generateMockInterviewTurn,
@@ -29,6 +30,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   const ctx = await requireAuth()
   if (!isAuthedContext(ctx)) return ctx
+
+  const rl = rateLimit('ai:' + ctx.userId, AI_RATE_LIMIT)
+  if (!rl.allowed) return rateLimitResponse(rl)
   const { supabase, userId, profile } = ctx
 
   const json = await request.json().catch(() => null)

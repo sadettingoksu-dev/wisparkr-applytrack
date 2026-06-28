@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio'
 import type { JobParseResult } from '@/lib/types'
 import { getAnthropicClient, extractJobPosting } from '@/lib/anthropic'
+import { safeFetchText } from '@/lib/ssrf'
 
 const USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'
@@ -33,16 +34,17 @@ function splitTitle(title: string): { position?: string; company?: string } {
  * block server-side fetches — callers should handle FETCH_FAILED.
  */
 export async function parseJobUrl(url: string): Promise<JobParseResult> {
-  const res = await fetch(url, {
+  // SSRF korumalı fetch: iç ağ/loopback/metadata adresleri engellenir,
+  // redirect'ler her adımda yeniden doğrulanır, timeout + boyut limiti uygulanır.
+  const res = await safeFetchText(url, {
     headers: { 'User-Agent': USER_AGENT, Accept: 'text/html' },
-    redirect: 'follow',
   })
 
   if (!res.ok) {
     throw new Error(`FETCH_FAILED: ${res.status}`)
   }
 
-  const html = await res.text()
+  const html = res.text
   const $ = cheerio.load(html)
 
   // Strip noise before reading the visible text so the AI sees real content.

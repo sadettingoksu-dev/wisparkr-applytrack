@@ -67,14 +67,14 @@ export default async function ApplicationsPage({
         <div className="space-y-3">
           {apps.map((app) => (
             <Link key={app.id} href={`/applications/${app.id}`}>
-              <Card className="flex items-center justify-between transition-shadow hover:shadow-lg">
-                <div>
-                  <p className="font-semibold text-slate-900">{app.position_title}</p>
-                  <p className="text-sm text-slate-500">{app.company_name}</p>
+              <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-lg">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-slate-900">{app.position_title}</p>
+                  <p className="truncate text-sm text-slate-500">{app.company_name}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex shrink-0 items-center gap-3">
                   {app.applied_at && (
-                    <span className="text-xs text-slate-400">{formatDate(app.applied_at)}</span>
+                    <span className="hidden text-xs text-slate-400 sm:inline">{formatDate(app.applied_at)}</span>
                   )}
                   <Badge className={STATUS_BADGE_CLASSES[app.status]}>
                     {t.status[app.status]}

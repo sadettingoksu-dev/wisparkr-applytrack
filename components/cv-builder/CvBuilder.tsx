@@ -6,6 +6,8 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Save,
   Download,
   Check,
@@ -20,6 +22,8 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 import { CvPreview } from '@/components/cv-builder/CvPreview'
+import { Stepper } from '@/components/cv-builder/Stepper'
+import { SharePanel } from '@/components/cv-builder/SharePanel'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { hasCvContent } from '@/lib/cv'
 import type {
@@ -79,7 +83,7 @@ const emptyProject: CvProject = { name: '', description: '', link: '', bullets: 
 const emptyLanguage: CvLanguage = { name: '', level: '' }
 const emptyCertification: CvCertification = { name: '', issuer: '', date: '' }
 
-export function CvBuilder({ initial }: { initial: CvData }) {
+export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) {
   const { t } = useI18n()
   const [cv, setCv] = useState<CvData>(initial)
   const [saving, setSaving] = useState(false)
@@ -87,6 +91,7 @@ export function CvBuilder({ initial }: { initial: CvData }) {
   const [error, setError] = useState<string | null>(null)
   const [template, setTemplate] = useState<CvTemplate>('classic')
   const [skillInput, setSkillInput] = useState('')
+  const [step, setStep] = useState(0)
 
   function patch(p: Partial<CvData>) {
     setCv((c) => ({ ...c, ...p }))
@@ -251,320 +256,437 @@ export function CvBuilder({ initial }: { initial: CvData }) {
     }
   }
 
+  // --- Sihirbaz navigasyonu ---
+  const stepLabels = [
+    t.cvBuilder.wizard.stepPersonal,
+    t.cvBuilder.wizard.stepContent,
+    t.cvBuilder.wizard.stepTemplate,
+    t.cvBuilder.wizard.stepPreview,
+    t.cvBuilder.wizard.stepFinish,
+  ]
+  const lastStep = stepLabels.length - 1
+
+  function scrollTop() {
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  // İleri giderken her zaman kaydet ki önizleme/PDF/denetim güncel sürümü görsün.
+  async function goNext() {
+    await handleSave()
+    setStep((s) => Math.min(s + 1, lastStep))
+    scrollTop()
+  }
+  function goBack() {
+    setStep((s) => Math.max(s - 1, 0))
+    scrollTop()
+  }
+  // Stepper yalnızca tamamlanmış (önceki) adımlara geri atlamaya izin verir.
+  function jumpTo(i: number) {
+    setStep(i)
+    scrollTop()
+  }
+
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      {/* Editor */}
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.cvBuilder.title}</h1>
-          <p className="text-sm text-slate-500">
-            {t.cvBuilder.subtitle}
-          </p>
+    <div className="space-y-5">
+      {/* Üst başlık + kaydet */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-bold text-slate-900 sm:text-xl">{t.cvBuilder.title}</h1>
+          <p className="hidden text-xs text-slate-500 sm:block">{t.cvBuilder.subtitle}</p>
         </div>
-
-        {/* Mevcut CV'yi içe aktar */}
-        <Card className="space-y-2">
-          <input
-            ref={importFileRef}
-            type="file"
-            accept="application/pdf,image/png,image/jpeg,image/webp"
-            className="hidden"
-            onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)}
-          />
-          <button
-            type="button"
-            onClick={() => importFileRef.current?.click()}
-            disabled={importing}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-purple-300 bg-purple-50 px-3 py-2.5 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
-          >
-            {importing ? <Spinner /> : <Upload className="h-4 w-4" />}
-            {importing ? t.cvBuilder.importing : t.cvBuilder.importCv}
-          </button>
-          <p className="text-[11px] text-slate-400">{t.cvBuilder.importHint}</p>
-          {importError && <p className="text-xs text-red-500">{importError}</p>}
-        </Card>
-
-        {/* Kişisel */}
-        <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.personal}</h2>
-
-          {/* Profesyonel fotoğraf */}
-          <div className="flex items-center gap-3">
-            {cv.personal.photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={cv.personal.photo} alt={t.cvBuilder.photo} className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" />
-            ) : (
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
-                <ImageIcon className="h-6 w-6" />
-              </div>
-            )}
-            <div className="space-y-1">
-              <input
-                ref={photoFileRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                className="hidden"
-                onChange={(e) => handlePhotoFile(e.target.files?.[0] ?? null)}
-              />
-              <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={() => photoFileRef.current?.click()} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50">
-                  {cv.personal.photo ? t.cvBuilder.photoChange : t.cvBuilder.photoUpload}
-                </button>
-                {cv.personal.photo && (
-                  <button type="button" onClick={() => setPersonal({ photo: '' })} className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50">
-                    {t.cvBuilder.photoRemove}
-                  </button>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-400">{t.cvBuilder.photoHint}</p>
-            </div>
-          </div>
-          {photoError && <p className="text-xs text-red-500">{photoError}</p>}
-
-          <input className={inputClass} placeholder={t.cvBuilder.fullName} value={cv.personal.fullName} onChange={(e) => setPersonal({ fullName: e.target.value })} />
-          <input className={inputClass} placeholder={t.cvBuilder.headline} value={cv.personal.headline} onChange={(e) => setPersonal({ headline: e.target.value })} />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <input className={inputClass} placeholder={t.cvBuilder.email} value={cv.personal.email} onChange={(e) => setPersonal({ email: e.target.value })} />
-            <input className={inputClass} placeholder={t.cvBuilder.phone} value={cv.personal.phone} onChange={(e) => setPersonal({ phone: e.target.value })} />
-          </div>
-          <input className={inputClass} placeholder={t.cvBuilder.location} value={cv.personal.location} onChange={(e) => setPersonal({ location: e.target.value })} />
-          <div className="space-y-2">
-            {cv.personal.links.map((link, i) => (
-              <div key={i} className="flex gap-2">
-                <input className={inputClass} placeholder={t.cvBuilder.linkLabel} value={link.label} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, label: e.target.value } : l)) })} />
-                <input className={inputClass} placeholder="https://..." value={link.url} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, url: e.target.value } : l)) })} />
-                <button onClick={() => setPersonal({ links: cv.personal.links.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-            <AddButton label={t.cvBuilder.addLink} onClick={() => setPersonal({ links: [...cv.personal.links, { label: '', url: '' }] })} />
-          </div>
-          <p className="text-[11px] text-slate-400">{t.cvBuilder.linkHint}</p>
-        </Card>
-
-        {/* Özet */}
-        <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.summary}</h2>
-          <textarea className={inputClass} rows={4} placeholder={t.cvBuilder.summaryPlaceholder} value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
-        </Card>
-
-        {/* Deneyim */}
-        <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.experience}</h2>
-          <p className="text-[11px] text-slate-400">{t.cvBuilder.experienceHint}</p>
-          {cv.experience.map((exp, i) => (
-            <ItemFrame key={i} index={i} total={cv.experience.length} onMove={(to) => patch({ experience: moveItem(cv.experience, i, to) })} onRemove={() => patch({ experience: cv.experience.filter((_, idx) => idx !== i) })}>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <input className={inputClass} placeholder={t.cvBuilder.role} value={exp.role} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, role: e.target.value } : x)) })} />
-                <input className={inputClass} placeholder={t.cvBuilder.company} value={exp.company} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, company: e.target.value } : x)) })} />
-                <input className={inputClass} placeholder={t.cvBuilder.expLocation} value={exp.location} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, location: e.target.value } : x)) })} />
-                <div className="flex gap-2">
-                  <input className={inputClass} placeholder={t.cvBuilder.startYear} value={exp.start} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
-                  <input className={inputClass} placeholder={t.cvBuilder.end} value={exp.end} disabled={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
-                </div>
-              </div>
-              <label className="flex items-center gap-2 text-xs text-slate-500">
-                <input type="checkbox" checked={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, current: e.target.checked } : x)) })} />
-                {t.cvBuilder.current}
-              </label>
-              <textarea className={inputClass} rows={3} placeholder={t.cvBuilder.expBullets} value={exp.bullets.join('\n')} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, bullets: e.target.value.split('\n') } : x)) })} />
-            </ItemFrame>
-          ))}
-          <AddButton label={t.cvBuilder.addExperience} onClick={() => patch({ experience: [...cv.experience, { ...emptyExperience }] })} />
-        </Card>
-
-        {/* Eğitim */}
-        <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.education}</h2>
-          <p className="text-[11px] text-slate-400">{t.cvBuilder.educationHint}</p>
-          {cv.education.map((ed, i) => (
-            <ItemFrame key={i} index={i} total={cv.education.length} onMove={(to) => patch({ education: moveItem(cv.education, i, to) })} onRemove={() => patch({ education: cv.education.filter((_, idx) => idx !== i) })}>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <input className={inputClass} placeholder={t.cvBuilder.degree} value={ed.degree} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, degree: e.target.value } : x)) })} />
-                <input className={inputClass} placeholder={t.cvBuilder.field} value={ed.field} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, field: e.target.value } : x)) })} />
-                <input className={inputClass} placeholder={t.cvBuilder.school} value={ed.school} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, school: e.target.value } : x)) })} />
-                <div className="flex gap-2">
-                  <input className={inputClass} placeholder={t.cvBuilder.start} value={ed.start} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
-                  <input className={inputClass} placeholder={t.cvBuilder.end} value={ed.end} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
-                </div>
-              </div>
-              <input className={inputClass} placeholder={t.cvBuilder.eduNote} value={ed.note} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, note: e.target.value } : x)) })} />
-            </ItemFrame>
-          ))}
-          <AddButton label={t.cvBuilder.addEducation} onClick={() => patch({ education: [...cv.education, { ...emptyEducation }] })} />
-        </Card>
-
-        {/* Beceriler */}
-        <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.skills}</h2>
-          <div className="flex flex-wrap gap-1.5">
-            {cv.skills.map((s, i) => (
-              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-xs text-purple-700">
-                {s}
-                <button onClick={() => patch({ skills: cv.skills.filter((_, idx) => idx !== i) })} className="hover:text-slate-900">
-                  <X className="h-3 w-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-          <input
-            className={inputClass}
-            placeholder={t.cvBuilder.skillPlaceholder}
-            value={skillInput}
-            onChange={(e) => setSkillInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault()
-                addSkill(skillInput)
-              }
-            }}
-          />
-        </Card>
-
-        {/* Projeler */}
-        <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.projects}</h2>
-          {cv.projects.map((pr, i) => (
-            <ItemFrame key={i} index={i} total={cv.projects.length} onMove={(to) => patch({ projects: moveItem(cv.projects, i, to) })} onRemove={() => patch({ projects: cv.projects.filter((_, idx) => idx !== i) })}>
-              <input className={inputClass} placeholder={t.cvBuilder.projectName} value={pr.name} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
-              <input className={inputClass} placeholder={t.cvBuilder.projectLink} value={pr.link} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, link: e.target.value } : x)) })} />
-              <textarea className={inputClass} rows={2} placeholder={t.cvBuilder.projectDesc} value={pr.description} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, description: e.target.value } : x)) })} />
-              <textarea className={inputClass} rows={2} placeholder={t.cvBuilder.projectBullets} value={pr.bullets.join('\n')} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, bullets: e.target.value.split('\n') } : x)) })} />
-            </ItemFrame>
-          ))}
-          <AddButton label={t.cvBuilder.addProject} onClick={() => patch({ projects: [...cv.projects, { ...emptyProject }] })} />
-        </Card>
-
-        {/* Diller & Sertifikalar */}
-        <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.languages}</h2>
-          <p className="text-[11px] text-slate-400">{t.cvBuilder.languagesHint}</p>
-          {cv.languages.map((l, i) => (
-            <div key={i} className="flex gap-2">
-              <input className={inputClass} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
-              <input className={inputClass} placeholder={t.cvBuilder.langLevel} value={l.level} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, level: e.target.value } : x)) })} />
-              <button onClick={() => patch({ languages: cv.languages.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-          <AddButton label={t.cvBuilder.addLanguage} onClick={() => patch({ languages: [...cv.languages, { ...emptyLanguage }] })} />
-        </Card>
-
-        <Card className="space-y-3">
-          <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.certifications}</h2>
-          {cv.certifications.map((c, i) => (
-            <div key={i} className="flex gap-2">
-              <input className={inputClass} placeholder={t.cvBuilder.certName} value={c.name} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
-              <input className={inputClass} placeholder={t.cvBuilder.certIssuer} value={c.issuer} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, issuer: e.target.value } : x)) })} />
-              <input className={`${inputClass} max-w-[90px]`} placeholder={t.cvBuilder.certYear} value={c.date} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, date: e.target.value } : x)) })} />
-              <button onClick={() => patch({ certifications: cv.certifications.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-          <AddButton label={t.cvBuilder.addCertification} onClick={() => patch({ certifications: [...cv.certifications, { ...emptyCertification }] })} />
-
-          {/* Dosyadan AI ile ekle */}
-          <div className="space-y-1.5 border-t border-slate-100 pt-3">
-            <input
-              ref={certFileRef}
-              type="file"
-              accept="application/pdf,image/png,image/jpeg,image/webp"
-              className="hidden"
-              onChange={(e) => handleCertFile(e.target.files?.[0] ?? null)}
-            />
-            <button
-              type="button"
-              onClick={() => certFileRef.current?.click()}
-              disabled={certUploading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-purple-300 bg-purple-50 px-3 py-2.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
-            >
-              {certUploading ? <Spinner /> : <Sparkles className="h-4 w-4" />}
-              {certUploading ? t.cvBuilder.certParsing : t.cvBuilder.uploadCert}
-            </button>
-            <p className="text-[11px] text-slate-400">{t.cvBuilder.uploadCertHint}</p>
-            {certError && <p className="text-xs text-red-500">{certError}</p>}
-          </div>
-        </Card>
-      </div>
-
-      {/* Preview + actions */}
-      <div className="lg:sticky lg:top-4 lg:h-fit space-y-4">
-        <TemplatePicker value={template} onChange={setTemplate} />
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={handleSave} disabled={saving} variant="primary">
-            {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            {saved ? t.common.saved : t.common.save}
-          </Button>
-          <a href={`/api/cv/pdf?template=${template}`}>
-            <Button variant="secondary">
-              <Download className="h-4 w-4" />
-              {t.cvBuilder.downloadPdf}
-            </Button>
-          </a>
-        </div>
-        {error && <p className="text-xs text-red-500">{error}</p>}
-        <p className="text-xs text-slate-400">{t.cvBuilder.pdfNote}</p>
-
-        {/* Profesyonellik kontrolü (AI) */}
-        <Card className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-              <ShieldCheck className="h-4 w-4 text-purple-600" />
-              {t.cvBuilder.reviewTitle}
-            </h2>
-            <Button onClick={handleReview} disabled={reviewing} variant="secondary">
-              {reviewing ? <Spinner /> : <Sparkles className="h-4 w-4" />}
-              {reviewing ? t.cvBuilder.reviewing : t.cvBuilder.reviewCta}
-            </Button>
-          </div>
-          <p className="text-[11px] text-slate-400">{t.cvBuilder.reviewHint}</p>
-          {reviewError && <p className="text-xs text-red-500">{reviewError}</p>}
-          {review && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="text-2xl font-bold text-slate-900">
-                  {review.score}
-                  <span className="text-sm font-medium text-slate-400">/100</span>
-                </div>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
-                  <div className="h-full rounded-full bg-purple-500" style={{ width: `${review.score}%` }} />
-                </div>
-              </div>
-              {review.strengths.length > 0 && (
-                <div>
-                  <p className="mb-1 text-xs font-semibold text-emerald-600">{t.cvBuilder.reviewStrengths}</p>
-                  <ul className="space-y-1">
-                    {review.strengths.map((s, i) => (
-                      <li key={i} className="flex gap-1.5 text-xs text-slate-600">
-                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {review.improvements.length > 0 && (
-                <div>
-                  <p className="mb-1 text-xs font-semibold text-amber-600">{t.cvBuilder.reviewImprovements}</p>
-                  <ul className="space-y-1.5">
-                    {review.improvements.map((im, i) => (
-                      <li key={i} className="text-xs text-slate-600">
-                        <span className="font-medium text-slate-800">{im.section}:</span> {im.tip}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+        <div className="flex items-center gap-2">
+          {saved && (
+            <span className="hidden items-center gap-1 text-xs font-medium text-emerald-600 sm:flex">
+              <Check className="h-3.5 w-3.5" />
+              {t.common.saved}
+            </span>
           )}
-        </Card>
-
-        <CvPreview data={cv} />
+          <Button onClick={handleSave} disabled={saving} variant="secondary">
+            {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {t.common.save}
+          </Button>
+        </div>
       </div>
+
+      {/* Adım göstergesi */}
+      <Card className="!p-4">
+        <Stepper labels={stepLabels} current={step} onJump={jumpTo} />
+      </Card>
+
+      {error && <p className="text-xs text-red-500">{error}</p>}
+
+      {/* Adım içeriği — her adım değişiminde animasyonu yeniden oynatmak için key={step} */}
+      <div key={step} className="wisparkr-step">
+        {/* ADIM 1 — Kişisel */}
+        {step === 0 && (
+          <div className="mx-auto max-w-3xl space-y-4">
+            <StepHeader title={t.cvBuilder.wizard.personalTitle} desc={t.cvBuilder.wizard.personalDesc} />
+
+            {/* Mevcut CV'yi içe aktar */}
+            <Card className="space-y-2">
+              <input
+                ref={importFileRef}
+                type="file"
+                accept="application/pdf,image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)}
+              />
+              <button
+                type="button"
+                onClick={() => importFileRef.current?.click()}
+                disabled={importing}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-purple-300 bg-purple-50 px-3 py-2.5 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
+              >
+                {importing ? <Spinner /> : <Upload className="h-4 w-4" />}
+                {importing ? t.cvBuilder.importing : t.cvBuilder.importCv}
+              </button>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.importHint}</p>
+              {importError && <p className="text-xs text-red-500">{importError}</p>}
+            </Card>
+
+            {/* Kişisel */}
+            <Card className="space-y-3">
+              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.personal}</h2>
+
+              {/* Profesyonel fotoğraf */}
+              <div className="flex items-center gap-3">
+                {cv.personal.photo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={cv.personal.photo} alt={t.cvBuilder.photo} className="h-16 w-16 shrink-0 rounded-lg object-cover ring-1 ring-slate-200" />
+                ) : (
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
+                    <ImageIcon className="h-6 w-6" />
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <input
+                    ref={photoFileRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => handlePhotoFile(e.target.files?.[0] ?? null)}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => photoFileRef.current?.click()} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50">
+                      {cv.personal.photo ? t.cvBuilder.photoChange : t.cvBuilder.photoUpload}
+                    </button>
+                    {cv.personal.photo && (
+                      <button type="button" onClick={() => setPersonal({ photo: '' })} className="rounded-lg px-3 py-1.5 text-xs font-medium text-red-500 transition-colors hover:bg-red-50">
+                        {t.cvBuilder.photoRemove}
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400">{t.cvBuilder.photoHint}</p>
+                </div>
+              </div>
+              {photoError && <p className="text-xs text-red-500">{photoError}</p>}
+
+              <input className={inputClass} placeholder={t.cvBuilder.fullName} value={cv.personal.fullName} onChange={(e) => setPersonal({ fullName: e.target.value })} />
+              <input className={inputClass} placeholder={t.cvBuilder.headline} value={cv.personal.headline} onChange={(e) => setPersonal({ headline: e.target.value })} />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <input className={inputClass} placeholder={t.cvBuilder.email} value={cv.personal.email} onChange={(e) => setPersonal({ email: e.target.value })} />
+                <input className={inputClass} placeholder={t.cvBuilder.phone} value={cv.personal.phone} onChange={(e) => setPersonal({ phone: e.target.value })} />
+              </div>
+              <input className={inputClass} placeholder={t.cvBuilder.location} value={cv.personal.location} onChange={(e) => setPersonal({ location: e.target.value })} />
+              <div className="space-y-2">
+                {cv.personal.links.map((link, i) => (
+                  <div key={i} className="flex gap-2">
+                    <input className={inputClass} placeholder={t.cvBuilder.linkLabel} value={link.label} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, label: e.target.value } : l)) })} />
+                    <input className={inputClass} placeholder="https://..." value={link.url} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, url: e.target.value } : l)) })} />
+                    <button onClick={() => setPersonal({ links: cv.personal.links.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                <AddButton label={t.cvBuilder.addLink} onClick={() => setPersonal({ links: [...cv.personal.links, { label: '', url: '' }] })} />
+              </div>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.linkHint}</p>
+            </Card>
+
+            {/* Özet */}
+            <Card className="space-y-3">
+              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.summary}</h2>
+              <textarea className={inputClass} rows={4} placeholder={t.cvBuilder.summaryPlaceholder} value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
+            </Card>
+          </div>
+        )}
+
+        {/* ADIM 2 — Özgeçmiş içeriği */}
+        {step === 1 && (
+          <div className="mx-auto max-w-3xl space-y-4">
+            <StepHeader title={t.cvBuilder.wizard.contentTitle} desc={t.cvBuilder.wizard.contentDesc} />
+
+            {/* Deneyim */}
+            <Card className="space-y-3">
+              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.experience}</h2>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.experienceHint}</p>
+              {cv.experience.map((exp, i) => (
+                <ItemFrame key={i} index={i} total={cv.experience.length} onMove={(to) => patch({ experience: moveItem(cv.experience, i, to) })} onRemove={() => patch({ experience: cv.experience.filter((_, idx) => idx !== i) })}>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <input className={inputClass} placeholder={t.cvBuilder.role} value={exp.role} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, role: e.target.value } : x)) })} />
+                    <input className={inputClass} placeholder={t.cvBuilder.company} value={exp.company} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, company: e.target.value } : x)) })} />
+                    <input className={inputClass} placeholder={t.cvBuilder.expLocation} value={exp.location} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, location: e.target.value } : x)) })} />
+                    <div className="flex gap-2">
+                      <input className={inputClass} placeholder={t.cvBuilder.startYear} value={exp.start} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
+                      <input className={inputClass} placeholder={t.cvBuilder.end} value={exp.end} disabled={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-xs text-slate-500">
+                    <input type="checkbox" checked={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, current: e.target.checked } : x)) })} />
+                    {t.cvBuilder.current}
+                  </label>
+                  <textarea className={inputClass} rows={3} placeholder={t.cvBuilder.expBullets} value={exp.bullets.join('\n')} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, bullets: e.target.value.split('\n') } : x)) })} />
+                </ItemFrame>
+              ))}
+              <AddButton label={t.cvBuilder.addExperience} onClick={() => patch({ experience: [...cv.experience, { ...emptyExperience }] })} />
+            </Card>
+
+            {/* Eğitim */}
+            <Card className="space-y-3">
+              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.education}</h2>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.educationHint}</p>
+              {cv.education.map((ed, i) => (
+                <ItemFrame key={i} index={i} total={cv.education.length} onMove={(to) => patch({ education: moveItem(cv.education, i, to) })} onRemove={() => patch({ education: cv.education.filter((_, idx) => idx !== i) })}>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <input className={inputClass} placeholder={t.cvBuilder.degree} value={ed.degree} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, degree: e.target.value } : x)) })} />
+                    <input className={inputClass} placeholder={t.cvBuilder.field} value={ed.field} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, field: e.target.value } : x)) })} />
+                    <input className={inputClass} placeholder={t.cvBuilder.school} value={ed.school} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, school: e.target.value } : x)) })} />
+                    <div className="flex gap-2">
+                      <input className={inputClass} placeholder={t.cvBuilder.start} value={ed.start} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
+                      <input className={inputClass} placeholder={t.cvBuilder.end} value={ed.end} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
+                    </div>
+                  </div>
+                  <input className={inputClass} placeholder={t.cvBuilder.eduNote} value={ed.note} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, note: e.target.value } : x)) })} />
+                </ItemFrame>
+              ))}
+              <AddButton label={t.cvBuilder.addEducation} onClick={() => patch({ education: [...cv.education, { ...emptyEducation }] })} />
+            </Card>
+
+            {/* Beceriler */}
+            <Card className="space-y-3">
+              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.skills}</h2>
+              <div className="flex flex-wrap gap-1.5">
+                {cv.skills.map((s, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-xs text-purple-700">
+                    {s}
+                    <button onClick={() => patch({ skills: cv.skills.filter((_, idx) => idx !== i) })} className="hover:text-slate-900">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <input
+                className={inputClass}
+                placeholder={t.cvBuilder.skillPlaceholder}
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault()
+                    addSkill(skillInput)
+                  }
+                }}
+              />
+            </Card>
+
+            {/* Projeler */}
+            <Card className="space-y-3">
+              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.projects}</h2>
+              {cv.projects.map((pr, i) => (
+                <ItemFrame key={i} index={i} total={cv.projects.length} onMove={(to) => patch({ projects: moveItem(cv.projects, i, to) })} onRemove={() => patch({ projects: cv.projects.filter((_, idx) => idx !== i) })}>
+                  <input className={inputClass} placeholder={t.cvBuilder.projectName} value={pr.name} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+                  <input className={inputClass} placeholder={t.cvBuilder.projectLink} value={pr.link} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, link: e.target.value } : x)) })} />
+                  <textarea className={inputClass} rows={2} placeholder={t.cvBuilder.projectDesc} value={pr.description} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, description: e.target.value } : x)) })} />
+                  <textarea className={inputClass} rows={2} placeholder={t.cvBuilder.projectBullets} value={pr.bullets.join('\n')} onChange={(e) => patch({ projects: cv.projects.map((x, idx) => (idx === i ? { ...x, bullets: e.target.value.split('\n') } : x)) })} />
+                </ItemFrame>
+              ))}
+              <AddButton label={t.cvBuilder.addProject} onClick={() => patch({ projects: [...cv.projects, { ...emptyProject }] })} />
+            </Card>
+
+            {/* Diller */}
+            <Card className="space-y-3">
+              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.languages}</h2>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.languagesHint}</p>
+              {cv.languages.map((l, i) => (
+                <div key={i} className="flex gap-2">
+                  <input className={inputClass} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+                  <input className={inputClass} placeholder={t.cvBuilder.langLevel} value={l.level} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, level: e.target.value } : x)) })} />
+                  <button onClick={() => patch({ languages: cv.languages.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              <AddButton label={t.cvBuilder.addLanguage} onClick={() => patch({ languages: [...cv.languages, { ...emptyLanguage }] })} />
+            </Card>
+
+            {/* Sertifikalar */}
+            <Card className="space-y-3">
+              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.certifications}</h2>
+              {cv.certifications.map((c, i) => (
+                <div key={i} className="flex gap-2">
+                  <input className={inputClass} placeholder={t.cvBuilder.certName} value={c.name} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+                  <input className={inputClass} placeholder={t.cvBuilder.certIssuer} value={c.issuer} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, issuer: e.target.value } : x)) })} />
+                  <input className={`${inputClass} max-w-[90px]`} placeholder={t.cvBuilder.certYear} value={c.date} onChange={(e) => patch({ certifications: cv.certifications.map((x, idx) => (idx === i ? { ...x, date: e.target.value } : x)) })} />
+                  <button onClick={() => patch({ certifications: cv.certifications.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              <AddButton label={t.cvBuilder.addCertification} onClick={() => patch({ certifications: [...cv.certifications, { ...emptyCertification }] })} />
+
+              {/* Dosyadan AI ile ekle */}
+              <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                <input
+                  ref={certFileRef}
+                  type="file"
+                  accept="application/pdf,image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => handleCertFile(e.target.files?.[0] ?? null)}
+                />
+                <button
+                  type="button"
+                  onClick={() => certFileRef.current?.click()}
+                  disabled={certUploading}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-purple-300 bg-purple-50 px-3 py-2.5 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
+                >
+                  {certUploading ? <Spinner /> : <Sparkles className="h-4 w-4" />}
+                  {certUploading ? t.cvBuilder.certParsing : t.cvBuilder.uploadCert}
+                </button>
+                <p className="text-[11px] text-slate-400">{t.cvBuilder.uploadCertHint}</p>
+                {certError && <p className="text-xs text-red-500">{certError}</p>}
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* ADIM 3 — Şablon */}
+        {step === 2 && (
+          <div className="mx-auto max-w-5xl">
+            <StepHeader title={t.cvBuilder.wizard.templateTitle} desc={t.cvBuilder.wizard.templateDesc} />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <TemplatePicker value={template} onChange={setTemplate} />
+              <div className="lg:sticky lg:top-6 lg:h-fit">
+                <CvPreview data={cv} template={template} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADIM 4 — Önizleme (CV'yi göster) */}
+        {step === 3 && (
+          <div className="mx-auto max-w-3xl space-y-4">
+            <StepHeader title={t.cvBuilder.wizard.previewTitle} desc={t.cvBuilder.wizard.previewDesc} />
+            <CvPreview data={cv} template={template} />
+            <div className="flex flex-col items-center gap-2">
+              <a href={`/api/cv/pdf?template=${template}`}>
+                <Button variant="primary">
+                  <Download className="h-4 w-4" />
+                  {t.cvBuilder.downloadPdf}
+                </Button>
+              </a>
+              <p className="text-center text-[11px] text-slate-400">{t.cvBuilder.pdfNote}</p>
+            </div>
+          </div>
+        )}
+
+        {/* ADIM 5 — Profesyonellik kontrolü + paylaşım */}
+        {step === 4 && (
+          <div className="mx-auto max-w-3xl space-y-4">
+            <StepHeader title={t.cvBuilder.wizard.finishTitle} desc={t.cvBuilder.wizard.finishDesc} />
+
+            {/* Profesyonellik kontrolü (AI) */}
+            <Card className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+                  <ShieldCheck className="h-4 w-4 text-purple-600" />
+                  {t.cvBuilder.reviewTitle}
+                </h2>
+                <Button onClick={handleReview} disabled={reviewing} variant="secondary">
+                  {reviewing ? <Spinner /> : <Sparkles className="h-4 w-4" />}
+                  {reviewing ? t.cvBuilder.reviewing : t.cvBuilder.reviewCta}
+                </Button>
+              </div>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.reviewHint}</p>
+              {reviewError && <p className="text-xs text-red-500">{reviewError}</p>}
+              {review && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl font-bold text-slate-900">
+                      {review.score}
+                      <span className="text-sm font-medium text-slate-400">/100</span>
+                    </div>
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-full rounded-full bg-purple-500" style={{ width: `${review.score}%` }} />
+                    </div>
+                  </div>
+                  {review.strengths.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold text-emerald-600">{t.cvBuilder.reviewStrengths}</p>
+                      <ul className="space-y-1">
+                        {review.strengths.map((s, i) => (
+                          <li key={i} className="flex gap-1.5 text-xs text-slate-600">
+                            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {review.improvements.length > 0 && (
+                    <div>
+                      <p className="mb-1 text-xs font-semibold text-amber-600">{t.cvBuilder.reviewImprovements}</p>
+                      <ul className="space-y-1.5">
+                        {review.improvements.map((im, i) => (
+                          <li key={i} className="text-xs text-slate-600">
+                            <span className="font-medium text-slate-800">{im.section}:</span> {im.tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
+
+            {/* Paylaşılabilir CV linki */}
+            <SharePanel plan={plan} />
+
+            {/* PDF indir kısayolu */}
+            <div className="flex flex-col items-center gap-2">
+              <a href={`/api/cv/pdf?template=${template}`}>
+                <Button variant="secondary">
+                  <Download className="h-4 w-4" />
+                  {t.cvBuilder.downloadPdf}
+                </Button>
+              </a>
+              <p className="text-center text-[11px] text-slate-400">{t.cvBuilder.pdfNote}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Alt navigasyon */}
+      <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+        <Button variant="secondary" onClick={goBack} disabled={step === 0}>
+          <ChevronLeft className="h-4 w-4" />
+          {t.cvBuilder.wizard.back}
+        </Button>
+        {step < lastStep && (
+          <Button variant="primary" onClick={goNext} disabled={saving}>
+            {saving ? <Spinner /> : null}
+            {t.cvBuilder.wizard.next}
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function StepHeader({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="space-y-1">
+      <h2 className="text-base font-bold text-slate-900 sm:text-lg">{title}</h2>
+      <p className="text-xs text-slate-500">{desc}</p>
     </div>
   )
 }

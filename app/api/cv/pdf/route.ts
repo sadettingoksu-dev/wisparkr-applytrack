@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { parseCvData, hasCvContent, isTrialActive } from '@/lib/cv'
-import { renderCvPdf, normalizeTemplate, cvPdfFilename } from '@/lib/cvPdf'
+import { renderCvPdf, normalizeTemplate, cvPdfFilename } from '@/lib/cvDocument'
 import { getPlan } from '@/lib/plans'
 
 export const runtime = 'nodejs'

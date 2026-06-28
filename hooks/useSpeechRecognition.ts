@@ -6,6 +6,7 @@ export function useSpeechRecognition() {
   const [isSupported, setIsSupported] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const recognitionRef = useRef<any>(null)
   const shouldListenRef = useRef(false)
   const finalTranscriptRef = useRef('')
@@ -49,6 +50,7 @@ export function useSpeechRecognition() {
     }
     recognition.onerror = (event: any) => {
       if (event.error === 'no-speech' || event.error === 'aborted') return
+      setError(event.error)
       shouldListenRef.current = false
       setIsListening(false)
     }
@@ -59,6 +61,7 @@ export function useSpeechRecognition() {
   const start = useCallback(() => {
     finalTranscriptRef.current = ''
     setTranscript('')
+    setError(null)
     shouldListenRef.current = true
     setIsListening(true)
     createAndStart()
@@ -70,5 +73,5 @@ export function useSpeechRecognition() {
     setIsListening(false)
   }, [])
 
-  return { isSupported, isListening, transcript, start, stop }
+  return { isSupported, isListening, transcript, error, start, stop }
 }

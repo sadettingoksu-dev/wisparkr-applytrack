@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseCvData, hasCvContent, SHARE_FREE_TTL_DAYS } from '@/lib/cv'
-import { normalizeTemplate } from '@/lib/cvPdf'
+import { normalizeTemplate } from '@/lib/cvTemplates'
 import { getPlan } from '@/lib/plans'
 
 export const runtime = 'nodejs'
