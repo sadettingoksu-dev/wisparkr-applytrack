@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { ArrowRight, BookOpen } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
-import { GUIDES } from '@/lib/guides'
+import { getGuides } from '@/lib/guides'
 import { getServerLocale, getServerDict } from '@/lib/i18n-server'
 
 export const metadata = {
@@ -13,7 +13,7 @@ export const metadata = {
 export default function GuidesPage() {
   const locale = getServerLocale()
   const t = getServerDict()
-  const guides = GUIDES[locale]
+  const guides = getGuides(locale)
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">

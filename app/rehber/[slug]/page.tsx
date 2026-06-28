@@ -7,7 +7,7 @@ import { getServerLocale, getServerDict } from '@/lib/i18n-server'
 
 export function generateStaticParams() {
   // Slug'lar her iki dilde aynı; tr listesinden üret.
-  return GUIDES.tr.map((g) => ({ slug: g.slug }))
+  return (GUIDES.tr ?? []).map((g) => ({ slug: g.slug }))
 }
 
 export function generateMetadata({ params }: { params: { slug: string } }) {

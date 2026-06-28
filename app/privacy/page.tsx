@@ -3,5 +3,6 @@ import { PRIVACY } from '@/lib/legal'
 import { getServerLocale } from '@/lib/i18n-server'
 
 export default function PrivacyPage() {
-  return <LegalPage doc={PRIVACY[getServerLocale()]} />
+  const doc = PRIVACY[getServerLocale()] ?? PRIVACY.en ?? PRIVACY.tr!
+  return <LegalPage doc={doc} />
 }

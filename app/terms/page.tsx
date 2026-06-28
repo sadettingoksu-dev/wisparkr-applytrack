@@ -3,5 +3,6 @@ import { TERMS } from '@/lib/legal'
 import { getServerLocale } from '@/lib/i18n-server'
 
 export default function TermsPage() {
-  return <LegalPage doc={TERMS[getServerLocale()]} />
+  const doc = TERMS[getServerLocale()] ?? TERMS.en ?? TERMS.tr!
+  return <LegalPage doc={doc} />
 }

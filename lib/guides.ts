@@ -12,7 +12,9 @@ export interface Guide {
   sections: GuideSection[]
 }
 
-export const GUIDES: Record<Locale, Guide[]> = {
+// Uzun metinli rehber içerikleri yalnızca tr/en'de hazır; diğer dillerde
+// İngilizce'ye düşülür (UI tamamen çevrili, bu uzun içerik henüz değil).
+export const GUIDES: Partial<Record<Locale, Guide[]>> = {
   tr: [
     {
       slug: 'ilk-is-basvurusu-rehberi',
@@ -227,6 +229,10 @@ export const GUIDES: Record<Locale, Guide[]> = {
   ],
 }
 
+export function getGuides(locale: Locale): Guide[] {
+  return GUIDES[locale] ?? GUIDES.en ?? GUIDES.tr ?? []
+}
+
 export function getGuide(locale: Locale, slug: string): Guide | undefined {
-  return GUIDES[locale].find((g) => g.slug === slug)
+  return getGuides(locale).find((g) => g.slug === slug)
 }

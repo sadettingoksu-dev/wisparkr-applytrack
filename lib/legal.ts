@@ -15,7 +15,7 @@ const UPDATED_TR = 'Son güncelleme: 26 Haziran 2026'
 const UPDATED_EN = 'Last updated: 26 June 2026'
 const CONTACT = 'info@wisparkr.com'
 
-export const PRIVACY: Record<Locale, LegalDoc> = {
+export const PRIVACY: Partial<Record<Locale, LegalDoc>> = {
   tr: {
     title: 'Gizlilik Politikası',
     updated: UPDATED_TR,
@@ -159,7 +159,7 @@ export const PRIVACY: Record<Locale, LegalDoc> = {
   },
 }
 
-export const TERMS: Record<Locale, LegalDoc> = {
+export const TERMS: Partial<Record<Locale, LegalDoc>> = {
   tr: {
     title: 'Kullanım Şartları',
     updated: UPDATED_TR,
