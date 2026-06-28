@@ -92,21 +92,10 @@ export default async function LandingPage({
                     {t.hero.ctaSecondary}
                   </button>
                 </Link>
-                <Link href="/demo">
-                  <button className="rounded-xl px-6 py-3 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-50">
-                    {t.hero.ctaDemo}
-                  </button>
-                </Link>
               </div>
             </div>
             <div className="flex justify-center lg:justify-end">
-              {/* Demoyu canlı gezmek için tıklanabilir */}
-              <Link href="/demo" className="group relative block transition-transform hover:scale-[1.02]" title={t.hero.ctaDemo}>
-                <HeroDemo labels={t.hero.demo} />
-                <span className="pointer-events-none absolute inset-x-0 bottom-3 mx-auto w-max rounded-full bg-purple-600 px-4 py-1.5 text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-                  {t.hero.ctaDemo} →
-                </span>
-              </Link>
+              <HeroDemo labels={t.hero.demo} />
             </div>
           </div>
         </section>
