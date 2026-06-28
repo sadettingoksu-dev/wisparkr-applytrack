@@ -109,6 +109,7 @@ export default function NewApplicationPage() {
           </Button>
         </div>
         <p className="text-xs text-slate-500">{t.newApp.urlHint}</p>
+        <p className="text-xs text-slate-400">{t.newApp.exampleSources}</p>
         {error && <p className="text-xs text-red-500">{error}</p>}
       </Card>
 
