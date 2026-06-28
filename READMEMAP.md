@@ -30,6 +30,7 @@
 - [x] **#9 Davet/referans:** davet eden her başarılı davet için **+5 gün Pro** (trial_ends_at uzatımı). `/api/referral` (kod üret/getir + sayaç), `/api/referral/claim` (ödül, tek kez). Signup `?ref` → localStorage → `ReferralClaimer` panelde işler (e-posta + Google). Ayarlar'da `ReferralCard`.
 - [x] **#7 Çoklu dil — 5 dil:** TR, EN + **DE, ES, FR** tam sözlük (`lib/i18n.ts`, ~1000 anahtar/dil). `LanguageSwitcher` otomatik render. NOT: uzun metinli `lib/guides.ts` + `lib/legal.ts` `Partial<Record<Locale>>` → eksik dilde İngilizce'ye düşer (UI tamamen çevrili, bu uzun içerik henüz değil).
 - [x] **#1/#3/#4** (şifre sıfırlama / landing sosyal kanıt-güven şeridi / SSS-`/yardim`): bu oturumda veya paralel PR'larla (taha branch'leri) tamamlandı.
+- [x] **Sidebar + hesap menüsü ince ayar (oturum sonu):** `Sidebar.tsx` logosu eski davranışında — basınca daraltır/genişletir (`localStorage 'wisparkr-sidebar-collapsed'`), ayrı ok denendi sonra geri alındı. `UserMenu.tsx` açılır menüye **🌐 Web sitesi** linki (`Globe`, `target=_blank`) → `/?home=1`. `app/page.tsx` artık `searchParams.home==='1'` ise oturum açık kullanıcıyı dashboard'a yönlendirmez (panelden pazarlama sayfası yeni sekmede görülebilir). i18n `userMenu.website` (5 dil).
 - **Durum: Tüm kod canlıda (her özellik ayrı commit + `vercel --prod`). DB tarafı: yukarıdaki 2 SQL + Reset Password şablonu BEKLİYOR.**
 
 ### Büyük UI + Monetizasyon revizyonu (beyaz+mor tema, 5 gün deneme, plan iptal, şablon galerisi)
