@@ -768,6 +768,8 @@ const tr = {
   cvBuilder: {
     title: 'CV Oluştur',
     subtitle: 'Adım adım doldur; sonunda şablonunu seç, indir veya paylaş.',
+    loadSample: 'Örnek CV ile doldur',
+    loadSampleConfirm: 'Mevcut alanların örnek verilerle değiştirilecek. Devam edilsin mi?',
     wizard: {
       stepPersonal: 'Kişisel',
       stepContent: 'Özgeçmiş',
@@ -1694,6 +1696,8 @@ const en: Dictionary = {
   cvBuilder: {
     title: 'Build CV',
     subtitle: 'Fill it step by step; at the end pick a template, download or share.',
+    loadSample: 'Fill with sample CV',
+    loadSampleConfirm: 'Your current fields will be replaced with sample data. Continue?',
     wizard: {
       stepPersonal: 'Personal',
       stepContent: 'Profile',
