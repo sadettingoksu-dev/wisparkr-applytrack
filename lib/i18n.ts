@@ -305,6 +305,15 @@ const tr = {
     error: 'Gönderilemedi, tekrar dene.',
     close: 'Kapat',
   },
+  referral: {
+    title: 'Arkadaşını davet et',
+    desc: 'Davet linkinle kayıt olan her arkadaşın için +5 gün Pro kazan.',
+    yourLink: 'Davet linkin',
+    copy: 'Kopyala',
+    copied: 'Kopyalandı!',
+    invited: 'Davet edilen',
+    reward: 'Her başarılı davet = +5 gün Pro',
+  },
   signup: {
     subtitle: 'Ücretsiz hesabını oluştur',
     google: 'Google ile devam et',
@@ -1303,6 +1312,15 @@ const en: Dictionary = {
     thanks: 'Thank you! Your feedback has reached us.',
     error: 'Could not send, please try again.',
     close: 'Close',
+  },
+  referral: {
+    title: 'Invite a friend',
+    desc: 'Earn +5 days of Pro for every friend who signs up with your link.',
+    yourLink: 'Your invite link',
+    copy: 'Copy',
+    copied: 'Copied!',
+    invited: 'Invited',
+    reward: 'Each successful invite = +5 days Pro',
   },
   signup: {
     subtitle: 'Create your free account',

@@ -65,6 +65,18 @@ export default function SignupPage() {
     })
   }, [router, postAuthPath])
 
+  // Davet linkiyle gelindiyse (?ref=KOD) kodu sakla; panele girince işlenir.
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) {
+      try {
+        localStorage.setItem('wisparkr_ref', ref)
+      } catch {
+        /* yoksay */
+      }
+    }
+  }, [searchParams])
+
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setError(null)

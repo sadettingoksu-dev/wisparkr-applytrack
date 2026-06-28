@@ -6,6 +6,7 @@ import { CvPolishCard } from '@/components/settings/CvPolishCard'
 import { ForwardingEmailCard } from '@/components/settings/ForwardingEmailCard'
 import { ExtensionTokenCard } from '@/components/settings/ExtensionTokenCard'
 import { NotificationPrefsCard } from '@/components/settings/NotificationPrefsCard'
+import { ReferralCard } from '@/components/settings/ReferralCard'
 import { DangerZoneCard } from '@/components/settings/DangerZoneCard'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
@@ -54,6 +55,8 @@ export default async function SettingsPage() {
           notify_product: profile?.notify_product ?? true,
         }}
       />
+
+      <ReferralCard />
 
       <DangerZoneCard />
     </div>
