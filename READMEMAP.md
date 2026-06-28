@@ -12,6 +12,26 @@
 
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
+### 2026-06-28 oturumu — Güvenlik sertleştirme + Mülakat insanlaştırma + "10 eksik" paketi + çoklu dil
+> ⚠️ **BEKLEYEN MANUEL ADIMLAR (canlıda tam çalışması için):**
+> - **SQL (Supabase SQL Editor'de bir kez çalıştır):** `0013_feedback.sql` (feedback tablosu + `profiles.notify_status_change/notify_interview/notify_product`) ve `0014_referral.sql` (`profiles.referral_code/referred_by/referral_count`). Çalıştırılana kadar feedback gönderimi, bildirim toggle'ları ve referans ödülü hata verir.
+> - **Reset Password e-posta şablonu:** Supabase → Authentication → Emails → "Reset Password" şablonuna `{{ .Token }}` eklenmeli (signup'taki gibi), yoksa şifre sıfırlama kodu maili boş gelir.
+
+- [x] **Güvenlik başlıkları:** `next.config.mjs` `async headers()` — CSP (Supabase + LemonSqueezy + Google izinli, makul-geçirgen), HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy (`microphone=(self)` — mülakat için), X-DNS-Prefetch-Control. Canlıda doğrulandı. CSP gözle test (Google login / checkout / mülakat mikrofonu) önerilir; engellenen origin çıkarsa CSP'ye eklenmeli.
+- [x] **Rate limit:** `lib/rateLimit.ts` bellek-içi sliding-window (kullanıcı başına dk'da 20 istek, 429+Retry-After). 15 AI/CV/mülakat route'una auth sonrası uygulandı. NOT: instance-içi (Vercel yatay ölçeklenir) → burst koruması; asıl maliyet tavanı `lib/usage.ts` aylık kota. Dağıtık istenirse imza aynı bırakıldı → Upstash'e geç.
+- [x] **Mülakat insanlaştırma:** `components/interview/InterviewAvatar.tsx` (SVG insan, göz kırpma + konuşurken dudak animasyonu, kadın/erkek), robot ikonu kaldırıldı; persona ismi (Elif/Mert). **Eller serbest:** mikrofon hep açık, ~2.8 sn sessizlikte cevap OTOMATİK gönderilir; manuel mic aç/kapa + sesli-mod toggle kaldırıldı (`MockInterviewChat.tsx`). `lib/speech.ts` doğal/nöral sesler önceliklendi (robotik düşük pitch kaldırıldı).
+- [x] **Şifre sıfırlama (OTP, cihaz bağımsız):** `/forgot-password` (e-posta → 6 haneli kod + yeni şifre → `resetPasswordForEmail`→`verifyOtp type:recovery`→`updateUser`). Login'de "Şifremi unuttum" linki. i18n `forgotPassword` (tr/en). Signup deseniyle tutarlı (PKCE link sorununu yaşamaz).
+- [x] **Giriş → doğrudan panel:** login/signup-OTP/şifre sıfırlamada `router.push` yerine `window.location.assign` (sunucu oturum çerezini hemen görür, landing'e düşmez).
+- [x] **#2 Başvuru listesi:** `components/applications/ApplicationsList.tsx` — arama (pozisyon/şirket) + durum filtresi + 4 sıralama + 10'arlı sayfalama + sonuç sayacı.
+- [x] **#5 Hesap silme + veri export (KVKK/GDPR):** `/api/account/export` (tüm veri tek JSON, RLS), `/api/account/delete` (admin `deleteUser` + cascade), Ayarlar'da "Tehlikeli bölge" kartı (iki adımlı silme onayı).
+- [x] **#10 Feedback widget'ı:** panelde yüzen buton + `/api/feedback` + `feedback` tablosu (RLS insert-own). `components/feedback/FeedbackWidget.tsx`, dashboard layout'a gömülü.
+- [x] **#8 Bildirim tercihleri:** `profiles.notify_*` (3 kolon) + Ayarlar'da `NotificationPrefsCard` toggle'lar + `/api/account/notifications`. Inbound-email bildirimi tercihe göre atlanır.
+- [x] **#6 Dark mode:** `tailwind darkMode:'class'` + `globals.css` `.dark` override'ları (bg-white/text-slate-*/border-slate-*/mor kutular → 76 dosyaya dokunmadan koyu tema, marka moru korunur). `ThemeToggle` hesap menüsünde, localStorage kalıcı, layout'ta flash-önleyici script. NOT: CSS-override yaklaşımı (her component'e `dark:` eklenmedi) — canlıda gözden geçirilip ince ayar gerekebilir.
+- [x] **#9 Davet/referans:** davet eden her başarılı davet için **+5 gün Pro** (trial_ends_at uzatımı). `/api/referral` (kod üret/getir + sayaç), `/api/referral/claim` (ödül, tek kez). Signup `?ref` → localStorage → `ReferralClaimer` panelde işler (e-posta + Google). Ayarlar'da `ReferralCard`.
+- [x] **#7 Çoklu dil — 5 dil:** TR, EN + **DE, ES, FR** tam sözlük (`lib/i18n.ts`, ~1000 anahtar/dil). `LanguageSwitcher` otomatik render. NOT: uzun metinli `lib/guides.ts` + `lib/legal.ts` `Partial<Record<Locale>>` → eksik dilde İngilizce'ye düşer (UI tamamen çevrili, bu uzun içerik henüz değil).
+- [x] **#1/#3/#4** (şifre sıfırlama / landing sosyal kanıt-güven şeridi / SSS-`/yardim`): bu oturumda veya paralel PR'larla (taha branch'leri) tamamlandı.
+- **Durum: Tüm kod canlıda (her özellik ayrı commit + `vercel --prod`). DB tarafı: yukarıdaki 2 SQL + Reset Password şablonu BEKLİYOR.**
+
 ### Büyük UI + Monetizasyon revizyonu (beyaz+mor tema, 5 gün deneme, plan iptal, şablon galerisi)
 - [x] **Ücretsiz plan → 5 günlük deneme:** `profiles.trial_ends_at` (default now()+5g) + `plan_started_at` (mig `0012_trial.sql`). `lib/plans.ts` `isTrialActive`/`getEffectivePlanId`/`getEffectivePlan` (deneme = Pro seviyesi tam erişim, süre dolunca free/kilitli). `requireAuth` (lib/apiAuth) artık `profile.plan`'ı efektif plana çevirir + `realPlanId` taşır (link kalıcılığı gerçek plana bağlı). Paylaşım linki: TTL 5 gün, deneme linki tam **deneme bitiminde** sona erer; Pro+Career Coach kalıcı (public `/cv/[token]` owner efektif planına bakar).
 - [x] **Plan iptal:** `app/api/billing/cancel` (LemonSqueezy `cancelSubscription` + yerel `status=cancelled, ends_at=renews_at`), `components/billing/CancelButton`. Billing sayfası: plan başlangıç tarihi, yenileme/iptal tarihi, **deneme gün sayacı**.
