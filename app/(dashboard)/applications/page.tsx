@@ -3,16 +3,14 @@ import { Plus, FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getPlan } from '@/lib/plans'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { CompareSelector } from '@/components/applications/CompareSelector'
 import { LimitBanner } from '@/components/applications/LimitBanner'
-import { STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { ApplicationsList } from '@/components/applications/ApplicationsList'
 import { getServerDict } from '@/lib/i18n-server'
-import { formatDate } from '@/utils/format'
-import type { Application, Profile } from '@/lib/types'
+import type { Application, ApplicationStatus, Profile } from '@/lib/types'
 
 export default async function ApplicationsPage({
   searchParams,
@@ -69,26 +67,11 @@ export default async function ApplicationsPage({
           ctaHref="/applications/new"
         />
       ) : (
-        <div className="space-y-3">
-          {apps.map((app) => (
-            <Link key={app.id} href={`/applications/${app.id}`}>
-              <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-lg">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-slate-900">{app.position_title}</p>
-                  <p className="truncate text-sm text-slate-500">{app.company_name}</p>
-                </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  {app.applied_at && (
-                    <span className="hidden text-xs text-slate-400 sm:inline">{formatDate(app.applied_at)}</span>
-                  )}
-                  <Badge className={STATUS_BADGE_CLASSES[app.status]}>
-                    {t.status[app.status]}
-                  </Badge>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <ApplicationsList
+          apps={apps}
+          labels={t.applications}
+          statusLabels={t.status as Record<ApplicationStatus, string>}
+        />
       )}
     </div>
   )
