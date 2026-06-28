@@ -27,6 +27,7 @@ const tr = {
       '“Başvurdum, ne oldu?” sorusuna son. Wisparkr tüm başvuru sürecini tek bir yerden yönetmeni sağlar.',
     ctaPrimary: 'Ücretsiz Başla',
     ctaSecondary: 'Özellikleri Gör',
+    ctaDemo: 'Demoyu İncele',
     demo: {
       title: 'Başvurularım',
       interview: 'Mülakat',
@@ -429,6 +430,14 @@ const tr = {
         desc: 'Mülakat simülasyonu ve AI asistanıyla pratiğini yap. Hazırsan başlayalım — bol şans! 🚀',
       },
     ],
+  },
+  demo: {
+    title: 'Wisparkr’ı canlı dene',
+    subtitle: 'Aşağıdaki örnek verilerle panelin nasıl göründüğünü keşfet. Hiçbir şey kaydedilmez.',
+    banner: 'Bu bir demo — örnek verilerle dolduruldu. Kendi başvurularını yönetmek için ücretsiz hesabını oluştur.',
+    cta: 'Ücretsiz başla',
+    recentTitle: 'Örnek başvurular',
+    back: 'Ana sayfaya dön',
   },
   planner: {
     interview_prep: '{company} mülakatına AI ile hazırlan',
@@ -934,6 +943,7 @@ const en: Dictionary = {
       'No more “I applied — now what?”. Wisparkr lets you manage your entire application process from one place.',
     ctaPrimary: 'Start Free',
     ctaSecondary: 'See Features',
+    ctaDemo: 'View Demo',
     demo: {
       title: 'My Applications',
       interview: 'Interview',
@@ -1336,6 +1346,14 @@ const en: Dictionary = {
         desc: 'Practice with the interview simulator and AI assistant. Ready when you are — good luck! 🚀',
       },
     ],
+  },
+  demo: {
+    title: 'Try Wisparkr live',
+    subtitle: 'Explore how the dashboard looks with the sample data below. Nothing is saved.',
+    banner: 'This is a demo — filled with sample data. Create your free account to manage your own applications.',
+    cta: 'Start free',
+    recentTitle: 'Sample applications',
+    back: 'Back to home',
   },
   planner: {
     interview_prep: 'Prep for the {company} interview with AI',
