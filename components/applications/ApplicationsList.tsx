@@ -2,11 +2,13 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Search, ChevronLeft, ChevronRight, Download, Trash2, X } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { STATUS_BADGE_CLASSES } from '@/utils/constants'
 import { formatDate } from '@/utils/format'
+import { format } from '@/lib/i18n'
 import type { Application, ApplicationStatus } from '@/lib/types'
 
 const PAGE_SIZE = 10
@@ -24,6 +26,13 @@ interface Labels {
   showing: string
   prev: string
   next: string
+  exportCsv: string
+  selectAll: string
+  selected: string
+  bulkStatus: string
+  bulkDelete: string
+  bulkDeleteConfirm: string
+  clearSelection: string
 }
 
 export function ApplicationsList({
@@ -35,10 +44,13 @@ export function ApplicationsList({
   labels: Labels
   statusLabels: Record<ApplicationStatus, string>
 }) {
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<ApplicationStatus | 'all'>('all')
   const [sort, setSort] = useState<SortKey>('newest')
   const [page, setPage] = useState(0)
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [busy, setBusy] = useState(false)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -73,6 +85,76 @@ export function ApplicationsList({
 
   const selectCls =
     'rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200'
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  // Tümünü seç: yalnızca o an görünen sayfa öğelerini kapsar.
+  const allPageSelected = pageItems.length > 0 && pageItems.every((a) => selected.has(a.id))
+  function toggleAll() {
+    setSelected((prev) => {
+      const next = new Set(prev)
+      if (allPageSelected) pageItems.forEach((a) => next.delete(a.id))
+      else pageItems.forEach((a) => next.add(a.id))
+      return next
+    })
+  }
+
+  async function bulkStatus(newStatus: ApplicationStatus) {
+    if (selected.size === 0) return
+    setBusy(true)
+    await Promise.all(
+      [...selected].map((id) =>
+        fetch(`/api/applications/${id}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus }),
+        }),
+      ),
+    )
+    setSelected(new Set())
+    setBusy(false)
+    router.refresh()
+  }
+
+  async function bulkDelete() {
+    if (selected.size === 0) return
+    if (!window.confirm(format(labels.bulkDeleteConfirm, { count: selected.size }))) return
+    setBusy(true)
+    await Promise.all(
+      [...selected].map((id) => fetch(`/api/applications/${id}`, { method: 'DELETE' })),
+    )
+    setSelected(new Set())
+    setBusy(false)
+    router.refresh()
+  }
+
+  function exportCsv() {
+    const header = ['Company', 'Position', 'Status', 'FitScore', 'AppliedAt']
+    const rows = filtered.map((a) => [
+      a.company_name,
+      a.position_title,
+      a.status,
+      a.fit_score ?? '',
+      a.applied_at ?? '',
+    ])
+    const escape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`
+    const csv = [header, ...rows].map((r) => r.map(escape).join(',')).join('\n')
+    // BOM ekle ki Excel Türkçe karakterleri doğru göstersin.
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `wisparkr-basvurular-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
 
   return (
     <div className="space-y-4">
@@ -111,6 +193,13 @@ export function ApplicationsList({
           <option value="company">{labels.sortCompany}</option>
           <option value="position">{labels.sortPosition}</option>
         </select>
+        <button
+          onClick={exportCsv}
+          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+        >
+          <Download className="h-4 w-4" />
+          {labels.exportCsv}
+        </button>
       </div>
 
       {filtered.length === 0 ? (
@@ -119,10 +208,78 @@ export function ApplicationsList({
         </Card>
       ) : (
         <>
+          {/* tümünü seç */}
+          <label className="inline-flex cursor-pointer items-center gap-2 text-xs text-slate-500">
+            <input
+              type="checkbox"
+              checked={allPageSelected}
+              onChange={toggleAll}
+              className="h-4 w-4 rounded border-slate-300 text-purple-600"
+            />
+            {labels.selectAll}
+          </label>
+
+          {/* toplu işlem çubuğu */}
+          {selected.size > 0 && (
+            <div className="sticky top-2 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2.5">
+              <span className="text-sm font-medium text-purple-800">
+                {format(labels.selected, { count: selected.size })}
+              </span>
+              <select
+                defaultValue=""
+                disabled={busy}
+                onChange={(e) => {
+                  if (e.target.value) bulkStatus(e.target.value as ApplicationStatus)
+                  e.target.value = ''
+                }}
+                className={selectCls}
+              >
+                <option value="" disabled>
+                  {labels.bulkStatus}
+                </option>
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {statusLabels[s]}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={bulkDelete}
+                disabled={busy}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" />
+                {labels.bulkDelete}
+              </button>
+              <button
+                onClick={() => setSelected(new Set())}
+                className="ml-auto inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"
+              >
+                <X className="h-4 w-4" />
+                {labels.clearSelection}
+              </button>
+            </div>
+          )}
+
           <div className="space-y-3">
             {pageItems.map((app) => (
-              <Link key={app.id} href={`/applications/${app.id}`}>
-                <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-lg">
+              <Card
+                key={app.id}
+                className={`flex items-center gap-3 transition-shadow hover:shadow-lg ${
+                  selected.has(app.id) ? 'ring-2 ring-purple-300' : ''
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.has(app.id)}
+                  onChange={() => toggle(app.id)}
+                  aria-label={app.position_title}
+                  className="h-4 w-4 shrink-0 rounded border-slate-300 text-purple-600"
+                />
+                <Link
+                  href={`/applications/${app.id}`}
+                  className="flex min-w-0 flex-1 items-center justify-between gap-3"
+                >
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-slate-900">{app.position_title}</p>
                     <p className="truncate text-sm text-slate-500">{app.company_name}</p>
@@ -133,8 +290,8 @@ export function ApplicationsList({
                     )}
                     <Badge className={STATUS_BADGE_CLASSES[app.status]}>{statusLabels[app.status]}</Badge>
                   </div>
-                </Card>
-              </Link>
+                </Link>
+              </Card>
             ))}
           </div>
 
