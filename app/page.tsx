@@ -67,7 +67,7 @@ export default async function LandingPage() {
               <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
                 {t.hero.titleA}{' '}
                 <span className="bg-gradient-to-r from-purple-600 to-fuchsia-500 bg-clip-text text-transparent">
-                  Sado
+                  Güzel Ankaram
                 </span>{' '}
                 {t.hero.titleB}
               </h1>
