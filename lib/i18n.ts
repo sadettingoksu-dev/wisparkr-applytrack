@@ -359,6 +359,13 @@ const tr = {
     settings: 'Ayarlar',
     billing: 'Plan & Faturalama',
   },
+  commandPalette: {
+    placeholder: 'Komut ara veya sayfaya git…',
+    empty: 'Sonuç yok.',
+    actions: 'Hızlı işlemler',
+    pages: 'Sayfalar',
+    newApplication: 'Yeni başvuru ekle',
+  },
   userMenu: {
     planSuffix: 'plan',
     goToPanel: 'Panele git',
@@ -1308,6 +1315,13 @@ const en: Dictionary = {
     documents: 'My Documents',
     settings: 'Settings',
     billing: 'Plan & Billing',
+  },
+  commandPalette: {
+    placeholder: 'Search a command or go to a page…',
+    empty: 'No results.',
+    actions: 'Quick actions',
+    pages: 'Pages',
+    newApplication: 'Add new application',
   },
   userMenu: {
     planSuffix: 'plan',
