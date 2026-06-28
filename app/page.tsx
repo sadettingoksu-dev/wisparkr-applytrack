@@ -17,15 +17,12 @@ import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { HeroDemo } from '@/components/landing/HeroDemo'
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
+import { ShowcaseMock } from '@/components/landing/ShowcaseMock'
 import { Faq } from '@/components/landing/Faq'
 import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
-import addShot from '@/public/shots/add.png'
-import cvShot from '@/public/shots/cv.png'
-import boardShot from '@/public/shots/board.png'
 
 const FEATURE_ICONS = [LayoutGrid, FileText, FileSearch, PenLine, MessageSquareText, CalendarDays]
-const SHOWCASE_SHOTS = [addShot, cvShot, boardShot]
 
 export default async function LandingPage({
   searchParams,
@@ -146,7 +143,7 @@ export default async function LandingPage({
         <FeatureShowcase
           heading={t.howItWorks.heading}
           subtitle={t.howItWorks.subtitle}
-          shots={t.howItWorks.steps.map((s, i) => ({ ...s, src: SHOWCASE_SHOTS[i] }))}
+          shots={t.howItWorks.steps.map((s, i) => ({ ...s, mock: <ShowcaseMock index={i} t={t} /> }))}
         />
 
         {/* Fiyatlandırma */}

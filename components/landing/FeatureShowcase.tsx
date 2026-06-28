@@ -1,8 +1,7 @@
-import Image, { type StaticImageData } from 'next/image'
 import { Reveal } from '@/components/landing/Reveal'
 
 interface Shot {
-  src: StaticImageData
+  mock: React.ReactNode
   title: string
   description: string
 }
@@ -45,7 +44,7 @@ export function FeatureShowcase({
                   right ? 'lg:flex-row-reverse' : ''
                 }`}
               >
-                {/* Ekran görüntüsü — tarayıcı çerçevesinde */}
+                {/* Ürün maketi — tarayıcı çerçevesinde (i18n metniyle, dil-duyarlı) */}
                 <Reveal className="w-full lg:w-3/5">
                   <div className="wisparkr-float overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-purple-200/50">
                     <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-4 py-2.5">
@@ -53,13 +52,7 @@ export function FeatureShowcase({
                       <span className="h-2.5 w-2.5 rounded-full bg-amber-300" />
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-300" />
                     </div>
-                    <Image
-                      src={shot.src}
-                      alt={shot.title}
-                      placeholder="blur"
-                      sizes="(min-width: 1024px) 60vw, 100vw"
-                      className="block h-auto w-full"
-                    />
+                    <div className="p-4 sm:p-5">{shot.mock}</div>
                   </div>
                 </Reveal>
 
