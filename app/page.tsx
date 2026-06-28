@@ -220,6 +220,7 @@ export default async function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 sm:flex-row sm:justify-between">
           <span>© {new Date().getFullYear()} Wisparkr. {t.footer.rights}</span>
           <nav className="flex items-center gap-4">
+            <Link href="/rehber" className="transition-colors hover:text-slate-700">{t.guides.title}</Link>
             <Link href="/yardim" className="transition-colors hover:text-slate-700">{t.footer.help}</Link>
             <Link href="/privacy" className="transition-colors hover:text-slate-700">{t.footer.privacy}</Link>
             <Link href="/terms" className="transition-colors hover:text-slate-700">{t.footer.terms}</Link>

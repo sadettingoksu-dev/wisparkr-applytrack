@@ -460,6 +460,12 @@ const tr = {
     recentTitle: 'Örnek başvurular',
     back: 'Ana sayfaya dön',
   },
+  guides: {
+    title: 'Rehberler',
+    subtitle: 'İş arama, CV ve mülakat sürecinde sana yol gösteren pratik içerikler.',
+    readMore: 'Oku',
+    backToGuides: '← Tüm rehberler',
+  },
   planner: {
     interview_prep: '{company} mülakatına AI ile hazırlan',
     interview_today: '{company} mülakatı bugün, AI ile hazırlan',
@@ -1447,6 +1453,12 @@ const en: Dictionary = {
     cta: 'Start free',
     recentTitle: 'Sample applications',
     back: 'Back to home',
+  },
+  guides: {
+    title: 'Guides',
+    subtitle: 'Practical content to guide you through job search, CV and interviews.',
+    readMore: 'Read',
+    backToGuides: '← All guides',
   },
   planner: {
     interview_prep: 'Prep for the {company} interview with AI',
