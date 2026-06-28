@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
+import { rateLimit, rateLimitResponse, AI_RATE_LIMIT } from '@/lib/rateLimit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
 import { getAnthropicClient, tailorCv } from '@/lib/anthropic'
@@ -36,6 +37,9 @@ export async function POST(request: Request) {
 
   const ctx = await requireAuth()
   if (!isAuthedContext(ctx)) return ctx
+
+  const rl = rateLimit('ai:' + ctx.userId, AI_RATE_LIMIT)
+  if (!rl.allowed) return rateLimitResponse(rl)
   const { supabase, userId, profile } = ctx
 
   const plan = getPlan(profile.plan)
