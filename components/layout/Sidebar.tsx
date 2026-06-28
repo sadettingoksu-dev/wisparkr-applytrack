@@ -32,8 +32,8 @@ const NAV_ITEMS: NavItem[] = [
   },
   { href: '/cv-builder', key: 'cvBuilder', icon: FilePlus },
   { href: '/documents', key: 'documents', icon: Files },
-  { href: '/settings', key: 'settings', icon: Settings },
   { href: '/settings/billing', key: 'billing', icon: CreditCard },
+  { href: '/settings', key: 'settings', icon: Settings },
 ]
 
 const STORAGE_KEY = 'wisparkr-sidebar-collapsed'
