@@ -16,6 +16,7 @@ const tr = {
   nav: {
     features: 'Özellikler',
     pricing: 'Fiyatlandırma',
+    faq: 'SSS',
     login: 'Giriş Yap',
   },
   hero: {
@@ -108,6 +109,45 @@ const tr = {
     rights: 'Tüm hakları saklıdır.',
     privacy: 'Gizlilik Politikası',
     terms: 'Kullanım Şartları',
+  },
+  trust: {
+    heading: 'Güvenle başla',
+    items: [
+      { title: '5 gün ücretsiz', desc: 'Kart bilgisi gerekmeden tüm özellikleri dene.' },
+      { title: 'Verilerin şifreli', desc: 'Bilgilerin güvenli altyapıda saklanır.' },
+      { title: 'KVKK uyumlu', desc: 'Verilerini istediğin zaman silebilirsin.' },
+      { title: 'İstediğin zaman iptal', desc: 'Taahhüt yok; tek tıkla aboneliğini bitir.' },
+    ],
+  },
+  faq: {
+    heading: 'Sıkça sorulan sorular',
+    subtitle: 'Aklındaki soruların yanıtları burada.',
+    items: [
+      {
+        q: 'Wisparkr’ı kullanmak için tecrübe gerekiyor mu?',
+        a: 'Hayır. İş ilanı linkini yapıştırman yeterli; gerisini AI senin için hazırlar. Hiç başvuru takibi yapmamış biri de dakikalar içinde başlayabilir.',
+      },
+      {
+        q: 'Başvuru nasıl eklenir?',
+        a: 'Panelde “Başvuru ekle”ye tıkla, iş ilanının linkini yapıştır. Wisparkr şirket, pozisyon ve açıklamayı otomatik çıkarır.',
+      },
+      {
+        q: 'Henüz CV’m yok, ne yapmalıyım?',
+        a: 'CV Builder ile sıfırdan profesyonel bir CV oluşturabilir veya mevcut PDF’ini yükleyebilirsin. AI, CV’ni ilana göre güçlendirir.',
+      },
+      {
+        q: 'AI uyum skoru nedir?',
+        a: 'CV’nin başvurduğun ilana ne kadar uyduğunu 0–100 arası puanlar ve eksiklerini gidermek için somut öneriler verir.',
+      },
+      {
+        q: 'Ücretsiz mi?',
+        a: 'Kayıt olunca 5 gün boyunca tüm özellikler ücretsiz açıktır. Süre sonunda dilersen ücretli plana geçer, dilersen ücretsiz devam edersin.',
+      },
+      {
+        q: 'Verilerim güvende mi?',
+        a: 'Bilgilerin şifreli ve güvenli altyapıda saklanır. KVKK kapsamında verilerini istediğin zaman silebilirsin.',
+      },
+    ],
   },
   showcase: {
     subtitle: 'Kariyerini hızlandıran AI destekli başvuru asistanı',
@@ -756,6 +796,7 @@ const en: Dictionary = {
   nav: {
     features: 'Features',
     pricing: 'Pricing',
+    faq: 'FAQ',
     login: 'Sign In',
   },
   hero: {
@@ -848,6 +889,45 @@ const en: Dictionary = {
     rights: 'All rights reserved.',
     privacy: 'Privacy Policy',
     terms: 'Terms of Use',
+  },
+  trust: {
+    heading: 'Start with confidence',
+    items: [
+      { title: '5 days free', desc: 'Try every feature — no credit card required.' },
+      { title: 'Encrypted data', desc: 'Your information is stored on secure infrastructure.' },
+      { title: 'GDPR friendly', desc: 'Delete your data whenever you want.' },
+      { title: 'Cancel anytime', desc: 'No commitment; end your subscription in one click.' },
+    ],
+  },
+  faq: {
+    heading: 'Frequently asked questions',
+    subtitle: 'Answers to what’s on your mind.',
+    items: [
+      {
+        q: 'Do I need experience to use Wisparkr?',
+        a: 'No. Just paste a job posting link and AI handles the rest. Even someone who has never tracked applications can start in minutes.',
+      },
+      {
+        q: 'How do I add an application?',
+        a: 'Click “Add application” in the dashboard and paste the job posting link. Wisparkr extracts the company, role and description automatically.',
+      },
+      {
+        q: 'I don’t have a CV yet — what should I do?',
+        a: 'Build a professional CV from scratch with the CV Builder, or upload your existing PDF. AI tailors it to each posting.',
+      },
+      {
+        q: 'What is the AI match score?',
+        a: 'It scores how well your CV fits a posting from 0–100 and gives concrete suggestions to close the gaps.',
+      },
+      {
+        q: 'Is it free?',
+        a: 'When you sign up, every feature is free for 5 days. After that you can move to a paid plan or continue on the free tier.',
+      },
+      {
+        q: 'Is my data safe?',
+        a: 'Your information is stored encrypted on secure infrastructure, and you can delete your data anytime under GDPR.',
+      },
+    ],
   },
   showcase: {
     subtitle: 'The AI-powered application assistant that accelerates your career',
