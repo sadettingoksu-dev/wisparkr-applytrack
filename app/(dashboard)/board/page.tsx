@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, Kanban } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Application } from '@/lib/types'
@@ -14,6 +15,8 @@ export default async function BoardPage() {
     .from('applications')
     .select('*')
     .order('created_at', { ascending: false })
+
+  const apps = (applications ?? []) as Application[]
 
   return (
     <div className="space-y-6">
@@ -33,7 +36,17 @@ export default async function BoardPage() {
         </div>
       </div>
 
-      <KanbanBoard initialApplications={(applications ?? []) as Application[]} />
+      {apps.length === 0 ? (
+        <EmptyState
+          icon={Kanban}
+          title={t.board.empty}
+          description={t.board.emptyDesc}
+          ctaLabel={t.board.newApplication}
+          ctaHref="/applications/new"
+        />
+      ) : (
+        <KanbanBoard initialApplications={apps} />
+      )}
     </div>
   )
 }
