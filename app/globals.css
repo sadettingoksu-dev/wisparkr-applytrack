@@ -77,3 +77,50 @@ body {
   .wisparkr-demo-scan,
   .wisparkr-demo-pop { animation: none }
 }
+
+/* ============================================================
+   DARK MODE
+   Uygulama ~76 dosyada açık-tema yardımcı sınıfları (bg-white,
+   text-slate-*, border-slate-*) kullanıyor. Her dosyaya dark:
+   eklemek yerine, .dark aktifken bu sık kullanılan sınıfları
+   tek yerden koyuya çeviriyoruz. Marka moru/gradyanlar korunur.
+   ============================================================ */
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
+
+.dark body { background-color: #020617; color: #e2e8f0; }
+
+/* yüzeyler */
+.dark .bg-white { background-color: #0f172a !important; }
+.dark .bg-slate-50 { background-color: #020617 !important; }
+.dark .bg-slate-100 { background-color: #1e293b !important; }
+.dark .hover\:bg-slate-50:hover { background-color: #1e293b !important; }
+.dark .hover\:bg-slate-100:hover { background-color: #334155 !important; }
+
+/* metin */
+.dark .text-slate-900 { color: #f1f5f9 !important; }
+.dark .text-slate-800 { color: #e2e8f0 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #94a3b8 !important; }
+.dark .text-slate-500 { color: #94a3b8 !important; }
+.dark .text-slate-400 { color: #64748b !important; }
+.dark .hover\:text-slate-900:hover { color: #f1f5f9 !important; }
+.dark .hover\:text-slate-800:hover { color: #e2e8f0 !important; }
+
+/* kenarlık + ayraç */
+.dark .border-slate-100 { border-color: #1e293b !important; }
+.dark .border-slate-200 { border-color: #1e293b !important; }
+.dark .border-slate-300 { border-color: #334155 !important; }
+.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #1e293b !important; }
+
+/* form alanları */
+.dark .placeholder-slate-400::placeholder { color: #475569 !important; }
+.dark .placeholder-slate-300::placeholder { color: #475569 !important; }
+
+/* mor vurgu kutuları — koyu zeminde okunur kalsın */
+.dark .bg-purple-50 { background-color: rgba(124, 58, 237, 0.15) !important; }
+.dark .bg-purple-100 { background-color: rgba(124, 58, 237, 0.22) !important; }
+.dark .text-purple-700 { color: #d8b4fe !important; }
+.dark .text-purple-600 { color: #c4b5fd !important; }
+.dark .border-purple-200 { border-color: rgba(124, 58, 237, 0.35) !important; }
+.dark .border-purple-100 { border-color: rgba(124, 58, 237, 0.25) !important; }

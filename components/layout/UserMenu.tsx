@@ -15,6 +15,7 @@ import {
   ChevronsUpDown,
 } from 'lucide-react'
 import { GoogleIcon } from '@/components/icons/GoogleIcon'
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { createClient } from '@/lib/supabase/client'
 import { getPlan, type PlanId } from '@/lib/plans'
@@ -198,6 +199,7 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar', co
 
           {/* Account actions */}
           <div className="border-t border-slate-200 py-1">
+            <ThemeToggle labelDark={t.userMenu.darkMode} labelLight={t.userMenu.lightMode} />
             <button
               onClick={handleSwitchAccount}
               disabled={busy}

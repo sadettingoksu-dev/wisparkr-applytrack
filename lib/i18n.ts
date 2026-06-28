@@ -391,6 +391,8 @@ const tr = {
     switchAccount: 'Google ile hesap değiştir',
     signOut: 'Çıkış yap',
     accountMenu: 'Hesap menüsü',
+    darkMode: 'Koyu tema',
+    lightMode: 'Açık tema',
   },
   notifications: {
     title: 'Bildirimler',
@@ -1385,6 +1387,8 @@ const en: Dictionary = {
     switchAccount: 'Switch account with Google',
     signOut: 'Sign out',
     accountMenu: 'Account menu',
+    darkMode: 'Dark theme',
+    lightMode: 'Light theme',
   },
   notifications: {
     title: 'Notifications',

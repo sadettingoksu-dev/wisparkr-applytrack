@@ -21,7 +21,16 @@ export default function RootLayout({
   const locale = normalizeLocale(cookies().get(LOCALE_COOKIE)?.value)
   return (
     <html lang={locale}>
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
+      <head>
+        {/* Tema flash'ını önle: boyamadan önce localStorage/sistem tercihine göre
+            <html>'e 'dark' sınıfını ekle. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}`,
+          }}
+        />
+      </head>
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>
     </html>
