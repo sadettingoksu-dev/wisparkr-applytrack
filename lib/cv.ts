@@ -90,6 +90,81 @@ export function emptyCvData(seed?: { fullName?: string; email?: string }): CvDat
   })
 }
 
+/**
+ * Eksiksiz örnek bir CV — CV Builder'da "Örnek ile doldur" için. Yeni
+ * başlayanlara her alanın nasıl doldurulacağını gösterir. Türkçe içerikli.
+ */
+export function sampleCvData(): CvData {
+  return cvDataSchema.parse({
+    personal: {
+      fullName: 'Ayşe Yılmaz',
+      headline: 'Frontend Developer',
+      email: 'ayse.yilmaz@example.com',
+      phone: '+90 555 000 0000',
+      location: 'İstanbul, Türkiye',
+      links: [
+        { label: 'LinkedIn', url: 'https://linkedin.com/in/ayseyilmaz' },
+        { label: 'GitHub', url: 'https://github.com/ayseyilmaz' },
+      ],
+    },
+    summary:
+      '3 yıl deneyimli Frontend Developer. React ve TypeScript ile performanslı, erişilebilir arayüzler geliştiriyorum. Kullanıcı odaklı çözümler ve ölçülebilir etki üretmeye odaklıyım.',
+    experience: [
+      {
+        company: 'TeknoSoft',
+        role: 'Frontend Developer',
+        location: 'İstanbul',
+        start: '2022',
+        end: '',
+        current: true,
+        bullets: [
+          'Sayfa yüklenme süresini %40 azaltarak dönüşüm oranını %15 artırdım.',
+          'Tasarım sistemini kurarak ekip genelinde geliştirme hızını ikiye katladım.',
+          '5 kişilik frontend ekibine mentorluk yaptım.',
+        ],
+      },
+      {
+        company: 'StartUpX',
+        role: 'Junior Frontend Developer',
+        location: 'Uzaktan',
+        start: '2021',
+        end: '2022',
+        current: false,
+        bullets: [
+          'Müşteri panelini React ile sıfırdan geliştirdim.',
+          'Birim test kapsamını %30’dan %80’e çıkardım.',
+        ],
+      },
+    ],
+    education: [
+      {
+        school: 'İstanbul Teknik Üniversitesi',
+        degree: 'Lisans',
+        field: 'Bilgisayar Mühendisliği',
+        start: '2017',
+        end: '2021',
+        note: 'Onur derecesiyle mezun.',
+      },
+    ],
+    skills: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS', 'Git', 'REST API', 'Jest'],
+    projects: [
+      {
+        name: 'Açık Kaynak Bileşen Kütüphanesi',
+        description: 'Erişilebilir React bileşenlerinden oluşan, 500+ yıldız alan kütüphane.',
+        link: 'https://github.com/ayseyilmaz/ui-kit',
+        bullets: ['Haftalık 2.000+ indirme', 'WCAG 2.1 AA uyumlu'],
+      },
+    ],
+    languages: [
+      { name: 'Türkçe', level: 'Ana dil' },
+      { name: 'İngilizce', level: 'İleri (C1)' },
+    ],
+    certifications: [
+      { name: 'Meta Front-End Developer', issuer: 'Coursera', date: '2023' },
+    ],
+  })
+}
+
 /** Coerces an unknown jsonb value into a valid CvData (filling defaults). */
 export function parseCvData(value: unknown): CvData {
   const result = cvDataSchema.safeParse(value ?? {})
