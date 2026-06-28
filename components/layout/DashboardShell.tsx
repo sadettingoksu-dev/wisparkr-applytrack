@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu } from 'lucide-react'
+import { Menu, Search } from 'lucide-react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { NotificationBell } from '@/components/layout/NotificationBell'
 import { ProductTour } from '@/components/dashboard/ProductTour'
+import { CommandPalette } from '@/components/layout/CommandPalette'
 import type { PlanId } from '@/lib/plans'
 
 interface DashboardShellProps {
@@ -27,6 +28,7 @@ export function DashboardShell({ name, email, avatarUrl, plan, children }: Dashb
   return (
     <div className="flex min-h-screen bg-slate-50 lg:h-screen lg:overflow-hidden">
       <ProductTour />
+      <CommandPalette />
       <Sidebar
         name={name}
         email={email}
@@ -45,7 +47,15 @@ export function DashboardShell({ name, email, avatarUrl, plan, children }: Dashb
           >
             <Menu className="h-5 w-5" />
           </button>
-          <div className="ml-auto">
+          {/* Komut paletini aç (Cmd/Ctrl+K) */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('wisparkr:cmdk'))}
+            className="ml-auto flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-400 transition-colors hover:bg-slate-50"
+          >
+            <Search className="h-4 w-4" />
+            <kbd className="hidden text-xs font-medium text-slate-400 sm:inline">Ctrl K</kbd>
+          </button>
+          <div>
             <NotificationBell />
           </div>
         </div>
