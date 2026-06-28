@@ -11,6 +11,7 @@ import {
   Puzzle,
   HelpCircle,
   Info,
+  Globe,
   LogOut,
   ChevronsUpDown,
 } from 'lucide-react'
@@ -195,6 +196,14 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar', co
               onClick={() => setOpen(false)}
             />
             <MenuLink href="/#features" icon={Info} label={t.userMenu.moreInfo} onClick={() => setOpen(false)} />
+            <MenuLink
+              href="/?home=1"
+              icon={Globe}
+              label={t.userMenu.website}
+              external
+              newTab
+              onClick={() => setOpen(false)}
+            />
           </div>
 
           {/* Account actions */}
@@ -229,6 +238,7 @@ function MenuLink({
   label,
   accent,
   external,
+  newTab,
   onClick,
 }: {
   href: string
@@ -236,6 +246,7 @@ function MenuLink({
   label: string
   accent?: boolean
   external?: boolean
+  newTab?: boolean
   onClick?: () => void
 }) {
   const className = clsx(
@@ -246,7 +257,12 @@ function MenuLink({
   )
   if (external) {
     return (
-      <a href={href} className={className} onClick={onClick}>
+      <a
+        href={href}
+        className={className}
+        onClick={onClick}
+        {...(newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      >
         <Icon className="h-4 w-4" />
         {label}
       </a>

@@ -27,10 +27,16 @@ import boardShot from '@/public/shots/board.png'
 const FEATURE_ICONS = [LayoutGrid, FileText, FileSearch, PenLine, MessageSquareText, CalendarDays]
 const SHOWCASE_SHOTS = [addShot, cvShot, boardShot]
 
-export default async function LandingPage() {
+export default async function LandingPage({
+  searchParams,
+}: {
+  searchParams: { home?: string }
+}) {
   // Giriş yapmış kullanıcı pazarlama sayfasında oyalanmasın; doğrudan panele.
+  // İstisna: `?home=1` ile bilinçli gelinmişse (panelden "Web sitesi" butonu)
+  // pazarlama sayfası gösterilir, yönlendirme atlanır.
   const { data: { user } } = await createClient().auth.getUser()
-  if (user) redirect('/dashboard')
+  if (user && searchParams.home !== '1') redirect('/dashboard')
 
   const locale = normalizeLocale(cookies().get(LOCALE_COOKIE)?.value)
   const t = getDictionary(locale)
