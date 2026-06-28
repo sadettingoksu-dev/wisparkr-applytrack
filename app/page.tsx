@@ -86,6 +86,11 @@ export default async function LandingPage() {
                     {t.hero.ctaSecondary}
                   </button>
                 </Link>
+                <Link href="/demo">
+                  <button className="rounded-xl px-6 py-3 text-sm font-semibold text-purple-700 transition-colors hover:bg-purple-50">
+                    {t.hero.ctaDemo}
+                  </button>
+                </Link>
               </div>
             </div>
             <div className="flex justify-center lg:justify-end">
