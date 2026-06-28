@@ -109,6 +109,7 @@ const tr = {
     rights: 'Tüm hakları saklıdır.',
     privacy: 'Gizlilik Politikası',
     terms: 'Kullanım Şartları',
+    help: 'Yardım',
   },
   trust: {
     heading: 'Güvenle başla',
@@ -146,6 +147,98 @@ const tr = {
       {
         q: 'Verilerim güvende mi?',
         a: 'Bilgilerin şifreli ve güvenli altyapıda saklanır. KVKK kapsamında verilerini istediğin zaman silebilirsin.',
+      },
+    ],
+  },
+  help: {
+    title: 'Yardım Merkezi',
+    subtitle: 'Wisparkr’ı en verimli şekilde kullanman için adım adım rehberler.',
+    searchPlaceholder: 'Bir konu ara… (ör. CV yükleme)',
+    noResults: 'Aramanla eşleşen bir konu bulunamadı.',
+    ctaTitle: 'Aradığını bulamadın mı?',
+    ctaDesc: 'Hesabını oluştur ve panel içindeki “i” yardım balonlarından her sayfanın ne işe yaradığını öğren.',
+    ctaButton: 'Ücretsiz başla',
+    categories: [
+      {
+        title: 'Başlarken',
+        articles: [
+          {
+            q: 'Hesabımı nasıl oluştururum?',
+            a: 'Sağ üstteki “Kayıt ol”a tıkla, e-postanla veya Google hesabınla saniyeler içinde kaydol. Kayıt sonrası 5 gün boyunca tüm özellikler ücretsiz açılır.',
+          },
+          {
+            q: 'İlk başvurumu nasıl eklerim?',
+            a: 'Panelde “Başvuru ekle”ye tıkla ve iş ilanının linkini yapıştır. Wisparkr şirket, pozisyon ve ilan açıklamasını otomatik doldurur; sen sadece kontrol edip kaydedersin.',
+          },
+          {
+            q: 'Panel (dashboard) bana ne gösterir?',
+            a: 'Toplam başvuru, mülakat ve teklif sayını, ortalama AI uyum skorunu, yapılacaklar listeni ve son başvurularını tek ekranda görürsün.',
+          },
+        ],
+      },
+      {
+        title: 'CV',
+        articles: [
+          {
+            q: 'CV’mi nasıl yüklerim?',
+            a: 'Ayarlar sayfasından PDF CV’ni yükle. Wisparkr metni okur ve AI özelliklerinde (uyum skoru, uyarlama) kullanır.',
+          },
+          {
+            q: 'CV Builder ile sıfırdan CV nasıl oluştururum?',
+            a: 'Sol menüden “CV Oluşturucu”ya gir, adımları doldur; şablon seç ve PDF olarak indir veya paylaşılabilir link oluştur.',
+          },
+          {
+            q: 'CV’mi nasıl paylaşırım?',
+            a: 'CV Builder’da “Paylaş” ile herkese açık bir link üretebilirsin. Linki olan herkes CV’ni giriş yapmadan görüntüler.',
+          },
+        ],
+      },
+      {
+        title: 'Başvurular & Takip',
+        articles: [
+          {
+            q: 'Başvuru durumlarını nasıl yönetirim?',
+            a: 'Her başvuru Beklemede, Mülakat, Teklif veya Reddedildi durumunda olabilir. Başvuru detayından ya da Kanban board’dan sürükleyerek durumu değiştirebilirsin.',
+          },
+          {
+            q: 'Kanban board nedir?',
+            a: 'Başvurularını sütunlar halinde (Beklemede / Mülakat / Teklif / Reddedildi) görsel olarak takip ettiğin ekrandır. Kartı sürükleyerek durumu güncellersin.',
+          },
+          {
+            q: 'Takvim ve hatırlatmalar nasıl çalışır?',
+            a: 'Mülakat ve önemli tarihler takvimde görünür; panel “yapılacaklar” bölümü seni takip ve hazırlık adımlarına yönlendirir.',
+          },
+        ],
+      },
+      {
+        title: 'AI Özellikleri',
+        articles: [
+          {
+            q: 'AI uyum skoru nedir, nasıl hesaplanır?',
+            a: 'CV’nin başvurduğun ilana uyumunu 0–100 arası puanlar. Eksik beceri ve anahtar kelimeleri gösterir, gidermen için somut öneriler sunar.',
+          },
+          {
+            q: 'Ön yazı (cover letter) nasıl oluşturulur?',
+            a: 'Başvuru detayında “Ön yazı oluştur”a tıkla; AI, CV’ni ve ilanı dikkate alarak Türkçe bir taslak hazırlar. İstediğin gibi düzenleyebilirsin.',
+          },
+          {
+            q: 'Mülakat simülasyonu nasıl kullanılır?',
+            a: 'Mülakat asistanından pozisyona özel sorularla pratik yap; yanıtlarına AI geri bildirim verir ve gelişim alanlarını gösterir.',
+          },
+        ],
+      },
+      {
+        title: 'Plan & Faturalama',
+        articles: [
+          {
+            q: 'Ücretsiz deneme nasıl çalışır?',
+            a: 'Kayıt olunca 5 gün boyunca Pro seviyesindeki tüm özellikler ücretsiz açıktır. Kart bilgisi gerekmez.',
+          },
+          {
+            q: 'Planımı nasıl yükseltir veya iptal ederim?',
+            a: 'Ayarlar › Plan ve Faturalama’dan planını yükseltebilir veya aboneliğini tek tıkla iptal edebilirsin. Taahhüt yoktur.',
+          },
+        ],
       },
     ],
   },
@@ -889,6 +982,7 @@ const en: Dictionary = {
     rights: 'All rights reserved.',
     privacy: 'Privacy Policy',
     terms: 'Terms of Use',
+    help: 'Help',
   },
   trust: {
     heading: 'Start with confidence',
@@ -926,6 +1020,98 @@ const en: Dictionary = {
       {
         q: 'Is my data safe?',
         a: 'Your information is stored encrypted on secure infrastructure, and you can delete your data anytime under GDPR.',
+      },
+    ],
+  },
+  help: {
+    title: 'Help Center',
+    subtitle: 'Step-by-step guides to get the most out of Wisparkr.',
+    searchPlaceholder: 'Search a topic… (e.g. uploading a CV)',
+    noResults: 'No topics matched your search.',
+    ctaTitle: 'Didn’t find what you need?',
+    ctaDesc: 'Create your account and use the in-app “i” help tips to learn what each page does.',
+    ctaButton: 'Start free',
+    categories: [
+      {
+        title: 'Getting started',
+        articles: [
+          {
+            q: 'How do I create my account?',
+            a: 'Click “Sign up” in the top right and register in seconds with your email or Google account. After signing up, every feature is free for 5 days.',
+          },
+          {
+            q: 'How do I add my first application?',
+            a: 'Click “Add application” in the dashboard and paste the job posting link. Wisparkr auto-fills the company, role and description — you just review and save.',
+          },
+          {
+            q: 'What does the dashboard show me?',
+            a: 'Your total applications, interviews and offers, your average AI match score, your to-do list and your most recent applications — all on one screen.',
+          },
+        ],
+      },
+      {
+        title: 'CV',
+        articles: [
+          {
+            q: 'How do I upload my CV?',
+            a: 'Upload your PDF CV from the Settings page. Wisparkr reads the text and uses it across AI features (match score, tailoring).',
+          },
+          {
+            q: 'How do I build a CV from scratch?',
+            a: 'Open “CV Builder” from the sidebar, fill in the steps, pick a template and download as PDF or create a shareable link.',
+          },
+          {
+            q: 'How do I share my CV?',
+            a: 'Use “Share” in the CV Builder to generate a public link. Anyone with the link can view your CV without signing in.',
+          },
+        ],
+      },
+      {
+        title: 'Applications & tracking',
+        articles: [
+          {
+            q: 'How do I manage application statuses?',
+            a: 'Each application can be Pending, Interview, Offer or Rejected. Change the status from the application detail or by dragging on the Kanban board.',
+          },
+          {
+            q: 'What is the Kanban board?',
+            a: 'A visual screen where applications are tracked in columns (Pending / Interview / Offer / Rejected). Drag a card to update its status.',
+          },
+          {
+            q: 'How do calendar and reminders work?',
+            a: 'Interviews and key dates appear on the calendar; the dashboard “to-do” section nudges you toward follow-up and preparation steps.',
+          },
+        ],
+      },
+      {
+        title: 'AI features',
+        articles: [
+          {
+            q: 'What is the AI match score and how is it calculated?',
+            a: 'It scores your CV’s fit to a posting from 0–100, highlights missing skills and keywords, and gives concrete suggestions to improve.',
+          },
+          {
+            q: 'How do I generate a cover letter?',
+            a: 'Click “Generate cover letter” on the application detail; AI drafts one based on your CV and the posting. Edit it however you like.',
+          },
+          {
+            q: 'How do I use the interview simulator?',
+            a: 'Practice with role-specific questions from the interview assistant; AI gives feedback on your answers and shows areas to improve.',
+          },
+        ],
+      },
+      {
+        title: 'Plan & billing',
+        articles: [
+          {
+            q: 'How does the free trial work?',
+            a: 'When you sign up, all Pro-level features are free for 5 days. No credit card required.',
+          },
+          {
+            q: 'How do I upgrade or cancel my plan?',
+            a: 'From Settings › Plan & Billing you can upgrade your plan or cancel your subscription in one click. There is no commitment.',
+          },
+        ],
       },
     ],
   },
