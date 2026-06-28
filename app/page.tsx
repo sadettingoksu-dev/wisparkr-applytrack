@@ -10,12 +10,14 @@ import {
   CalendarDays,
   Sparkles,
   Check,
+  ShieldCheck,
 } from 'lucide-react'
 import { PLANS, PLAN_ORDER } from '@/lib/plans'
 import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { HeroDemo } from '@/components/landing/HeroDemo'
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
+import { Faq } from '@/components/landing/Faq'
 import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
 import addShot from '@/public/shots/add.png'
@@ -47,6 +49,7 @@ export default async function LandingPage() {
           <nav className="col-start-2 hidden items-center gap-6 text-sm text-slate-500 md:flex">
             <Link href="/#features" className="hover:text-slate-900 transition-colors">{t.nav.features}</Link>
             <Link href="/#pricing" className="hover:text-slate-900 transition-colors">{t.nav.pricing}</Link>
+            <Link href="/#faq" className="hover:text-slate-900 transition-colors">{t.nav.faq}</Link>
           </nav>
           <div className="col-start-3 flex items-center justify-end gap-4">
             <LanguageSwitcher />
@@ -88,6 +91,21 @@ export default async function LandingPage() {
             <div className="flex justify-center lg:justify-end">
               <HeroDemo labels={t.hero.demo} />
             </div>
+          </div>
+        </section>
+
+        {/* Güven şeridi — dürüst değer noktaları */}
+        <section className="border-y border-slate-200 bg-white py-10">
+          <div className="mx-auto grid max-w-6xl grid-cols-2 gap-6 px-6 lg:grid-cols-4">
+            {t.trust.items.map((item) => (
+              <div key={item.title} className="flex items-start gap-3">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-purple-600" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="text-xs leading-relaxed text-slate-500">{item.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -182,6 +200,9 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* SSS */}
+        <Faq heading={t.faq.heading} subtitle={t.faq.subtitle} items={t.faq.items} />
       </main>
 
       <footer className="bg-slate-50 py-8 text-sm text-slate-400">
