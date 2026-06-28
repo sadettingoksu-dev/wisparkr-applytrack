@@ -98,13 +98,28 @@ export async function POST(request: Request) {
     await admin.from('applications').update({ status: newStatus } as never).eq('id', matchedApp.id)
   }
 
-  const company = matchedApp?.company_name ?? 'Bir şirket'
-  await admin.from('notifications').insert({
-    user_id: userId,
-    application_id: matchedApp?.id ?? null,
-    title: NOTIFICATION_TITLES[result.classification],
-    message: `${company}'den gelen "${subject}" konulu mail işlendi.`,
-  } as never)
+  // Kullanıcının bildirim tercihlerini gözet: mülakat daveti → notify_interview,
+  // diğer durum değişiklikleri → notify_status_change. Kapalıysa bildirim oluşturma.
+  const { data: prefs } = await admin
+    .from('profiles')
+    .select('notify_interview, notify_status_change')
+    .eq('id', userId)
+    .single()
+  const p = prefs as { notify_interview?: boolean; notify_status_change?: boolean } | null
+  const wantsNotif =
+    result.classification === 'interview_invitation'
+      ? p?.notify_interview ?? true
+      : p?.notify_status_change ?? true
+
+  if (wantsNotif) {
+    const company = matchedApp?.company_name ?? 'Bir şirket'
+    await admin.from('notifications').insert({
+      user_id: userId,
+      application_id: matchedApp?.id ?? null,
+      title: NOTIFICATION_TITLES[result.classification],
+      message: `${company}'den gelen "${subject}" konulu mail işlendi.`,
+    } as never)
+  }
 
   return NextResponse.json({ received: true })
 }

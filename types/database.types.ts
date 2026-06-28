@@ -31,6 +31,9 @@ export interface Database {
           plan_started_at: string | null
           plan: 'free' | 'pro' | 'career_coach'
           extension_token: string
+          notify_status_change: boolean
+          notify_interview: boolean
+          notify_product: boolean
           created_at: string
           updated_at: string
         }
@@ -39,6 +42,21 @@ export interface Database {
           email: string
         }
         Update: Partial<Database['public']['Tables']['profiles']['Row']>
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          id: string
+          user_id: string | null
+          message: string
+          category: string | null
+          page: string | null
+          created_at: string
+        }
+        Insert: Partial<Database['public']['Tables']['feedback']['Row']> & {
+          message: string
+        }
+        Update: Partial<Database['public']['Tables']['feedback']['Row']>
         Relationships: []
       }
       cv_shares: {
