@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { LOCALES, LOCALE_COOKIE, type Locale } from '@/lib/i18n'
 import { useI18n } from '@/components/i18n/I18nProvider'
 
-const LABELS: Record<Locale, string> = { tr: 'TR', en: 'EN', de: 'DE', es: 'ES' }
+const LABELS: Record<Locale, string> = { tr: 'TR', en: 'EN', de: 'DE', es: 'ES', fr: 'FR' }
 
 /** Navbar'daki TR/EN dil seçici. Seçimi çereze yazıp sunucuyu yeniler. */
 export function LanguageSwitcher() {
