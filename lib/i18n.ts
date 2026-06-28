@@ -401,6 +401,35 @@ const tr = {
       { title: 'Mülakat tarihi gir', desc: 'Başvuru detayında mülakat tarihini gir, takvimde takip et.', cta: 'Takvimi Aç' },
     ],
   },
+  tour: {
+    skip: 'Geç',
+    back: 'Geri',
+    next: 'İleri',
+    finish: 'Başla',
+    stepOf: '{current} / {total}',
+    steps: [
+      {
+        title: "Wisparkr'a hoş geldin! 👋",
+        desc: '30 saniyede sana etrafı gezdirelim. İstediğin an "Geç" diyebilirsin.',
+      },
+      {
+        title: 'Başvurunu ekle',
+        desc: 'Bir iş ilanının linkini yapıştır; AI şirketi, pozisyonu ve açıklamayı senin için otomatik doldursun.',
+      },
+      {
+        title: 'CV & uyum skoru',
+        desc: 'CV’ni yükle ya da CV Oluşturucu ile sıfırdan yap. AI, CV’nin ilana uyumunu 0–100 puanlar ve öneriler verir.',
+      },
+      {
+        title: 'Takip et',
+        desc: 'Başvurularını Kanban board’da Beklemede / Mülakat / Teklif / Reddedildi sütunlarında sürükleyerek yönet.',
+      },
+      {
+        title: 'AI ile hazırlan',
+        desc: 'Mülakat simülasyonu ve AI asistanıyla pratiğini yap. Hazırsan başlayalım — bol şans! 🚀',
+      },
+    ],
+  },
   planner: {
     interview_prep: '{company} mülakatına AI ile hazırlan',
     interview_today: '{company} mülakatı bugün, AI ile hazırlan',
@@ -1277,6 +1306,35 @@ const en: Dictionary = {
       { title: 'Add your first application', desc: 'Add manually or save with one click via the LinkedIn extension.', cta: 'Add Application' },
       { title: 'Install the browser extension', desc: 'Get your token from Settings and save LinkedIn postings in one click.', cta: 'Get Token' },
       { title: 'Add an interview date', desc: 'Enter the interview date in the application detail and track it on the calendar.', cta: 'Open Calendar' },
+    ],
+  },
+  tour: {
+    skip: 'Skip',
+    back: 'Back',
+    next: 'Next',
+    finish: 'Get started',
+    stepOf: '{current} / {total}',
+    steps: [
+      {
+        title: 'Welcome to Wisparkr! 👋',
+        desc: 'Let us show you around in 30 seconds. You can hit "Skip" anytime.',
+      },
+      {
+        title: 'Add an application',
+        desc: 'Paste a job posting link and AI auto-fills the company, role and description for you.',
+      },
+      {
+        title: 'CV & match score',
+        desc: 'Upload your CV or build one from scratch. AI scores your CV’s fit to a posting from 0–100 and gives suggestions.',
+      },
+      {
+        title: 'Track it',
+        desc: 'Manage your applications on the Kanban board across Pending / Interview / Offer / Rejected by dragging.',
+      },
+      {
+        title: 'Prepare with AI',
+        desc: 'Practice with the interview simulator and AI assistant. Ready when you are — good luck! 🚀',
+      },
     ],
   },
   planner: {

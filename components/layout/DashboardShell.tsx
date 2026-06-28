@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Menu } from 'lucide-react'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { NotificationBell } from '@/components/layout/NotificationBell'
+import { ProductTour } from '@/components/dashboard/ProductTour'
 import type { PlanId } from '@/lib/plans'
 
 interface DashboardShellProps {
@@ -25,6 +26,7 @@ export function DashboardShell({ name, email, avatarUrl, plan, children }: Dashb
 
   return (
     <div className="flex min-h-screen bg-slate-50 lg:h-screen lg:overflow-hidden">
+      <ProductTour />
       <Sidebar
         name={name}
         email={email}
