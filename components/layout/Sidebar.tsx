@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, GraduationCap, Bot, Mic, ChevronDown } from 'lucide-react'
+import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, GraduationCap, Bot, Mic, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { useI18n } from '@/components/i18n/I18nProvider'
@@ -106,17 +106,30 @@ export function Sidebar({ name, email, avatarUrl, plan, mobileOpen = false, onMo
           effCollapsed ? 'w-16' : 'w-64'
         )}
       >
-        {/* Logoya basınca sidebar daralır/açılır (masaüstü) */}
+        {/* Logo → ana sayfa (wisparkr.com); yanındaki ok sidebar'ı daraltır/genişletir */}
         <div className={clsx('border-b border-slate-200 py-5', effCollapsed ? 'px-3' : 'px-6')}>
-          <button
-            onClick={toggle}
-            title={effCollapsed ? t.sidebar.dashboard : APP_NAME}
-            aria-label="Menüyü daralt/genişlet"
-            className="flex w-full items-center gap-2"
-          >
-            <Image src="/logo.png" alt="Wisparkr" width={28} height={28} className="shrink-0 rounded-lg" />
-            {!effCollapsed && <span className="text-xl font-bold text-purple-600">{APP_NAME}</span>}
-          </button>
+          <div className={clsx('flex items-center', effCollapsed ? 'flex-col gap-3' : 'gap-2')}>
+            <Link
+              href="/"
+              onClick={onMobileClose}
+              title={APP_NAME}
+              aria-label={APP_NAME}
+              className={clsx('flex min-w-0 items-center gap-2', !effCollapsed && 'flex-1')}
+            >
+              <Image src="/logo.png" alt="Wisparkr" width={28} height={28} className="shrink-0 rounded-lg" />
+              {!effCollapsed && <span className="truncate text-xl font-bold text-purple-600">{APP_NAME}</span>}
+            </Link>
+            {isDesktop && (
+              <button
+                onClick={toggle}
+                aria-label="Menüyü daralt/genişlet"
+                title={effCollapsed ? 'Menüyü genişlet' : 'Menüyü daralt'}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+              >
+                {effCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              </button>
+            )}
+          </div>
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">
