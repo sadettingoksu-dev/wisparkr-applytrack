@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Send, Mic, MicOff, Volume2, Bot, ChevronDown } from 'lucide-react'
+import { Send, Mic, Volume2, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { InterviewAvatar } from '@/components/interview/InterviewAvatar'
 import { InterviewFeedbackReport } from '@/components/interview/InterviewFeedbackReport'
 import { MOCK_INTERVIEW_QUESTION_COUNT } from '@/utils/constants'
 import { isSpeechSynthesisSupported, speakText, cancelSpeech, type VoiceGender } from '@/lib/speech'
@@ -27,11 +28,6 @@ const KEYFRAMES = `
 @keyframes mi-userwave{0%,100%{transform:scaleY(0.3)}50%{transform:scaleY(1)}}
 `
 
-const MOUTH_BARS = [
-  { dur: '0.5s', delay: '0s' }, { dur: '0.34s', delay: '0.12s' }, { dur: '0.42s', delay: '0.05s' },
-  { dur: '0.3s', delay: '0.18s' }, { dur: '0.46s', delay: '0.09s' }, { dur: '0.36s', delay: '0.2s' },
-  { dur: '0.4s', delay: '0.04s' },
-]
 const USER_BARS = [
   { dur: '0.6s', delay: '0s' }, { dur: '0.4s', delay: '0.1s' }, { dur: '0.7s', delay: '0.05s' },
   { dur: '0.5s', delay: '0.18s' }, { dur: '0.38s', delay: '0.12s' }, { dur: '0.62s', delay: '0.03s' },
@@ -65,6 +61,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   const [micBlocked, setMicBlocked] = useState(false)
   const speech = useSpeechRecognition()
   const prevMessageCountRef = useRef(initialMessages.length)
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function speak(text: string) {
     if (!isSpeechSynthesisSupported()) return
@@ -147,26 +144,36 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     if (speech.transcript) setInput(speech.transcript)
   }, [speech.transcript])
 
+  // ELLER SERBEST: mikrofon hep açık; kullanıcı bir süre (≈2.3 sn) konuşmayı
+  // bırakınca cevabı OTOMATİK gönderir. Her yeni konuşma parçası zamanlayıcıyı
+  // sıfırlar; AI konuşurken/işlerken tetiklenmez (yankı/erken gönderim önlenir).
+  useEffect(() => {
+    if (!voiceMode || !speech.isListening || loading || isSpeaking) return
+    const text = speech.transcript.trim()
+    if (text.length < 2) return
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+    silenceTimerRef.current = setTimeout(() => {
+      sendMessage(text)
+    }, 2800)
+    return () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [speech.transcript, speech.isListening, loading, isSpeaking, voiceMode])
+
   useEffect(() => {
     return () => {
       cancelSpeech()
       speech.stop()
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function toggleVoiceMode() {
-    if (voiceMode) {
-      cancelSpeech()
-      setIsSpeaking(false)
-      speech.stop()
-    }
-    setVoiceMode((prev) => !prev)
-  }
-
-  async function sendMessage() {
-    const content = input.trim()
+  async function sendMessage(override?: string) {
+    const content = (override ?? input).trim()
     if (!content || loading) return
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     setError(null)
     setLoading(true)
     setInput('')
@@ -276,6 +283,8 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   const lastInterviewer = [...messages].reverse().find((m) => m.role === 'interviewer')
   const currentQuestion = lastInterviewer?.content ?? ''
   const aiActive = loading || isSpeaking
+  // İnsan hissi için mülakatçıya isim ver (robot/"AI" yerine), sese göre değişir.
+  const interviewerName = voiceGender === 'female' ? 'Elif' : 'Mert'
   const qNumber = Math.min(questionCount, MOCK_INTERVIEW_QUESTION_COUNT)
   const mm = String(Math.floor(elapsed / 60)).padStart(2, '0')
   const ss = String(elapsed % 60).padStart(2, '0')
@@ -317,13 +326,10 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
           style={{ background: 'rgba(7,4,17,0.78)', backdropFilter: 'blur(4px)' }}
         >
           <div
-            className="flex h-24 w-24 items-center justify-center rounded-full"
-            style={{
-              background: 'linear-gradient(135deg,#b07cff,#6d28d9 60%,#3b1d80)',
-              boxShadow: '0 0 50px rgba(124,58,237,0.45)',
-            }}
+            className="h-24 w-24 overflow-hidden rounded-full"
+            style={{ boxShadow: '0 0 50px rgba(124,58,237,0.45)' }}
           >
-            <Mic className="h-10 w-10 text-white/90" strokeWidth={1.5} />
+            <InterviewAvatar speaking={false} gender={voiceGender} size={96} />
           </div>
           <div>
             <div className="text-lg font-semibold text-purple-50">{jobTitle}</div>
@@ -350,16 +356,15 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
       <header className="relative z-10 flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div className="flex min-w-0 items-center gap-3">
           <div
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold text-white"
-            style={{
-              background: 'linear-gradient(135deg,#a855f7,#6d28d9)',
-              boxShadow: '0 4px 18px rgba(124,58,237,0.5)',
-            }}
+            className="h-9 w-9 shrink-0 overflow-hidden rounded-xl"
+            style={{ boxShadow: '0 4px 18px rgba(124,58,237,0.5)' }}
           >
-            AI
+            <InterviewAvatar speaking={isSpeaking} gender={voiceGender} size={36} />
           </div>
           <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-purple-50">{jobTitle}</div>
+            <div className="truncate text-sm font-semibold text-purple-50">
+              {interviewerName} · {jobTitle}
+            </div>
             <div className="truncate text-[11px] tracking-wide text-purple-300">{company}</div>
           </div>
         </div>
@@ -396,20 +401,6 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
               </button>
             </div>
           )}
-          {speechSupported && (
-            <button
-              onClick={toggleVoiceMode}
-              title={voiceMode ? t.interview.voiceOffTitle : t.interview.voiceOnTitle}
-              className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
-                voiceMode
-                  ? 'border-purple-400/40 bg-purple-500/20 text-purple-100'
-                  : 'border-white/12 bg-white/5 text-purple-200 hover:bg-white/10'
-              }`}
-            >
-              {voiceMode ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-            </button>
-          )}
-
           <button
             onClick={finishInterview}
             disabled={loading}
@@ -440,35 +431,10 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
             </>
           )}
           <div
-            className="relative flex h-24 w-24 items-center justify-center rounded-full sm:h-28 sm:w-28"
-            style={{
-              background: 'linear-gradient(135deg,#b07cff,#6d28d9 60%,#3b1d80)',
-              boxShadow: '0 0 50px rgba(124,58,237,0.45)',
-            }}
+            className="relative h-24 w-24 overflow-hidden rounded-full sm:h-28 sm:w-28"
+            style={{ boxShadow: '0 0 50px rgba(124,58,237,0.45)' }}
           >
-            <Bot className="h-11 w-11 text-white/90" strokeWidth={1.5} />
-
-            {/* konuşurken ağız ekolayzeri */}
-            {isSpeaking && (
-              <div
-                className="absolute bottom-3.5 left-1/2 flex h-6 -translate-x-1/2 items-end gap-[3px] rounded-xl px-2 py-1"
-                style={{ background: 'rgba(11,7,22,0.62)', backdropFilter: 'blur(3px)' }}
-              >
-                {MOUTH_BARS.map((b, i) => (
-                  <span
-                    key={i}
-                    className="block w-[3px] rounded-sm"
-                    style={{
-                      height: '12px',
-                      background: '#f0d9ff',
-                      transformOrigin: 'center bottom',
-                      animation: `mi-eqbar ${b.dur} ease-in-out infinite`,
-                      animationDelay: b.delay,
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+            <InterviewAvatar speaking={isSpeaking} gender={voiceGender} size={112} />
           </div>
         </div>
 
@@ -487,7 +453,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
         {!voiceMode ? (
           <div className="max-w-2xl px-3">
             <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-purple-300/70">
-              {t.interview.aiInterviewer}
+              {interviewerName}
             </div>
             <div className="text-pretty text-lg font-medium leading-relaxed text-purple-50 sm:text-xl">
               {currentQuestion}
@@ -495,7 +461,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
           </div>
         ) : (
           <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-purple-300/70">
-            {t.interview.aiInterviewer}
+            {interviewerName}
           </div>
         )}
       </main>
@@ -589,24 +555,11 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
           </div>
         </div>
 
-        {/* kontroller */}
-        <div className="flex items-center gap-3">
-          {voiceMode && (
-            <button
-              onClick={() => (speech.isListening ? speech.stop() : speech.start())}
-              disabled={loading}
-              title={speech.isListening ? t.interview.stopListening : t.interview.answerByVoice}
-              className={`flex h-12 w-12 items-center justify-center rounded-full border transition-colors disabled:opacity-50 ${
-                speech.isListening
-                  ? 'border-rose-400/50 bg-rose-500/20 text-rose-200'
-                  : 'border-white/14 bg-white/5 text-purple-100 hover:bg-white/10'
-              }`}
-            >
-              <Mic className={`h-5 w-5 ${speech.isListening ? 'animate-pulse' : ''}`} />
-            </button>
-          )}
+        {/* kontroller — mikrofon her zaman açık; sessizlikte cevap otomatik gider.
+            "Gönder" yalnızca beklemeden hemen göndermek isteyenler için yedek. */}
+        <div className="flex flex-col items-center gap-2">
           <button
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={loading || !input.trim()}
             className="flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[15px] font-semibold text-white transition-opacity disabled:opacity-50"
             style={{
@@ -617,6 +570,11 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
             {loading ? <Spinner /> : <Send className="h-4 w-4" />}
             {t.interview.sendAnswer}
           </button>
+          {voiceMode && speech.isListening && !loading && (
+            <span className="font-mono text-[10px] uppercase tracking-wider text-purple-300/70">
+              {t.interview.statusListening} · {t.interview.autoSendHint}
+            </span>
+          )}
         </div>
       </footer>
     </div>
