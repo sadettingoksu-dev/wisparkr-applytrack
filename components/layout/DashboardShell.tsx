@@ -13,6 +13,8 @@ interface DashboardShellProps {
   email: string
   avatarUrl: string | null
   plan: PlanId | string | null
+  /** Effective plan (trial elevated) — drives sidebar feature locks. */
+  effectivePlan?: PlanId | string | null
   children: React.ReactNode
 }
 
@@ -22,7 +24,7 @@ interface DashboardShellProps {
  *   yalnızca sağdaki içerik alanı (main) kendi içinde kaydırılır.
  * - Mobil: normal sayfa kaydırması; sidebar hamburger ile açılan drawer.
  */
-export function DashboardShell({ name, email, avatarUrl, plan, children }: DashboardShellProps) {
+export function DashboardShell({ name, email, avatarUrl, plan, effectivePlan, children }: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -34,6 +36,7 @@ export function DashboardShell({ name, email, avatarUrl, plan, children }: Dashb
         email={email}
         avatarUrl={avatarUrl}
         plan={plan}
+        effectivePlan={effectivePlan}
         mobileOpen={mobileOpen}
         onMobileClose={() => setMobileOpen(false)}
       />

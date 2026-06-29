@@ -5,6 +5,7 @@ import { rateLimit, rateLimitResponse, AI_RATE_LIMIT } from '@/lib/rateLimit'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
 import { getAnthropicClient, DEFAULT_MODEL, TURKISH_WRITING_RULE } from '@/lib/anthropic'
+import { getPlan } from '@/lib/plans'
 import { APP_NAME } from '@/utils/constants'
 import type { Application, RequiredDocument } from '@/lib/types'
 
@@ -33,6 +34,19 @@ export async function POST(request: Request) {
   const rl = rateLimit('ai:' + ctx.userId, AI_RATE_LIMIT)
   if (!rl.allowed) return rateLimitResponse(rl)
   const { supabase, userId, profile } = ctx
+
+  // AI Kariyer Asistanı (sohbet) Career Coach planına özel.
+  if (!getPlan(profile.plan).features.aiAssistant) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'FEATURE_NOT_AVAILABLE',
+          message: 'AI Kariyer Asistanı yalnızca Career Coach planında mevcut.',
+        },
+      },
+      { status: 403 }
+    )
+  }
 
   const json = await request.json().catch(() => null)
   const parsed = bodySchema.safeParse(json)

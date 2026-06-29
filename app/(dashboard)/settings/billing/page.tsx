@@ -75,11 +75,24 @@ export default async function BillingPage() {
     'kanban',
     'cvFitScore',
     'cvAutoTailoring',
+    'coverLetter',
+    'cvPolish',
     'mockInterview',
+    'aiAssistant',
     'companyInsights',
     'salaryNegotiationCoach',
+    'competitorAnalysis',
     'unlimitedAi',
   ]
+
+  // Tüm AI işlemleri (soru, fit skor, uyarlama, kapak, cilalama, mülakat) tek aylık havuzdan düşer.
+  const aiUsedTotal =
+    (usage?.ai_questions_used ?? 0) +
+    (usage?.fit_scores_used ?? 0) +
+    (usage?.cv_tailors_used ?? 0) +
+    (usage?.mock_interviews_used ?? 0) +
+    (usage?.cover_letters_used ?? 0) +
+    (usage?.cv_polish_used ?? 0)
 
   // Plan seçimi: Pro mu Career Coach mı — kullanıcı karar versin (tek "Pro" butonu yerine).
   const planChooser = (
@@ -187,21 +200,9 @@ export default async function BillingPage() {
           unlimitedLabel={t.billing.unlimited}
         />
         <UsageBar
-          label={t.billing.usageAiQuestions}
-          used={usage?.ai_questions_used ?? 0}
+          label={t.billing.usageAiTotal}
+          used={aiUsedTotal}
           limit={plan.limits.aiQuestionsPerMonth}
-          unlimitedLabel={t.billing.unlimited}
-        />
-        <UsageBar
-          label={t.billing.usageCvTailor}
-          used={usage?.cv_tailors_used ?? 0}
-          limit={plan.id === 'free' ? 0 : plan.id === 'pro' ? 10 : null}
-          unlimitedLabel={t.billing.unlimited}
-        />
-        <UsageBar
-          label={t.billing.usageMockInterview}
-          used={usage?.mock_interviews_used ?? 0}
-          limit={plan.id === 'free' ? 0 : plan.id === 'pro' ? 5 : null}
           unlimitedLabel={t.billing.unlimited}
         />
       </Card>

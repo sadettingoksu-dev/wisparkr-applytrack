@@ -26,13 +26,12 @@ export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup
       )}
       <div>
         <h3 className="text-lg font-semibold text-slate-900">{plan.name}</h3>
-        {plan.priceMonthly === 0 ? (
-          <p className="mt-1 text-3xl font-bold text-purple-600">{t.pricing.trialPrice}</p>
-        ) : (
-          <p className="mt-1 text-3xl font-bold text-slate-900">
-            ${plan.priceMonthly}
-            <span className="text-sm font-normal text-slate-500">{t.pricing.perMonth}</span>
-          </p>
+        <p className="mt-1 text-3xl font-bold text-slate-900">
+          ${plan.priceMonthly}
+          <span className="text-sm font-normal text-slate-500">{t.pricing.perMonth}</span>
+        </p>
+        {plan.priceMonthly === 0 && (
+          <p className="mt-1 text-xs font-medium text-purple-600">{t.pricing.trialPrice}</p>
         )}
       </div>
       <ul className="flex-1 space-y-2">

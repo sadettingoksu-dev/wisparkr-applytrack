@@ -91,17 +91,24 @@ const tr = {
     pageSubtitle: 'İhtiyacına uygun planı seç, istediğin zaman değiştir.',
     popular: 'En Popüler',
     perMonth: '/ay',
-    trialPrice: '5 gün ücretsiz',
-    freeCta: 'Ücretsiz Dene',
+    trialPrice: '3 gün tüm özellikler ücretsiz · kart gerekmez',
+    freeCta: 'Ücretsiz Başla',
     paidCta: 'Plana Geç',
     lists: {
-      free: ['5 gün boyunca tüm özellikler açık', 'CV oluştur + paylaşılabilir link', 'Tüm AI özellikleri', 'Süre sonunda ödeme ile devam'],
-      pro: ['Sınırsız başvuru', '200 AI soru/ay', 'CV uyum skoru', 'CV otomatik uyarlama'],
+      free: ['3 gün boyunca tüm Pro özellikleri açık', '10 başvuruya kadar takip', 'Aylık 15 AI işlemi', 'CV oluştur + 1 paylaşım linki'],
+      pro: [
+        'Sınırsız başvuru',
+        'Aylık 200 AI işlemi',
+        'CV uyum skoru + otomatik uyarlama',
+        'Kapak mektubu + CV cilalama',
+        'Mülakat provası',
+        'Kalıcı paylaşım linki + analitik',
+      ],
       career_coach: [
         "Pro'daki her şey",
-        'Sınırsız AI soru',
-        'Şirket içgörüsü',
-        'Maaş müzakere koçu',
+        'Sınırsız AI kullanımı',
+        'AI Kariyer Asistanı (başvuruya özel sohbet)',
+        'Şirket içgörüsü + maaş müzakere koçu',
         'Rakip analizi',
       ],
     },
@@ -115,7 +122,7 @@ const tr = {
   trust: {
     heading: 'Güvenle başla',
     items: [
-      { title: '5 gün ücretsiz', desc: 'Kart bilgisi gerekmeden tüm özellikleri dene.' },
+      { title: '3 gün ücretsiz', desc: 'Kart bilgisi gerekmeden tüm özellikleri dene.' },
       { title: 'Verilerin şifreli', desc: 'Bilgilerin güvenli altyapıda saklanır.' },
       { title: 'KVKK uyumlu', desc: 'Verilerini istediğin zaman silebilirsin.' },
       { title: 'İstediğin zaman iptal', desc: 'Taahhüt yok; tek tıkla aboneliğini bitir.' },
@@ -143,7 +150,7 @@ const tr = {
       },
       {
         q: 'Ücretsiz mi?',
-        a: 'Kayıt olunca 5 gün boyunca tüm özellikler ücretsiz açıktır. Süre sonunda dilersen ücretli plana geçer, dilersen ücretsiz devam edersin.',
+        a: 'Kayıt olunca 3 gün boyunca tüm özellikler ücretsiz açıktır. Süre sonunda dilersen ücretli plana geçer, dilersen ücretsiz devam edersin.',
       },
       {
         q: 'Verilerim güvende mi?',
@@ -165,7 +172,7 @@ const tr = {
         articles: [
           {
             q: 'Hesabımı nasıl oluştururum?',
-            a: 'Sağ üstteki “Kayıt ol”a tıkla, e-postanla veya Google hesabınla saniyeler içinde kaydol. Kayıt sonrası 5 gün boyunca tüm özellikler ücretsiz açılır.',
+            a: 'Sağ üstteki “Kayıt ol”a tıkla, e-postanla veya Google hesabınla saniyeler içinde kaydol. Kayıt sonrası 3 gün boyunca tüm özellikler ücretsiz açılır.',
           },
           {
             q: 'İlk başvurumu nasıl eklerim?',
@@ -233,7 +240,7 @@ const tr = {
         articles: [
           {
             q: 'Ücretsiz deneme nasıl çalışır?',
-            a: 'Kayıt olunca 5 gün boyunca Pro seviyesindeki tüm özellikler ücretsiz açıktır. Kart bilgisi gerekmez.',
+            a: 'Kayıt olunca 3 gün boyunca Pro seviyesindeki tüm özellikler ücretsiz açıktır. Kart bilgisi gerekmez.',
           },
           {
             q: 'Planımı nasıl yükseltir veya iptal ederim?',
@@ -377,6 +384,7 @@ const tr = {
     careerCoach: 'Kariyer Koçu',
     assistant: 'AI Asistan',
     interviewSim: 'Mülakat Simülatörü',
+    locked: 'Plan yükseltmesi gerekli',
     cvBuilder: 'CV Oluştur',
     documents: 'Belgelerim',
     settings: 'Ayarlar',
@@ -817,6 +825,7 @@ const tr = {
     usageAiQuestions: 'AI Sorusu',
     usageCvTailor: 'CV Optimizasyonu',
     usageMockInterview: 'Mock Mülakat',
+    usageAiTotal: 'AI Kullanımı (tüm işlemler)',
     unlimited: 'Sınırsız',
     planFeatures: 'Plan Özellikleri',
     comparePlans: 'Planları Karşılaştır',
@@ -836,13 +845,21 @@ const tr = {
     trialDaysLeft: '{days} gün kaldı',
     trialExpired: 'Deneme süren doldu. Devam etmek ve paylaşılan CV linklerini canlandırmak için bir plan seç.',
     upgradeNow: 'Şimdi yükselt',
+    lockTitle: 'Plan yükseltmen gerekiyor',
+    lockDescAssistant: 'AI Kariyer Asistanı (başvuruya özel sohbet) yalnızca Career Coach planında. Yükselt ve koçunla konuşmaya başla.',
+    lockDescInterview: 'Mülakat provası Pro ve üzeri planlarda. Yükselt ve gerçek mülakat sorularıyla pratik yap.',
+    lockCta: 'Planları gör',
     features: {
       kanban: 'Kanban Board',
       cvFitScore: 'CV Uyum Skoru',
       cvAutoTailoring: 'CV Otomatik Optimizasyon',
+      coverLetter: 'Kapak Mektubu Üretimi',
+      cvPolish: 'CV Cilalama (AI)',
       mockInterview: 'Mock Mülakat Provası',
+      aiAssistant: 'AI Kariyer Asistanı (sohbet)',
       companyInsights: 'Şirket İçgörüleri',
       salaryNegotiationCoach: 'Maaş Müzakere Koçu',
+      competitorAnalysis: 'Rakip Analizi',
       unlimitedAi: 'Sınırsız AI Kullanımı',
     },
   },
@@ -1100,17 +1117,24 @@ const en: Dictionary = {
     pageSubtitle: 'Choose the plan that fits you, change anytime.',
     popular: 'Most Popular',
     perMonth: '/mo',
-    trialPrice: '5 days free',
-    freeCta: 'Start Free Trial',
+    trialPrice: '3 days, all features free · no card required',
+    freeCta: 'Start Free',
     paidCta: 'Get This Plan',
     lists: {
-      free: ['All features unlocked for 5 days', 'Build CV + shareable link', 'All AI features', 'Continue with payment after trial'],
-      pro: ['Unlimited applications', '200 AI questions/mo', 'CV match score', 'Automatic CV tailoring'],
+      free: ['All Pro features unlocked for 3 days', 'Track up to 10 applications', '15 AI actions per month', 'Build CV + 1 shareable link'],
+      pro: [
+        'Unlimited applications',
+        '200 AI actions per month',
+        'CV match score + automatic tailoring',
+        'Cover letter + CV polish',
+        'Mock interview practice',
+        'Permanent share link + analytics',
+      ],
       career_coach: [
         'Everything in Pro',
-        'Unlimited AI questions',
-        'Company insights',
-        'Salary negotiation coach',
+        'Unlimited AI usage',
+        'AI Career Assistant (per-application chat)',
+        'Company insights + salary negotiation coach',
         'Competitor analysis',
       ],
     },
@@ -1124,7 +1148,7 @@ const en: Dictionary = {
   trust: {
     heading: 'Start with confidence',
     items: [
-      { title: '5 days free', desc: 'Try every feature — no credit card required.' },
+      { title: '3 days free', desc: 'Try every feature — no credit card required.' },
       { title: 'Encrypted data', desc: 'Your information is stored on secure infrastructure.' },
       { title: 'GDPR friendly', desc: 'Delete your data whenever you want.' },
       { title: 'Cancel anytime', desc: 'No commitment; end your subscription in one click.' },
@@ -1152,7 +1176,7 @@ const en: Dictionary = {
       },
       {
         q: 'Is it free?',
-        a: 'When you sign up, every feature is free for 5 days. After that you can move to a paid plan or continue on the free tier.',
+        a: 'When you sign up, every feature is free for 3 days. After that you can move to a paid plan or continue on the free tier.',
       },
       {
         q: 'Is my data safe?',
@@ -1174,7 +1198,7 @@ const en: Dictionary = {
         articles: [
           {
             q: 'How do I create my account?',
-            a: 'Click “Sign up” in the top right and register in seconds with your email or Google account. After signing up, every feature is free for 5 days.',
+            a: 'Click “Sign up” in the top right and register in seconds with your email or Google account. After signing up, every feature is free for 3 days.',
           },
           {
             q: 'How do I add my first application?',
@@ -1242,7 +1266,7 @@ const en: Dictionary = {
         articles: [
           {
             q: 'How does the free trial work?',
-            a: 'When you sign up, all Pro-level features are free for 5 days. No credit card required.',
+            a: 'When you sign up, all Pro-level features are free for 3 days. No credit card required.',
           },
           {
             q: 'How do I upgrade or cancel my plan?',
@@ -1386,6 +1410,7 @@ const en: Dictionary = {
     careerCoach: 'Career Coach',
     assistant: 'AI Assistant',
     interviewSim: 'Interview Simulator',
+    locked: 'Plan upgrade required',
     cvBuilder: 'Build CV',
     documents: 'My Documents',
     settings: 'Settings',
@@ -1826,6 +1851,7 @@ const en: Dictionary = {
     usageAiQuestions: 'AI Questions',
     usageCvTailor: 'CV Optimizations',
     usageMockInterview: 'Mock Interviews',
+    usageAiTotal: 'AI Usage (all actions)',
     unlimited: 'Unlimited',
     planFeatures: 'Plan Features',
     comparePlans: 'Compare Plans',
@@ -1845,13 +1871,21 @@ const en: Dictionary = {
     trialDaysLeft: '{days} days left',
     trialExpired: 'Your trial has ended. Pick a plan to continue and reactivate your shared CV links.',
     upgradeNow: 'Upgrade now',
+    lockTitle: 'You need to upgrade your plan',
+    lockDescAssistant: 'The AI Career Assistant (per-application chat) is exclusive to the Career Coach plan. Upgrade to start talking with your coach.',
+    lockDescInterview: 'Mock interview practice is available on Pro and above. Upgrade to practice with real interview questions.',
+    lockCta: 'See plans',
     features: {
       kanban: 'Kanban Board',
       cvFitScore: 'CV Match Score',
       cvAutoTailoring: 'Automatic CV Optimization',
+      coverLetter: 'Cover Letter Generation',
+      cvPolish: 'CV Polish (AI)',
       mockInterview: 'Mock Interview Practice',
+      aiAssistant: 'AI Career Assistant (chat)',
       companyInsights: 'Company Insights',
       salaryNegotiationCoach: 'Salary Negotiation Coach',
+      competitorAnalysis: 'Competitor Analysis',
       unlimitedAi: 'Unlimited AI Usage',
     },
   },
@@ -2107,17 +2141,24 @@ const de: Dictionary = {
     pageSubtitle: 'Wähle den passenden Tarif, jederzeit änderbar.',
     popular: 'Am beliebtesten',
     perMonth: '/Mon.',
-    trialPrice: '5 Tage kostenlos',
-    freeCta: 'Kostenlos testen',
+    trialPrice: '3 Tage alle Funktionen kostenlos · keine Karte nötig',
+    freeCta: 'Kostenlos starten',
     paidCta: 'Diesen Tarif holen',
     lists: {
-      free: ['Alle Funktionen 5 Tage freigeschaltet', 'Lebenslauf + teilbarer Link', 'Alle KI-Funktionen', 'Nach dem Test mit Zahlung fortfahren'],
-      pro: ['Unbegrenzte Bewerbungen', '200 KI-Fragen/Mon.', 'Lebenslauf-Übereinstimmung', 'Automatische Lebenslauf-Anpassung'],
+      free: ['Alle Pro-Funktionen 3 Tage freigeschaltet', 'Bis zu 10 Bewerbungen verfolgen', '15 KI-Aktionen pro Monat', 'Lebenslauf + 1 teilbarer Link'],
+      pro: [
+        'Unbegrenzte Bewerbungen',
+        '200 KI-Aktionen pro Monat',
+        'Lebenslauf-Übereinstimmung + automatische Anpassung',
+        'Anschreiben + Lebenslauf-Politur',
+        'Übungsinterview',
+        'Dauerhafter Teilen-Link + Analyse',
+      ],
       career_coach: [
         'Alles aus Pro',
-        'Unbegrenzte KI-Fragen',
-        'Unternehmens-Insights',
-        'Coach für Gehaltsverhandlung',
+        'Unbegrenzte KI-Nutzung',
+        'KI-Karriereassistent (Chat pro Bewerbung)',
+        'Unternehmens-Insights + Gehaltsverhandlungs-Coach',
         'Wettbewerbsanalyse',
       ],
     },
@@ -2131,7 +2172,7 @@ const de: Dictionary = {
   trust: {
     heading: 'Starte mit Vertrauen',
     items: [
-      { title: '5 Tage kostenlos', desc: 'Teste jede Funktion – keine Kreditkarte nötig.' },
+      { title: '3 Tage kostenlos', desc: 'Teste jede Funktion – keine Kreditkarte nötig.' },
       { title: 'Verschlüsselte Daten', desc: 'Deine Daten werden auf sicherer Infrastruktur gespeichert.' },
       { title: 'DSGVO-freundlich', desc: 'Lösche deine Daten, wann immer du willst.' },
       { title: 'Jederzeit kündbar', desc: 'Keine Bindung; beende dein Abo mit einem Klick.' },
@@ -2159,7 +2200,7 @@ const de: Dictionary = {
       },
       {
         q: 'Ist es kostenlos?',
-        a: 'Bei der Registrierung sind alle Funktionen 5 Tage lang kostenlos. Danach kannst du auf einen kostenpflichtigen Tarif wechseln oder kostenlos weitermachen.',
+        a: 'Bei der Registrierung sind alle Funktionen 3 Tage lang kostenlos. Danach kannst du auf einen kostenpflichtigen Tarif wechseln oder kostenlos weitermachen.',
       },
       {
         q: 'Sind meine Daten sicher?',
@@ -2181,7 +2222,7 @@ const de: Dictionary = {
         articles: [
           {
             q: 'Wie erstelle ich mein Konto?',
-            a: 'Klicke oben rechts auf „Registrieren“ und melde dich in Sekunden mit deiner E-Mail oder deinem Google-Konto an. Nach der Registrierung sind alle Funktionen 5 Tage kostenlos.',
+            a: 'Klicke oben rechts auf „Registrieren“ und melde dich in Sekunden mit deiner E-Mail oder deinem Google-Konto an. Nach der Registrierung sind alle Funktionen 3 Tage kostenlos.',
           },
           {
             q: 'Wie füge ich meine erste Bewerbung hinzu?',
@@ -2249,7 +2290,7 @@ const de: Dictionary = {
         articles: [
           {
             q: 'Wie funktioniert die kostenlose Testphase?',
-            a: 'Bei der Registrierung sind alle Pro-Funktionen 5 Tage kostenlos. Keine Kreditkarte nötig.',
+            a: 'Bei der Registrierung sind alle Pro-Funktionen 3 Tage kostenlos. Keine Kreditkarte nötig.',
           },
           {
             q: 'Wie upgrade oder kündige ich meinen Tarif?',
@@ -2393,6 +2434,7 @@ const de: Dictionary = {
     careerCoach: 'Karriere-Coach',
     assistant: 'KI-Assistent',
     interviewSim: 'Interview-Simulator',
+    locked: 'Tarif-Upgrade erforderlich',
     cvBuilder: 'Lebenslauf erstellen',
     documents: 'Meine Dokumente',
     settings: 'Einstellungen',
@@ -2833,6 +2875,7 @@ const de: Dictionary = {
     usageAiQuestions: 'KI-Fragen',
     usageCvTailor: 'Lebenslauf-Optimierungen',
     usageMockInterview: 'Übungsinterviews',
+    usageAiTotal: 'KI-Nutzung (alle Aktionen)',
     unlimited: 'Unbegrenzt',
     planFeatures: 'Tarif-Funktionen',
     comparePlans: 'Tarife vergleichen',
@@ -2852,13 +2895,21 @@ const de: Dictionary = {
     trialDaysLeft: 'Noch {days} Tage',
     trialExpired: 'Deine Testphase ist beendet. Wähle einen Tarif, um fortzufahren und deine geteilten Lebenslauf-Links zu reaktivieren.',
     upgradeNow: 'Jetzt upgraden',
+    lockTitle: 'Du musst deinen Tarif upgraden',
+    lockDescAssistant: 'Der KI-Karriereassistent (Chat pro Bewerbung) ist exklusiv im Karriere-Coach-Tarif. Upgrade, um mit deinem Coach zu sprechen.',
+    lockDescInterview: 'Das Übungsinterview ist ab Pro verfügbar. Upgrade, um mit echten Interviewfragen zu üben.',
+    lockCta: 'Tarife ansehen',
     features: {
       kanban: 'Kanban-Board',
       cvFitScore: 'Lebenslauf-Übereinstimmung',
       cvAutoTailoring: 'Automatische Lebenslauf-Optimierung',
+      coverLetter: 'Anschreiben-Erstellung',
+      cvPolish: 'Lebenslauf-Politur (KI)',
       mockInterview: 'Übungsinterview',
+      aiAssistant: 'KI-Karriereassistent (Chat)',
       companyInsights: 'Unternehmens-Insights',
       salaryNegotiationCoach: 'Coach für Gehaltsverhandlung',
+      competitorAnalysis: 'Wettbewerbsanalyse',
       unlimitedAi: 'Unbegrenzte KI-Nutzung',
     },
   },
@@ -3114,17 +3165,24 @@ const es: Dictionary = {
     pageSubtitle: 'Elige el plan que te conviene, cámbialo cuando quieras.',
     popular: 'Más popular',
     perMonth: '/mes',
-    trialPrice: '5 días gratis',
-    freeCta: 'Probar gratis',
+    trialPrice: '3 días con todas las funciones gratis · sin tarjeta',
+    freeCta: 'Empezar gratis',
     paidCta: 'Obtener este plan',
     lists: {
-      free: ['Todas las funciones 5 días', 'CV + enlace compartible', 'Todas las funciones de IA', 'Continúa con pago tras la prueba'],
-      pro: ['Candidaturas ilimitadas', '200 preguntas IA/mes', 'Puntuación de CV', 'Ajuste automático del CV'],
+      free: ['Todas las funciones Pro 3 días', 'Hasta 10 candidaturas', '15 acciones de IA al mes', 'Crea CV + 1 enlace compartible'],
+      pro: [
+        'Candidaturas ilimitadas',
+        '200 acciones de IA al mes',
+        'Puntuación de CV + ajuste automático',
+        'Carta de presentación + pulido de CV',
+        'Entrevista simulada',
+        'Enlace compartible permanente + analíticas',
+      ],
       career_coach: [
         'Todo lo de Pro',
-        'Preguntas IA ilimitadas',
-        'Información de empresas',
-        'Coach de negociación salarial',
+        'Uso de IA ilimitado',
+        'Asistente de Carrera IA (chat por candidatura)',
+        'Información de empresas + coach de negociación salarial',
         'Análisis de la competencia',
       ],
     },
@@ -3138,7 +3196,7 @@ const es: Dictionary = {
   trust: {
     heading: 'Empieza con confianza',
     items: [
-      { title: '5 días gratis', desc: 'Prueba cada función, sin tarjeta de crédito.' },
+      { title: '3 días gratis', desc: 'Prueba cada función, sin tarjeta de crédito.' },
       { title: 'Datos cifrados', desc: 'Tu información se almacena en infraestructura segura.' },
       { title: 'Compatible con RGPD', desc: 'Elimina tus datos cuando quieras.' },
       { title: 'Cancela cuando quieras', desc: 'Sin compromiso; termina tu suscripción con un clic.' },
@@ -3166,7 +3224,7 @@ const es: Dictionary = {
       },
       {
         q: '¿Es gratis?',
-        a: 'Al registrarte, todas las funciones son gratis durante 5 días. Después puedes pasar a un plan de pago o seguir en el plan gratuito.',
+        a: 'Al registrarte, todas las funciones son gratis durante 3 días. Después puedes pasar a un plan de pago o seguir en el plan gratuito.',
       },
       {
         q: '¿Están seguros mis datos?',
@@ -3188,7 +3246,7 @@ const es: Dictionary = {
         articles: [
           {
             q: '¿Cómo creo mi cuenta?',
-            a: 'Haz clic en “Registrarse” arriba a la derecha y regístrate en segundos con tu correo o cuenta de Google. Tras registrarte, todas las funciones son gratis durante 5 días.',
+            a: 'Haz clic en “Registrarse” arriba a la derecha y regístrate en segundos con tu correo o cuenta de Google. Tras registrarte, todas las funciones son gratis durante 3 días.',
           },
           {
             q: '¿Cómo añado mi primera candidatura?',
@@ -3256,7 +3314,7 @@ const es: Dictionary = {
         articles: [
           {
             q: '¿Cómo funciona la prueba gratuita?',
-            a: 'Al registrarte, todas las funciones de nivel Pro son gratis durante 5 días. Sin tarjeta de crédito.',
+            a: 'Al registrarte, todas las funciones de nivel Pro son gratis durante 3 días. Sin tarjeta de crédito.',
           },
           {
             q: '¿Cómo mejoro o cancelo mi plan?',
@@ -3400,6 +3458,7 @@ const es: Dictionary = {
     careerCoach: 'Coach de carrera',
     assistant: 'Asistente IA',
     interviewSim: 'Simulador de entrevistas',
+    locked: 'Requiere mejorar el plan',
     cvBuilder: 'Crear CV',
     documents: 'Mis documentos',
     settings: 'Ajustes',
@@ -3840,6 +3899,7 @@ const es: Dictionary = {
     usageAiQuestions: 'Preguntas IA',
     usageCvTailor: 'Optimizaciones de CV',
     usageMockInterview: 'Entrevistas simuladas',
+    usageAiTotal: 'Uso de IA (todas las acciones)',
     unlimited: 'Ilimitado',
     planFeatures: 'Funciones del plan',
     comparePlans: 'Comparar planes',
@@ -3859,13 +3919,21 @@ const es: Dictionary = {
     trialDaysLeft: 'Quedan {days} días',
     trialExpired: 'Tu prueba ha terminado. Elige un plan para continuar y reactivar tus enlaces de CV compartidos.',
     upgradeNow: 'Mejorar ahora',
+    lockTitle: 'Necesitas mejorar tu plan',
+    lockDescAssistant: 'El Asistente de Carrera IA (chat por candidatura) es exclusivo del plan Career Coach. Mejora tu plan para hablar con tu coach.',
+    lockDescInterview: 'La entrevista simulada está disponible en Pro y superiores. Mejora tu plan para practicar con preguntas reales de entrevista.',
+    lockCta: 'Ver planes',
     features: {
       kanban: 'Tablero Kanban',
       cvFitScore: 'Puntuación de coincidencia del CV',
       cvAutoTailoring: 'Optimización automática del CV',
+      coverLetter: 'Generación de carta de presentación',
+      cvPolish: 'Pulido de CV (IA)',
       mockInterview: 'Práctica de entrevista simulada',
+      aiAssistant: 'Asistente de Carrera IA (chat)',
       companyInsights: 'Información de empresas',
       salaryNegotiationCoach: 'Coach de negociación salarial',
+      competitorAnalysis: 'Análisis de la competencia',
       unlimitedAi: 'Uso ilimitado de IA',
     },
   },
@@ -4121,17 +4189,24 @@ const fr: Dictionary = {
     pageSubtitle: 'Choisissez le forfait qui vous convient, changez quand vous voulez.',
     popular: 'Le plus populaire',
     perMonth: '/mois',
-    trialPrice: '5 jours gratuits',
-    freeCta: 'Essai gratuit',
+    trialPrice: '3 jours, toutes les fonctionnalités gratuites · sans carte',
+    freeCta: 'Commencer gratuitement',
     paidCta: 'Obtenir ce forfait',
     lists: {
-      free: ['Toutes les fonctionnalités 5 jours', 'CV + lien partageable', 'Toutes les fonctions IA', 'Continuez avec un paiement après l\'essai'],
-      pro: ['Candidatures illimitées', '200 questions IA/mois', 'Score de CV', 'Adaptation automatique du CV'],
+      free: ['Toutes les fonctions Pro pendant 3 jours', 'Jusqu\'à 10 candidatures', '15 actions IA par mois', 'Créez un CV + 1 lien partageable'],
+      pro: [
+        'Candidatures illimitées',
+        '200 actions IA par mois',
+        'Score de CV + adaptation automatique',
+        'Lettre de motivation + peaufinage du CV',
+        'Entretien simulé',
+        'Lien partageable permanent + analytique',
+      ],
       career_coach: [
         'Tout de Pro',
-        'Questions IA illimitées',
-        'Informations sur les entreprises',
-        'Coach de négociation salariale',
+        'Utilisation IA illimitée',
+        'Assistant Carrière IA (chat par candidature)',
+        'Informations sur les entreprises + coach de négociation salariale',
         'Analyse de la concurrence',
       ],
     },
@@ -4145,7 +4220,7 @@ const fr: Dictionary = {
   trust: {
     heading: 'Commencez en toute confiance',
     items: [
-      { title: '5 jours gratuits', desc: 'Essayez chaque fonctionnalité, sans carte bancaire.' },
+      { title: '3 jours gratuits', desc: 'Essayez chaque fonctionnalité, sans carte bancaire.' },
       { title: 'Données chiffrées', desc: 'Vos informations sont stockées sur une infrastructure sécurisée.' },
       { title: 'Conforme au RGPD', desc: 'Supprimez vos données quand vous voulez.' },
       { title: 'Annulez à tout moment', desc: 'Sans engagement ; mettez fin à votre abonnement en un clic.' },
@@ -4173,7 +4248,7 @@ const fr: Dictionary = {
       },
       {
         q: 'Est-ce gratuit ?',
-        a: 'À l\'inscription, toutes les fonctionnalités sont gratuites pendant 5 jours. Ensuite, passez à un forfait payant ou continuez en version gratuite.',
+        a: 'À l\'inscription, toutes les fonctionnalités sont gratuites pendant 3 jours. Ensuite, passez à un forfait payant ou continuez en version gratuite.',
       },
       {
         q: 'Mes données sont-elles en sécurité ?',
@@ -4195,7 +4270,7 @@ const fr: Dictionary = {
         articles: [
           {
             q: 'Comment créer mon compte ?',
-            a: 'Cliquez sur « S\'inscrire » en haut à droite et inscrivez-vous en quelques secondes avec votre e-mail ou votre compte Google. Après l\'inscription, toutes les fonctionnalités sont gratuites pendant 5 jours.',
+            a: 'Cliquez sur « S\'inscrire » en haut à droite et inscrivez-vous en quelques secondes avec votre e-mail ou votre compte Google. Après l\'inscription, toutes les fonctionnalités sont gratuites pendant 3 jours.',
           },
           {
             q: 'Comment ajouter ma première candidature ?',
@@ -4263,7 +4338,7 @@ const fr: Dictionary = {
         articles: [
           {
             q: 'Comment fonctionne l\'essai gratuit ?',
-            a: 'À l\'inscription, toutes les fonctions de niveau Pro sont gratuites pendant 5 jours. Sans carte bancaire.',
+            a: 'À l\'inscription, toutes les fonctions de niveau Pro sont gratuites pendant 3 jours. Sans carte bancaire.',
           },
           {
             q: 'Comment changer ou annuler mon forfait ?',
@@ -4407,6 +4482,7 @@ const fr: Dictionary = {
     careerCoach: 'Coach carrière',
     assistant: 'Assistant IA',
     interviewSim: 'Simulateur d\'entretien',
+    locked: 'Mise à niveau requise',
     cvBuilder: 'Créer un CV',
     documents: 'Mes documents',
     settings: 'Paramètres',
@@ -4847,6 +4923,7 @@ const fr: Dictionary = {
     usageAiQuestions: 'Questions IA',
     usageCvTailor: 'Optimisations de CV',
     usageMockInterview: 'Entretiens simulés',
+    usageAiTotal: 'Utilisation IA (toutes actions)',
     unlimited: 'Illimité',
     planFeatures: 'Fonctionnalités du forfait',
     comparePlans: 'Comparer les forfaits',
@@ -4866,13 +4943,21 @@ const fr: Dictionary = {
     trialDaysLeft: 'Encore {days} jours',
     trialExpired: 'Votre essai est terminé. Choisissez un forfait pour continuer et réactiver vos liens de CV partagés.',
     upgradeNow: 'Améliorer maintenant',
+    lockTitle: 'Vous devez améliorer votre forfait',
+    lockDescAssistant: 'L\'Assistant Carrière IA (chat par candidature) est exclusif au forfait Career Coach. Améliorez votre forfait pour parler avec votre coach.',
+    lockDescInterview: 'L\'entretien simulé est disponible à partir de Pro. Améliorez votre forfait pour vous entraîner avec de vraies questions d\'entretien.',
+    lockCta: 'Voir les forfaits',
     features: {
       kanban: 'Tableau Kanban',
       cvFitScore: 'Score de correspondance du CV',
       cvAutoTailoring: 'Optimisation automatique du CV',
+      coverLetter: 'Génération de lettre de motivation',
+      cvPolish: 'Peaufinage du CV (IA)',
       mockInterview: 'Entraînement d\'entretien simulé',
+      aiAssistant: 'Assistant Carrière IA (chat)',
       companyInsights: 'Informations sur les entreprises',
       salaryNegotiationCoach: 'Coach de négociation salariale',
+      competitorAnalysis: 'Analyse de la concurrence',
       unlimitedAi: 'Utilisation illimitée de l\'IA',
     },
   },

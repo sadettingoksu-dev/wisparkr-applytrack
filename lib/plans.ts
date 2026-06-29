@@ -20,6 +20,8 @@ export interface PlanConfig {
     skillsGap: boolean
     permanentShareLinks: boolean
     shareAnalytics: boolean
+    /** AI Kariyer Asistanı (başvuruya özel sohbet) — Career Coach'a özel. */
+    aiAssistant: boolean
     companyInsights: boolean
     salaryNegotiationCoach: boolean
     competitorAnalysis: boolean
@@ -28,22 +30,27 @@ export interface PlanConfig {
   }
 }
 
+/** A single feature flag key — used by the sidebar/page guards to gate UI. */
+export type FeatureKey = keyof PlanConfig['features']
+
 export const PLANS: Record<PlanId, PlanConfig> = {
   free: {
     id: 'free',
-    name: 'Deneme',
+    name: 'Ücretsiz',
     priceMonthly: 0,
     lemonSqueezyVariantId: null,
-    limits: { maxApplications: 5, aiQuestionsPerMonth: 10 },
+    // Kalıcı ücretsiz tier: deneme bittikten sonra düşülen kısıtlı seviye.
+    limits: { maxApplications: 10, aiQuestionsPerMonth: 15 },
     features: {
       kanban: true,
-      cvFitScore: false,
+      cvFitScore: true, // tadımlık: aylık AI kotasıyla sınırlı
       cvAutoTailoring: false,
       coverLetter: false,
       cvPolish: false,
       skillsGap: true,
       permanentShareLinks: false,
       shareAnalytics: false,
+      aiAssistant: false,
       companyInsights: false,
       salaryNegotiationCoach: false,
       competitorAnalysis: false,
@@ -54,7 +61,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
   pro: {
     id: 'pro',
     name: 'Pro',
-    priceMonthly: 9,
+    priceMonthly: 12,
     lemonSqueezyVariantId: process.env.LEMONSQUEEZY_VARIANT_PRO || null,
     limits: { maxApplications: null, aiQuestionsPerMonth: 200 },
     features: {
@@ -66,11 +73,12 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       skillsGap: true,
       permanentShareLinks: true,
       shareAnalytics: true,
+      aiAssistant: false, // sohbet asistanı Career Coach'a özel
       companyInsights: false,
       salaryNegotiationCoach: false,
       competitorAnalysis: false,
       unlimitedAi: false,
-      mockInterview: true,
+      mockInterview: true, // mülakat provası Pro'da
     },
   },
   career_coach: {
@@ -88,6 +96,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       skillsGap: true,
       permanentShareLinks: true,
       shareAnalytics: true,
+      aiAssistant: true,
       companyInsights: true,
       salaryNegotiationCoach: true,
       competitorAnalysis: true,
@@ -95,6 +104,17 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       mockInterview: true,
     },
   },
+}
+
+/**
+ * The lowest plan that unlocks a given feature, used to label "upgrade" CTAs
+ * and to gate sidebar links. Returns the first plan in tier order that has it.
+ */
+export function requiredPlanForFeature(feature: FeatureKey): PlanId {
+  for (const id of PLAN_ORDER) {
+    if (PLANS[id].features[feature]) return id
+  }
+  return 'career_coach'
 }
 
 export function getPlan(planId: string | null | undefined): PlanConfig {

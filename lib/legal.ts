@@ -181,7 +181,7 @@ export const TERMS: Partial<Record<Locale, LegalDoc>> = {
         body: [
           'Ücretli planlar (Pro, Career Coach) aylık aboneliktir.',
           'Ödemeler Lemon Squeezy üzerinden alınır; Lemon Squeezy resmi satıcıdır (merchant of record).',
-          'Yeni kayıtlarda 5 günlük ücretsiz tam erişimli deneme sunulur.',
+          'Yeni kayıtlarda 3 günlük ücretsiz tam erişimli deneme sunulur.',
           'Aboneliğini istediğin zaman iptal edebilirsin; mevcut dönem sonuna kadar erişimin devam eder.',
           'İade talepleri Lemon Squeezy’nin iade politikasına tabidir.',
         ],

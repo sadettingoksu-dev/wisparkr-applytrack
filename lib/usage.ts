@@ -29,6 +29,15 @@ const USAGE_COLUMNS = {
   cv_polish: 'cv_polish_used',
 } as const
 
+/** Sum every AI action column → the user's total AI spend for the period. */
+function totalUsed(row: Record<string, unknown> | null | undefined): number {
+  if (!row) return 0
+  return Object.values(USAGE_COLUMNS).reduce(
+    (sum, col) => sum + (Number((row as Record<string, unknown>)[col]) || 0),
+    0
+  )
+}
+
 export async function checkAndIncrementUsage(
   admin: AdminClient,
   userId: string,
@@ -36,6 +45,8 @@ export async function checkAndIncrementUsage(
   type: 'ai_question' | 'fit_score' | 'cv_tailor' | 'mock_interview' | 'cover_letter' | 'cv_polish'
 ): Promise<UsageCheckResult> {
   const plan = getPlan(planId)
+  // Single shared monthly AI budget: every AI action (chat, fit score, tailor,
+  // cover letter, polish, mock interview) draws from the same pool.
   const limit = plan.limits.aiQuestionsPerMonth
   const period = currentPeriodMonth()
   const column = USAGE_COLUMNS[type]
@@ -47,7 +58,8 @@ export async function checkAndIncrementUsage(
     .eq('period_month', period)
     .maybeSingle()
 
-  const used = existing ? (existing as any)[column] ?? 0 : 0
+  const used = totalUsed(existing as Record<string, unknown> | null)
+  const columnUsed = existing ? Number((existing as any)[column]) || 0 : 0
 
   if (limit !== null && used >= limit) {
     return { allowed: false, used, limit }
@@ -56,7 +68,7 @@ export async function checkAndIncrementUsage(
   if (existing) {
     await admin
       .from('ai_usage')
-      .update({ [column]: used + 1 } as any)
+      .update({ [column]: columnUsed + 1 } as any)
       .eq('id', existing.id)
   } else {
     await admin.from('ai_usage').insert({

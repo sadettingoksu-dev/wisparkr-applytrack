@@ -3,9 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { AssistantPicker } from '@/components/chat/AssistantPicker'
 import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
+import { FeatureLock } from '@/components/billing/FeatureLock'
 import { getServerDict } from '@/lib/i18n-server'
 import { resolveSelectedApp } from '@/lib/selectedApp'
-import type { Application, MockInterview } from '@/lib/types'
+import { getEffectivePlan } from '@/lib/plans'
+import type { Application, MockInterview, Profile } from '@/lib/types'
 
 export default async function InterviewPage({
   searchParams,
@@ -14,6 +16,30 @@ export default async function InterviewPage({
 }) {
   const t = getServerDict()
   const supabase = createClient()
+
+  // Plan kilidi: Mülakat provası Pro ve üzeri planlarda.
+  const { data: userData } = await supabase.auth.getUser()
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('plan, trial_ends_at')
+    .eq('id', userData.user!.id)
+    .single()
+  if (!getEffectivePlan(profileData as Profile | null).features.mockInterview) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">{t.interview.pageTitle}</h1>
+          <p className="text-sm text-slate-500">{t.interview.pageSubtitle}</p>
+        </div>
+        <FeatureLock
+          title={t.billing.lockTitle}
+          description={t.billing.lockDescInterview}
+          planId="pro"
+          ctaLabel={t.billing.lockCta}
+        />
+      </div>
+    )
+  }
 
   const { data: appsData } = await supabase
     .from('applications')

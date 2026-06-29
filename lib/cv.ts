@@ -270,7 +270,7 @@ export function hasCvContent(data: CvData): boolean {
 // ---------------------------------------------------------------------------
 
 export const SHARE_FREE_TTL_DAYS = 5
-export const CV_TRIAL_DAYS = 5
+export const CV_TRIAL_DAYS = 3
 
 export interface ShareActivenessInput {
   expires_at: string | null

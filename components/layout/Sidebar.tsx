@@ -5,18 +5,20 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, GraduationCap, Bot, Mic, ChevronDown } from 'lucide-react'
+import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, GraduationCap, Bot, Mic, ChevronDown, Lock } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { APP_NAME } from '@/utils/constants'
-import type { PlanId } from '@/lib/plans'
+import { getPlan, type PlanId, type FeatureKey } from '@/lib/plans'
 
-type NavLeaf = { href: string; key: string; icon: LucideIcon }
+type NavLeaf = { href: string; key: string; icon: LucideIcon; feature?: FeatureKey }
 type NavGroup = { key: string; icon: LucideIcon; children: NavLeaf[] }
 type NavItem = NavLeaf | NavGroup
 
 // Analitik dashboard'a taşındı; takvim ayrı kaldı.
+// `feature` taşıyan öğeler, kullanıcının efektif planı o özelliği içermiyorsa
+// sönükleşir ve tıklanınca faturalama sayfasına yönlendirir.
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', key: 'dashboard', icon: LayoutDashboard },
   { href: '/calendar', key: 'calendar', icon: CalendarDays },
@@ -26,8 +28,8 @@ const NAV_ITEMS: NavItem[] = [
     key: 'careerCoach',
     icon: GraduationCap,
     children: [
-      { href: '/assistant', key: 'assistant', icon: Bot },
-      { href: '/interview', key: 'interviewSim', icon: Mic },
+      { href: '/interview', key: 'interviewSim', icon: Mic, feature: 'mockInterview' },
+      { href: '/assistant', key: 'assistant', icon: Bot, feature: 'aiAssistant' },
     ],
   },
   { href: '/cv-builder', key: 'cvBuilder', icon: FilePlus },
@@ -35,6 +37,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/settings/billing', key: 'billing', icon: CreditCard },
   { href: '/settings', key: 'settings', icon: Settings },
 ]
+
+const BILLING_HREF = '/settings/billing'
 
 const STORAGE_KEY = 'wisparkr-sidebar-collapsed'
 
@@ -56,13 +60,15 @@ interface SidebarProps {
   email?: string
   avatarUrl?: string | null
   plan?: PlanId | string | null
+  /** Efektif plan (deneme yükseltmesi dahil) — özellik kilitlerini belirler. */
+  effectivePlan?: PlanId | string | null
   /** Mobil drawer açık mı (masaüstünde yok sayılır). */
   mobileOpen?: boolean
   /** Mobilde drawer'ı kapat (link tıklama / arka plana dokunma). */
   onMobileClose?: () => void
 }
 
-export function Sidebar({ name, email, avatarUrl, plan, mobileOpen = false, onMobileClose }: SidebarProps) {
+export function Sidebar({ name, email, avatarUrl, plan, effectivePlan, mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname()
   const { t } = useI18n()
   const isDesktop = useIsDesktop()
@@ -71,6 +77,10 @@ export function Sidebar({ name, email, avatarUrl, plan, mobileOpen = false, onMo
 
   // i18n etiketi (NAV_ITEMS anahtarları string olduğundan güvenli erişim).
   const navLabel = (key: string) => (t.sidebar as Record<string, string>)[key]
+
+  // Efektif planın özellikleri: bir öğenin kilitli olup olmadığını belirler.
+  const planFeatures = getPlan(effectivePlan ?? plan).features
+  const isLocked = (item: { feature?: FeatureKey }) => !!item.feature && !planFeatures[item.feature]
 
   // Kullanıcının daraltma tercihini hatırla.
   useEffect(() => {
@@ -151,25 +161,32 @@ export function Sidebar({ name, email, avatarUrl, plan, mobileOpen = false, onMo
             const groupActive = children.some((c) => pathname === c.href)
 
             const renderChild = (child: NavLeaf) => {
-              const active = pathname === child.href
+              const locked = isLocked(child)
+              const active = !locked && pathname === child.href
               const ChildIcon = child.icon
               const childLabel = navLabel(child.key)
+              // Kilitliyse: tıklayınca özelliği aç(tır)mak için faturalama sayfasına git.
+              const lockTitle = `${childLabel} — ${t.sidebar.locked}`
               return (
                 <Link
                   key={child.href}
-                  href={child.href}
+                  href={locked ? BILLING_HREF : child.href}
                   onClick={onMobileClose}
-                  title={effCollapsed ? childLabel : undefined}
+                  title={locked ? lockTitle : effCollapsed ? childLabel : undefined}
+                  aria-disabled={locked}
                   className={clsx(
                     'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     effCollapsed ? 'justify-center' : 'pl-9',
-                    active
-                      ? 'bg-purple-50 text-purple-600'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                    locked
+                      ? 'text-slate-300 hover:bg-slate-50 hover:text-slate-400'
+                      : active
+                        ? 'bg-purple-50 text-purple-600'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                   )}
                 >
                   <ChildIcon className="h-4 w-4 shrink-0" />
-                  {!effCollapsed && childLabel}
+                  {!effCollapsed && <span className="flex-1">{childLabel}</span>}
+                  {!effCollapsed && locked && <Lock className="h-3.5 w-3.5 shrink-0 text-slate-300" />}
                 </Link>
               )
             }
@@ -179,7 +196,9 @@ export function Sidebar({ name, email, avatarUrl, plan, mobileOpen = false, onMo
               return <div key={key} className="space-y-1">{children.map(renderChild)}</div>
             }
 
-            const open = openGroups[key] ?? groupActive
+            // İçinde kilitli özellik varsa grubu varsayılan açık tut (upsell görünür olsun).
+            const hasLocked = children.some(isLocked)
+            const open = openGroups[key] ?? (groupActive || hasLocked)
             return (
               <div key={key}>
                 <button
