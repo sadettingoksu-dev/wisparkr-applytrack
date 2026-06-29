@@ -16,7 +16,7 @@ const tr = {
   nav: {
     features: 'Özellikler',
     pricing: 'Fiyatlandırma',
-    faq: 'SSS',
+    faq: 'Sıkça Sorulan Sorular',
     login: 'Giriş Yap',
   },
   hero: {
