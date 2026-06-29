@@ -1,0 +1,14 @@
+# Ortak çekirdek dosyalar değişince repo sahibinden otomatik review istenir.
+# (Branch protection'da "Require review from Code Owners" açılırsa zorunlu olur.)
+# Not: PR'ı açan kişiden kendi PR'ı için review istenmez.
+
+/lib/plans.ts        @sadettingoksu-dev
+/lib/types.ts        @sadettingoksu-dev
+/lib/i18n.ts         @sadettingoksu-dev
+/lib/lemonsqueezy.ts @sadettingoksu-dev
+/lib/apiAuth.ts      @sadettingoksu-dev
+/middleware.ts       @sadettingoksu-dev
+/supabase/           @sadettingoksu-dev
+/app/api/            @sadettingoksu-dev
+/package.json        @sadettingoksu-dev
+/.github/            @sadettingoksu-dev
