@@ -1,8 +1,6 @@
-import Link from 'next/link'
-import { Plus, Kanban } from 'lucide-react'
+import { Kanban } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
-import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
@@ -25,15 +23,7 @@ export default async function BoardPage() {
           <h1 className="text-2xl font-bold text-slate-900">{t.board.title}</h1>
           <p className="text-sm text-slate-500">{t.board.subtitle}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <PageInfo page="board" />
-          <Link href="/applications/new">
-            <Button>
-              <Plus className="h-4 w-4" />
-              {t.board.newApplication}
-            </Button>
-          </Link>
-        </div>
+        <PageInfo page="board" />
       </div>
 
       {apps.length === 0 ? (

@@ -382,10 +382,10 @@ const tr = {
     rejected: 'Reddedildi',
   },
   sidebar: {
-    dashboard: 'Dashboard',
+    dashboard: 'Ana sayfa',
     analytics: 'Analitik',
     calendar: 'Takvim',
-    board: 'Kanban Board',
+    board: 'Başvuru Paneli',
     applications: 'Başvurular',
     careerCoach: 'Kariyer Koçu',
     assistant: 'AI Asistan',
