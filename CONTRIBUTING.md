@@ -1,60 +1,77 @@
-# Katkı Rehberi (Taha için)
+# Ekip Çalışma Rehberi (Wisparkr)
 
-## Günlük Rutin
+İki kişilik ekip için anlaşılan geliştirme akışı. **Özet kural: `master` = CANLI.**
+master'a giren her şey saniyeler içinde www.wisparkr.com'a deploy olur. O yüzden
+master'a doğrudan push **yoktur** — her şey branch + PR + onay ile gider.
 
-**Sabah — çalışmaya başlarken:**
-```bash
-git checkout main
-git pull origin main
-npm install        # package.json değiştiyse
-npm run dev
+## Akış: GitHub Flow
+
 ```
-`http://localhost:3000` açılıyor mu kontrol et.
-
-**Akşam — işi bitirirken:**
-```bash
-git add .
-git commit -m "kanban board kartları eklendi"
-git push origin feature/taha-<özellik-adı>
+master (korumalı = canlı)
+   ├── feature/sadettin-<ozellik>   → PR → onay → merge → otomatik canlı
+   └── feature/taha-<ozellik>       → PR → onay → merge → otomatik canlı
 ```
-Sonra GitHub'da `main`'e PR aç.
 
-## Branch Kuralları
+**İşe başlarken:**
+```bash
+git checkout master
+git pull origin master
+npm install            # package.json değiştiyse
+git checkout -b feature/<isim>-<ozellik>   # örn. feature/taha-takvim-filtreleri
+npm run dev            # http://localhost:3000
+```
 
-- `main` korumalı — **doğrudan push yapma**.
-- Kendi branch'in: `feature/taha-<özellik-adı>` (örn. `feature/taha-landing`, `feature/taha-kanban`).
-- İş bitince PR aç, açıklamada ne değiştiğini Türkçe yaz.
+**İş bittiğinde:**
+```bash
+git add -A
+git commit -m "takvim filtreleri eklendi"
+git push origin feature/<isim>-<ozellik>
+```
+Sonra GitHub'da **`master`'a PR aç** (main değil — bu repo `master` kullanır).
 
-## Dokunma / Dokunabilirsin
+## PR Kuralları
 
-✅ **Dokunabilirsin:**
-- `components/**`
-- `app/**/page.tsx` (API rotaları hariç)
-- `app/(dashboard)/layout.tsx` (sidebar/topbar görünümü)
-- Tailwind class'ları, renkler, layout
+- Her PR **tek bir özelliğe** odaklı olsun (küçük PR = kolay review).
+- PR açıklamasını şablona göre Türkçe doldur (ne/neden/nasıl test ettim).
+- **CI kontrolü** (tsc + lint) otomatik çalışır; kırmızıysa merge edilemez.
+- **Diğer kişi PR'ı inceleyip onaylamadan merge yok.** İstersen PR'da `/code-review`
+  çalıştırıp Claude'a da denetlet.
+- Merge sonrası branch'i sil.
 
-❌ **Kesinlikle dokunma:**
-- `app/api/**` — backend API
-- `lib/**`, `utils/**` — yardımcı kodlar, Supabase/AI/ödeme bağlantıları
-- `.env*` — API anahtarları
-- `middleware.ts`, `supabase/**`
-- `package.json`'a yeni paket eklemeden önce Sadettin'e sor
+## İş Bölümü: Özellik Bazında Sahiplik
 
-Bir şey çalışmıyorsa önce Sadettin'e sor, backend koduna kendiliğinden girme.
+Her kişi bir özelliği **baştan sona** (frontend + gerekiyorsa backend) üstlenir.
+Böylece paralel çalışır, aynı dosyada az çakışırsınız.
 
-## Ortak Kontrat
+- Bir özelliğe başlamadan önce "ben bunu alıyorum" diye haber ver (issue/board/mesaj).
+- Mümkün olduğunca farklı dosya/sayfalarda çalışın.
 
-Sayfalarda kullanacağın tipler ve sabitler:
-- `lib/types.ts` — `Application`, `AiMessage`, `Profile` vb. tipler
-- `utils/constants.ts` — kanban sütunları, durum etiketleri/renkleri
-- `lib/plans.ts` — fiyatlandırma/plan bilgisi (pricing sayfası için)
+### Ortak çekirdek dosyalar — önce konuşun
+Bunlara iki kişi de dokunabilir ama **çakışma riski yüksek**, önce koordine olun:
+- `lib/plans.ts` — plan/fiyat/özellik tanımları
+- `lib/types.ts`, `utils/constants.ts` — ortak tipler ve sabitler
+- `lib/i18n.ts` — çok dilli metinler (5 dil; aynı anahtarlar her dilde olmalı)
+- `middleware.ts`, `supabase/**` — auth ve şema
+- `package.json` — yeni paket eklemeden önce haber ver
 
-Yeni bir tip/sabite ihtiyacın olursa Sadettin'den `lib/types.ts` veya
-`utils/constants.ts`'e ekleme yapmasını iste.
+## Veritabanı / Ortam
+
+- **Şema değişikliği** = `supabase/migrations/` altına yeni numaralı SQL dosyası ekle.
+  Migration'lar deploy ile **otomatik uygulanmaz** — Supabase SQL Editor'de elle
+  çalıştırılır. PR açıklamasına bunu not düş.
+- Test için **ayrı bir dev Supabase projesi** kullanıyoruz; gerçek kullanıcı verisine
+  dokunmayın. (Prod Supabase yalnızca canlı.)
+- `.env*` dosyaları repoda yok; anahtarları kimseyle paylaşmayın, commit etmeyin.
+
+## Deploy
+
+- `master`'a merge = otomatik production deploy (www.wisparkr.com). Ekstra komut yok.
+- Her PR'a Vercel otomatik bir **preview URL** verir — merge'den önce orada test edin.
+- Lokalden `vercel --prod` **ÇALIŞTIRMAYIN** (yanlış projeye gider).
 
 ## Renk Paleti
 
-| Renk | Tailwind class | Kullanım |
+| Renk | Tailwind | Kullanım |
 |---|---|---|
 | Ana mor (#6D5FD8) | `purple-600` | Butonlar, vurgular, aktif durum |
 | Açık mor (#EEF0FF) | `purple-50` | Kart arka planları, badge'ler |
@@ -63,21 +80,11 @@ Yeni bir tip/sabite ihtiyacın olursa Sadettin'den `lib/types.ts` veya
 | Yeşil (#1B7A5E) | `emerald-700` | Başarı, onay |
 | Kırmızı (#E24B4A) | `red-500` | Hata, reddedildi |
 
-## Commit Mesajı Örnekleri
-
-```
-git commit -m "landing page hero kısmı tamamlandı"
-git commit -m "kanban board kartları eklendi"
-git commit -m "dashboard metrik kartları düzenlendi"
-```
-
-Türkçe yazabilirsin, ne yaptığın anlaşılsın yeter.
-
 ## Bir Şeyi Bozdun mu?
 
-Panikleme:
 ```bash
-git status        # ne değişti gör
-git checkout .     # son commit'e geri dön (kaydedilmemiş değişiklikler gider)
+git status          # ne değişti gör
+git restore .       # kaydedilmemiş değişiklikleri geri al
+git checkout master # temiz master'a dön
 ```
-Hâlâ sorun varsa Sadettin'e ulaş.
+master'a hiçbir şey doğrudan gitmediği için canlı güvende. Takılırsan diğer kişiye sor.
