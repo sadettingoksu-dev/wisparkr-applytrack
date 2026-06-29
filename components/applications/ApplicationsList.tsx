@@ -1,9 +1,9 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, ChevronLeft, ChevronRight, Download, Upload, Trash2, X } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Trash2, X } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { STATUS_BADGE_CLASSES } from '@/utils/constants'
@@ -26,10 +26,6 @@ interface Labels {
   showing: string
   prev: string
   next: string
-  exportCsv: string
-  importCsv: string
-  importDone: string
-  importEmpty: string
   selectAll: string
   selected: string
   bulkStatus: string
@@ -48,7 +44,6 @@ export function ApplicationsList({
   statusLabels: Record<ApplicationStatus, string>
 }) {
   const router = useRouter()
-  const importRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<ApplicationStatus | 'all'>('all')
   const [sort, setSort] = useState<SortKey>('newest')
@@ -139,99 +134,6 @@ export function ApplicationsList({
     router.refresh()
   }
 
-  function exportCsv() {
-    const header = ['Company', 'Position', 'Status', 'FitScore', 'AppliedAt']
-    const rows = filtered.map((a) => [
-      a.company_name,
-      a.position_title,
-      a.status,
-      a.fit_score ?? '',
-      a.applied_at ?? '',
-    ])
-    const escape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`
-    const csv = [header, ...rows].map((r) => r.map(escape).join(',')).join('\n')
-    // BOM ekle ki Excel Türkçe karakterleri doğru göstersin.
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `wisparkr-basvurular-${new Date().toISOString().slice(0, 10)}.csv`
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  // Basit CSV satır ayrıştırıcı: tırnaklı alanları ve "" kaçışını destekler.
-  function parseCsvLine(line: string): string[] {
-    const out: string[] = []
-    let cur = ''
-    let inQuotes = false
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i]
-      if (inQuotes) {
-        if (ch === '"' && line[i + 1] === '"') {
-          cur += '"'
-          i++
-        } else if (ch === '"') {
-          inQuotes = false
-        } else {
-          cur += ch
-        }
-      } else if (ch === '"') {
-        inQuotes = true
-      } else if (ch === ',') {
-        out.push(cur)
-        cur = ''
-      } else {
-        cur += ch
-      }
-    }
-    out.push(cur)
-    return out
-  }
-
-  async function importCsv(file: File) {
-    const text = (await file.text()).replace(/^﻿/, '')
-    const lines = text.split(/\r?\n/).filter((l) => l.trim())
-    if (lines.length < 2) {
-      window.alert(labels.importEmpty)
-      return
-    }
-    // Başlığa göre sütun eşle; bulunamazsa konuma göre (0=şirket, 1=pozisyon, 2=durum).
-    const header = parseCsvLine(lines[0]).map((h) => h.trim().toLowerCase())
-    const idx = (names: string[], fallback: number) => {
-      const found = header.findIndex((h) => names.some((n) => h.includes(n)))
-      return found >= 0 ? found : fallback
-    }
-    const ci = idx(['company', 'şirket', 'sirket'], 0)
-    const pi = idx(['position', 'pozisyon', 'title'], 1)
-    const si = idx(['status', 'durum'], 2)
-
-    setBusy(true)
-    let ok = 0
-    let fail = 0
-    for (const line of lines.slice(1)) {
-      const cols = parseCsvLine(line)
-      const company_name = (cols[ci] ?? '').trim()
-      const position_title = (cols[pi] ?? '').trim()
-      if (!company_name || !position_title) {
-        fail++
-        continue
-      }
-      const rawStatus = (cols[si] ?? '').trim().toLowerCase()
-      const status = (STATUSES as string[]).includes(rawStatus) ? rawStatus : undefined
-      const res = await fetch('/api/applications', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ company_name, position_title, status }),
-      })
-      if (res.ok) ok++
-      else fail++
-    }
-    setBusy(false)
-    window.alert(format(labels.importDone, { ok, fail }))
-    router.refresh()
-  }
-
   return (
     <div className="space-y-4">
       {/* araç çubuğu */}
@@ -269,32 +171,6 @@ export function ApplicationsList({
           <option value="company">{labels.sortCompany}</option>
           <option value="position">{labels.sortPosition}</option>
         </select>
-        <button
-          onClick={exportCsv}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
-        >
-          <Download className="h-4 w-4" />
-          {labels.exportCsv}
-        </button>
-        <input
-          ref={importRef}
-          type="file"
-          accept=".csv,text/csv"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0]
-            if (f) importCsv(f)
-            e.target.value = ''
-          }}
-        />
-        <button
-          onClick={() => importRef.current?.click()}
-          disabled={busy}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
-        >
-          <Upload className="h-4 w-4" />
-          {labels.importCsv}
-        </button>
       </div>
 
       {filtered.length === 0 ? (
