@@ -848,6 +848,7 @@ const tr = {
     lockTitle: 'Plan yükseltmen gerekiyor',
     lockDescAssistant: 'AI Kariyer Asistanı (başvuruya özel sohbet) yalnızca Career Coach planında. Yükselt ve koçunla konuşmaya başla.',
     lockDescInterview: 'Mülakat provası Pro ve üzeri planlarda. Yükselt ve gerçek mülakat sorularıyla pratik yap.',
+    lockCardDesc: 'Bu özellik {plan} planında açılır.',
     lockCta: 'Planları gör',
     features: {
       kanban: 'Kanban Board',
@@ -1874,6 +1875,7 @@ const en: Dictionary = {
     lockTitle: 'You need to upgrade your plan',
     lockDescAssistant: 'The AI Career Assistant (per-application chat) is exclusive to the Career Coach plan. Upgrade to start talking with your coach.',
     lockDescInterview: 'Mock interview practice is available on Pro and above. Upgrade to practice with real interview questions.',
+    lockCardDesc: 'This feature unlocks on the {plan} plan.',
     lockCta: 'See plans',
     features: {
       kanban: 'Kanban Board',
@@ -2898,6 +2900,7 @@ const de: Dictionary = {
     lockTitle: 'Du musst deinen Tarif upgraden',
     lockDescAssistant: 'Der KI-Karriereassistent (Chat pro Bewerbung) ist exklusiv im Karriere-Coach-Tarif. Upgrade, um mit deinem Coach zu sprechen.',
     lockDescInterview: 'Das Übungsinterview ist ab Pro verfügbar. Upgrade, um mit echten Interviewfragen zu üben.',
+    lockCardDesc: 'Diese Funktion wird im {plan}-Tarif freigeschaltet.',
     lockCta: 'Tarife ansehen',
     features: {
       kanban: 'Kanban-Board',
@@ -3922,6 +3925,7 @@ const es: Dictionary = {
     lockTitle: 'Necesitas mejorar tu plan',
     lockDescAssistant: 'El Asistente de Carrera IA (chat por candidatura) es exclusivo del plan Career Coach. Mejora tu plan para hablar con tu coach.',
     lockDescInterview: 'La entrevista simulada está disponible en Pro y superiores. Mejora tu plan para practicar con preguntas reales de entrevista.',
+    lockCardDesc: 'Esta función se desbloquea en el plan {plan}.',
     lockCta: 'Ver planes',
     features: {
       kanban: 'Tablero Kanban',
@@ -4946,6 +4950,7 @@ const fr: Dictionary = {
     lockTitle: 'Vous devez améliorer votre forfait',
     lockDescAssistant: 'L\'Assistant Carrière IA (chat par candidature) est exclusif au forfait Career Coach. Améliorez votre forfait pour parler avec votre coach.',
     lockDescInterview: 'L\'entretien simulé est disponible à partir de Pro. Améliorez votre forfait pour vous entraîner avec de vraies questions d\'entretien.',
+    lockCardDesc: 'Cette fonctionnalité se débloque avec le forfait {plan}.',
     lockCta: 'Voir les forfaits',
     features: {
       kanban: 'Tableau Kanban',

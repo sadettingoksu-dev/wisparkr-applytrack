@@ -8,8 +8,11 @@ import { ExtensionTokenCard } from '@/components/settings/ExtensionTokenCard'
 import { NotificationPrefsCard } from '@/components/settings/NotificationPrefsCard'
 import { ReferralCard } from '@/components/settings/ReferralCard'
 import { DangerZoneCard } from '@/components/settings/DangerZoneCard'
+import { LockedFeatureCard } from '@/components/billing/LockedFeatureCard'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
+import { format } from '@/lib/i18n'
+import { getEffectivePlan, requiredPlanForFeature, PLANS } from '@/lib/plans'
 import type { Profile } from '@/lib/types'
 
 export default async function SettingsPage() {
@@ -22,6 +25,7 @@ export default async function SettingsPage() {
     .eq('id', data.user!.id)
     .single()
   const profile = profileData as Profile | null
+  const canPolish = getEffectivePlan(profile).features.cvPolish
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -42,7 +46,16 @@ export default async function SettingsPage() {
         <CvUploadCard initialFilename={profile?.cv_filename ?? null} />
       </Card>
 
-      <CvPolishCard hasCv={Boolean(profile?.cv_text)} />
+      {canPolish ? (
+        <CvPolishCard hasCv={Boolean(profile?.cv_text)} />
+      ) : (
+        <LockedFeatureCard
+          title={t.billing.features.cvPolish}
+          description={format(t.billing.lockCardDesc, { plan: PLANS[requiredPlanForFeature('cvPolish')].name })}
+          planId="pro"
+          ctaLabel={t.billing.lockCta}
+        />
+      )}
 
       <ForwardingEmailCard userId={data.user!.id} />
 
