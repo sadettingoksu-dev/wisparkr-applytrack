@@ -43,7 +43,13 @@ export default function SignupPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan')
-  const postAuthPath = plan === 'pro' || plan === 'career_coach' ? `/checkout?plan=${plan}` : '/dashboard'
+  // `next`: kayıttan sonra gidilecek iç sayfa (örn. "Ücretsiz CV oluştur" → /cv-builder).
+  // Açık yönlendirme engellemek için yalnızca "/..." göreli yollara izin ver.
+  const nextParam = searchParams.get('next')
+  const safeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : null
+  const postAuthPath =
+    plan === 'pro' || plan === 'career_coach' ? `/checkout?plan=${plan}` : safeNext ?? '/dashboard'
+  const loginHref = safeNext ? `/login?next=${encodeURIComponent(safeNext)}` : '/login'
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -337,7 +343,7 @@ export default function SignupPage() {
 
         <p className="mt-4 text-center text-sm text-slate-400">
           {t.signup.haveAccount}{' '}
-          <Link href="/login" className="font-medium text-purple-600 hover:text-purple-700 transition-colors">
+          <Link href={loginHref} className="font-medium text-purple-600 hover:text-purple-700 transition-colors">
             {t.signup.loginLink}
           </Link>
         </p>

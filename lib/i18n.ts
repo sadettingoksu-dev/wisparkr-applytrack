@@ -25,6 +25,7 @@ const tr = {
     titleB: 'ile yönet',
     subtitle:
       '“Başvurdum, ne oldu?” sorusuna son. Wisparkr tüm başvuru sürecini tek bir yerden yönetmeni sağlar.',
+    ctaCv: 'Ücretsiz CV Oluştur',
     ctaPrimary: 'Ücretsiz Başla',
     ctaSecondary: 'Özellikleri Gör',
     ctaDemo: 'Demoyu İncele',
@@ -1057,6 +1058,7 @@ const en: Dictionary = {
     titleB: 'with',
     subtitle:
       'No more “I applied — now what?”. Wisparkr lets you manage your entire application process from one place.',
+    ctaCv: 'Create a Free CV',
     ctaPrimary: 'Start Free',
     ctaSecondary: 'See Features',
     ctaDemo: 'View Demo',
@@ -2087,6 +2089,7 @@ const de: Dictionary = {
     titleB: 'mit',
     subtitle:
       'Schluss mit „Ich habe mich beworben – und jetzt?“. Mit Wisparkr verwaltest du deinen gesamten Bewerbungsprozess an einem Ort.',
+    ctaCv: 'Kostenlosen Lebenslauf erstellen',
     ctaPrimary: 'Kostenlos starten',
     ctaSecondary: 'Funktionen ansehen',
     ctaDemo: 'Demo ansehen',
@@ -3117,6 +3120,7 @@ const es: Dictionary = {
     titleB: 'con',
     subtitle:
       'Se acabó el “Ya me postulé… ¿y ahora qué?”. Con Wisparkr gestionas todo tu proceso de candidatura desde un solo lugar.',
+    ctaCv: 'Crea un CV gratis',
     ctaPrimary: 'Empezar gratis',
     ctaSecondary: 'Ver funciones',
     ctaDemo: 'Ver demo',
@@ -4147,6 +4151,7 @@ const fr: Dictionary = {
     titleB: 'avec',
     subtitle:
       'Fini le « J\'ai postulé… et maintenant ? ». Avec Wisparkr, gérez tout votre processus de candidature au même endroit.',
+    ctaCv: 'Créer un CV gratuit',
     ctaPrimary: 'Commencer gratuitement',
     ctaSecondary: 'Voir les fonctionnalités',
     ctaDemo: 'Voir la démo',

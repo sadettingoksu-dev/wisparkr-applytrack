@@ -79,8 +79,15 @@ export default async function LandingPage({
               </h1>
               <p className="mt-5 max-w-xl text-lg text-slate-500">{t.hero.subtitle}</p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                {/* Ana çağrı: ücretsiz CV oluştur → giriş yapılmamışsa kayıt/giriş, sonra /cv-builder */}
+                <Link href="/signup?next=/cv-builder">
+                  <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-opacity hover:opacity-90">
+                    <FileText className="h-4 w-4" />
+                    {t.hero.ctaCv}
+                  </button>
+                </Link>
                 <Link href="/signup">
-                  <button className="rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-opacity hover:opacity-90">
+                  <button className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100">
                     {t.hero.ctaPrimary}
                   </button>
                 </Link>
