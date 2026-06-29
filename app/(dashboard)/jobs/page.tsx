@@ -2,7 +2,7 @@ import { Briefcase, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { JobCard } from '@/components/jobs/JobCard'
-import { fetchRemoteJobs, rankJobsByCv } from '@/lib/jobFeed'
+import { getCvMatchedJobs } from '@/lib/jobFeed'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Profile } from '@/lib/types'
 
@@ -51,16 +51,15 @@ async function JobsContent({
     )
   }
 
-  const allJobs = await fetchRemoteJobs()
+  const { jobs: matched, reachable } = await getCvMatchedJobs(cvText)
 
-  // Boş dizi = feed'e ulaşılamadı (fetchRemoteJobs asla throw etmez).
-  if (allJobs.length === 0) {
+  // Hiçbir kaynağa ulaşılamadı (boş listeyi "eşleşme yok"tan ayırır).
+  if (!reachable) {
     return (
       <EmptyState icon={AlertCircle} title={t.jobs.errorTitle} description={t.jobs.errorDesc} />
     )
   }
 
-  const matched = rankJobsByCv(allJobs, cvText)
   if (matched.length === 0) {
     return <EmptyState icon={Briefcase} title={t.jobs.empty} description={t.jobs.emptyDesc} />
   }
