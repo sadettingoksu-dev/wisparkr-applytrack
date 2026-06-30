@@ -38,7 +38,16 @@ Sonra GitHub'da **`master`'a PR aç** (main değil — bu repo `master` kullanı
   çalıştırıp Claude'a da denetlet.
 - Merge sonrası branch'i sil.
 
-## İş Bölümü: Özellik Bazında Sahiplik
+## İş Bölümü: Alan Sahipliği
+
+Çakışmayı en aza indirmek için **kim hangi alana bakar** net olsun. Bu bir duvar
+değil — gerekirse diğer alana da girilir, ama önce haber verilir.
+
+| Alan | Sahip | Tipik dosyalar |
+|---|---|---|
+| **Frontend / UX / Landing** | **Taha** | `app/(dashboard)/*` sayfaları, landing, `components/`, Tailwind, görseller, UI parlatma |
+| **Backend / Billing / Auth / Altyapı** | **Sadettin** | `app/api/*`, `lib/lemonsqueezy.ts`, `supabase/`, `middleware.ts`, deploy, branch koruması |
+| **Ortak çekirdek (önce konuşun)** | İkisi de | `lib/plans.ts`, `lib/i18n.ts`, `lib/types.ts`, `utils/constants.ts`, `package.json` |
 
 Her kişi bir özelliği **baştan sona** (frontend + gerekiyorsa backend) üstlenir.
 Böylece paralel çalışır, aynı dosyada az çakışırsınız.
