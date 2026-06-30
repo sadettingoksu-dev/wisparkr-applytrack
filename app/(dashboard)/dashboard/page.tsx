@@ -5,6 +5,7 @@ import { MetricCard } from '@/components/dashboard/MetricCard'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { OnboardingBanner } from '@/components/dashboard/OnboardingBanner'
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
+import { ParkrcanWidget } from '@/components/assistant/ParkrcanWidget'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -143,6 +144,9 @@ export default async function DashboardPage() {
         </div>
         <AnalyticsDashboard apps={apps} embedded />
       </div>
+
+      {/* parkrcan — uygulama içi AI rehberi (yalnızca ana sayfa) */}
+      <ParkrcanWidget />
     </div>
   )
 }
