@@ -3,7 +3,17 @@ import { z } from 'zod'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { rateLimit, rateLimitResponse, AI_RATE_LIMIT } from '@/lib/rateLimit'
 import { getAnthropicClient, DEFAULT_MODEL, TURKISH_WRITING_RULE } from '@/lib/anthropic'
+import { LOCALES, type Locale } from '@/lib/i18n'
 import { APP_NAME } from '@/utils/constants'
+
+// Yanıt dili — kullanıcının seçili arayüz diline göre.
+const LANG_NAMES: Record<Locale, string> = {
+  tr: 'Türkçe',
+  en: 'English',
+  de: 'Deutsch (Almanca)',
+  es: 'Español (İspanyolca)',
+  fr: 'Français (Fransızca)',
+}
 
 // parkrcan — uygulama içi yönlendirme asistanı. Kullanıcının ne yapmak
 // istediğini anlar, kısa Türkçe yanıt verir ve onu doğru sayfaya yönlendiren
@@ -12,6 +22,7 @@ import { APP_NAME } from '@/utils/constants'
 
 const bodySchema = z.object({
   message: z.string().min(1).max(1000),
+  locale: z.enum(LOCALES).optional(),
 })
 
 const linkSchema = z.object({
@@ -67,7 +78,8 @@ export async function POST(request: Request) {
       { status: 400 }
     )
   }
-  const { message } = parsed.data
+  const { message, locale } = parsed.data
+  const lang = LANG_NAMES[locale ?? 'tr']
 
   const systemPrompt = [
     `Sen "parkrcan"sın: ${APP_NAME} uygulamasının sevimli, samimi ve yardımsever yapay zeka rehberisin.`,
@@ -79,15 +91,18 @@ export async function POST(request: Request) {
     ...ROUTES.map((r) => `- ${r.href} → ${r.desc}`),
     '',
     'Kurallar:',
-    '- Yanıtı Türkçe, 1-3 cümle, sıcak ve aksiyon odaklı yaz.',
+    `- TÜM çıktıyı (hem "reply" hem link "label" değerleri) ${lang} dilinde yaz. Kullanıcı hangi dili seçtiyse o dilde yanıtla.`,
+    '- Yanıt 1-3 cümle, sıcak ve aksiyon odaklı olsun.',
     '- Kullanıcının isteğine en uygun sayfa(ları) "links" olarak ver (en fazla 3, en alakalısı ilk sırada).',
     '- href MUTLAKA yukarıdaki listeden olmalı; uydurma yol verme.',
     '- İstek uygulamayla ilgisizse kibarca yalnızca uygulama içi konularda yardımcı olabileceğini söyle ve links\'i boş bırak.',
-    `- ${TURKISH_WRITING_RULE}`,
+    locale === 'tr' || !locale ? `- ${TURKISH_WRITING_RULE}` : null,
     '',
     'SADECE şu JSON formatında yanıt ver, başka hiçbir metin yazma:',
     '{"reply": "...", "links": [{"label": "Sayfa adı", "href": "/yol"}]}',
-  ].join('\n')
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   let raw: string
   try {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
+import { useI18n } from '@/components/i18n/I18nProvider'
 
 /**
  * Kompakt açık/koyu tema anahtarı (navbar için). <html>'e 'dark' sınıfını
@@ -10,6 +11,7 @@ import { Moon, Sun } from 'lucide-react'
  * script tarafından <html>'e işlendiği için mount'ta oradan okunur.
  */
 export function ThemeToggleButton() {
+  const { t } = useI18n()
   const [dark, setDark] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -35,7 +37,7 @@ export function ThemeToggleButton() {
   return (
     <button
       onClick={toggle}
-      aria-label={mounted && dark ? 'Açık temaya geç' : 'Koyu temaya geç'}
+      aria-label={mounted && dark ? t.userMenu.lightMode : t.userMenu.darkMode}
       className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-2.5 py-1.5 text-slate-600 transition-colors hover:bg-slate-50"
     >
       {/* mount öncesi ikon sabit kalsın (hydration uyumu) */}
