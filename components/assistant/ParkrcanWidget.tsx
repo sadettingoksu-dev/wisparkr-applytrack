@@ -75,7 +75,7 @@ export function ParkrcanWidget() {
         <button
           onClick={() => setOpen(true)}
           aria-label="parkrcan'ı aç"
-          className="fixed bottom-24 right-5 z-40 h-14 w-14 overflow-hidden rounded-full bg-white shadow-lg shadow-purple-400/40 ring-2 ring-purple-200 transition-transform hover:scale-105"
+          className="fixed bottom-24 right-5 z-40 h-16 w-16 overflow-hidden rounded-full bg-white shadow-lg shadow-purple-400/40 ring-2 ring-purple-200 transition-transform hover:scale-105"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/parkrcan.png" alt="parkrcan" className="h-full w-full object-cover" />
