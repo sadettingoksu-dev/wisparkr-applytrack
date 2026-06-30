@@ -15,6 +15,7 @@ import {
 import { PLANS, PLAN_ORDER } from '@/lib/plans'
 import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { ThemeToggleButton } from '@/components/layout/ThemeToggleButton'
 import { HeroDemo } from '@/components/landing/HeroDemo'
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
 import { ShowcaseMock } from '@/components/landing/ShowcaseMock'
@@ -55,8 +56,9 @@ export default async function LandingPage({
             <Link href="/#pricing" className="hover:text-slate-900 transition-colors">{t.nav.pricing}</Link>
             <Link href="/#faq" className="hover:text-slate-900 transition-colors">{t.nav.faq}</Link>
           </nav>
-          <div className="col-start-3 flex items-center justify-end gap-4">
+          <div className="col-start-3 flex items-center justify-end gap-3">
             <LanguageSwitcher />
+            <ThemeToggleButton />
             <NavbarAuth />
           </div>
         </div>
