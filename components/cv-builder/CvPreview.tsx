@@ -216,7 +216,7 @@ export function CvPreview({ data, template = 'classic' }: { data: CvData; templa
       </div>
     )
     return (
-      <div className="flex overflow-hidden rounded-2xl bg-white text-[13px] leading-relaxed text-neutral-800 shadow-xl">
+      <div className="cv-paper flex overflow-hidden rounded-2xl bg-white text-[13px] leading-relaxed text-neutral-800 shadow-xl">
         {onRight ? (<>{Main}{Aside}</>) : (<>{Aside}{Main}</>)}
       </div>
     )
@@ -226,7 +226,7 @@ export function CvPreview({ data, template = 'classic' }: { data: CvData; templa
   if (layout === 'band') {
     const centered = headerAlign === 'center'
     return (
-      <div className="overflow-hidden rounded-2xl bg-white text-[13px] leading-relaxed text-neutral-800 shadow-xl">
+      <div className="cv-paper overflow-hidden rounded-2xl bg-white text-[13px] leading-relaxed text-neutral-800 shadow-xl">
         <header className={`flex items-center gap-4 p-7 text-white ${centered ? 'justify-center text-center' : 'justify-between'}`} style={{ backgroundColor: accent }}>
           <div className="min-w-0">
             <h1 className="text-2xl font-bold">{p.fullName || t.cvPreview.yourName}</h1>
@@ -256,7 +256,7 @@ export function CvPreview({ data, template = 'classic' }: { data: CvData; templa
   // ---------- SINGLE ----------
   const centered = headerAlign === 'center'
   return (
-    <div className="rounded-2xl bg-white p-8 text-[13px] leading-relaxed text-neutral-800 shadow-xl">
+    <div className="cv-paper rounded-2xl bg-white p-8 text-[13px] leading-relaxed text-neutral-800 shadow-xl">
       <header
         className={`flex gap-4 border-b-2 pb-4 ${centered ? 'flex-col items-center text-center' : 'items-start justify-between'}`}
         style={{ borderColor: accent }}

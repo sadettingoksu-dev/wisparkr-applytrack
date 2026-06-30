@@ -20,7 +20,11 @@ export function ThemeToggle({ labelDark, labelLight }: { labelDark: string; labe
   function toggle() {
     const next = !dark
     setDark(next)
-    document.documentElement.classList.toggle('dark', next)
+    const root = document.documentElement
+    // Yalnızca anahtara basıldığında kısa, yumuşak renk geçişi uygula.
+    root.classList.add('theme-transition')
+    window.setTimeout(() => root.classList.remove('theme-transition'), 300)
+    root.classList.toggle('dark', next)
     try {
       localStorage.setItem('theme', next ? 'dark' : 'light')
     } catch {
