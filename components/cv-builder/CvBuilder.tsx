@@ -108,6 +108,8 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
   const [shownExtras, setShownExtras] = useState<PersonalExtraKey[]>(() =>
     PERSONAL_EXTRA_KEYS.filter((k) => (initial.personal[k] ?? '').trim() !== '')
   )
+  // Sosyal platformlar (bağlantılar) bölümü — dolu linki varsa baştan açık.
+  const [showSocial, setShowSocial] = useState(() => initial.personal.links.length > 0)
 
   function patch(p: Partial<CvData>) {
     setCv((c) => ({ ...c, ...p }))
@@ -423,19 +425,6 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
                 <input className={inputClass} placeholder={t.cvBuilder.phone} value={cv.personal.phone} onChange={(e) => setPersonal({ phone: e.target.value })} />
               </div>
               <input className={inputClass} placeholder={t.cvBuilder.location} value={cv.personal.location} onChange={(e) => setPersonal({ location: e.target.value })} />
-              <div className="space-y-2">
-                {cv.personal.links.map((link, i) => (
-                  <div key={i} className="flex gap-2">
-                    <input className={inputClass} placeholder={t.cvBuilder.linkLabel} value={link.label} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, label: e.target.value } : l)) })} />
-                    <input className={inputClass} placeholder="https://..." value={link.url} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, url: e.target.value } : l)) })} />
-                    <button onClick={() => setPersonal({ links: cv.personal.links.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-                <AddButton label={t.cvBuilder.addLink} onClick={() => setPersonal({ links: [...cv.personal.links, { label: '', url: '' }] })} />
-              </div>
-              <p className="text-[11px] text-slate-400">{t.cvBuilder.linkHint}</p>
 
               {/* Daha fazla bilgi ekle — opsiyonel kişisel alanlar */}
               <div className="space-y-2 border-t border-slate-100 pt-3">
@@ -459,16 +448,48 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
                     />
                   )
                 ))}
-                {PERSONAL_EXTRA_KEYS.some((k) => !shownExtras.includes(k)) && (
+
+                {/* Sosyal platformlar (bağlantılar) */}
+                {showSocial && (
+                  <div className="space-y-2 rounded-xl border border-slate-200 p-3">
+                    <p className="text-xs font-semibold text-slate-700">{t.cvBuilder.social}</p>
+                    {cv.personal.links.map((link, i) => (
+                      <div key={i} className="flex gap-2">
+                        <input className={inputClass} placeholder={t.cvBuilder.linkLabel} value={link.label} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, label: e.target.value } : l)) })} />
+                        <input className={inputClass} placeholder="https://..." value={link.url} onChange={(e) => setPersonal({ links: cv.personal.links.map((l, idx) => (idx === i ? { ...l, url: e.target.value } : l)) })} />
+                        <button onClick={() => setPersonal({ links: cv.personal.links.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                    <AddButton label={t.cvBuilder.addLink} onClick={() => setPersonal({ links: [...cv.personal.links, { label: '', url: '' }] })} />
+                    <p className="text-[11px] text-slate-400">{t.cvBuilder.linkHint}</p>
+                  </div>
+                )}
+
+                {(PERSONAL_EXTRA_KEYS.some((k) => !shownExtras.includes(k)) || !showSocial) && (
                   <div className="space-y-1.5">
-                    <p className="text-[11px] font-medium text-slate-500">{t.cvBuilder.addMoreInfo}</p>
+                    <p className="text-xs font-medium text-slate-600">{t.cvBuilder.addMoreInfo}</p>
                     <div className="flex flex-wrap gap-1.5">
+                      {!showSocial && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowSocial(true)
+                            if (cv.personal.links.length === 0) setPersonal({ links: [{ label: '', url: '' }] })
+                          }}
+                          className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 text-[11px] font-semibold text-purple-700 transition-colors hover:bg-purple-100"
+                        >
+                          <Plus className="h-3 w-3" />
+                          {t.cvBuilder.social}
+                        </button>
+                      )}
                       {PERSONAL_EXTRA_KEYS.filter((k) => !shownExtras.includes(k)).map((k) => (
                         <button
                           key={k}
                           type="button"
                           onClick={() => setShownExtras((s) => [...s, k])}
-                          className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:border-purple-500/40 hover:text-purple-700"
+                          className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-300 px-2.5 py-1 text-[11px] font-medium text-slate-600 transition-colors hover:border-purple-500/40 hover:text-purple-700"
                         >
                           <Plus className="h-3 w-3" />
                           {t.cvBuilder[k].replace(/\s*\(.*\)\s*$/, '')}
@@ -482,16 +503,16 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
 
             {/* Özet — "Bize kendinizden bahsedin" */}
             <Card className="space-y-3">
-              <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.summary}</h2>
-              <p className="text-[11px] text-slate-400">{t.cvBuilder.summaryTip}</p>
-              <textarea className={inputClass} rows={4} placeholder={t.cvBuilder.summaryPlaceholder} value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
+              <h2 className="text-base font-semibold text-slate-900">{t.cvBuilder.summary}</h2>
+              <p className="text-sm text-slate-700">{t.cvBuilder.summaryTip}</p>
+              <textarea className={`${inputClass} text-[15px]`} rows={4} placeholder={t.cvBuilder.summaryPlaceholder} value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
               <div className="flex flex-wrap gap-1.5">
                 {t.cvBuilder.summarySuggestions.map((s, i) => (
                   <button
                     key={i}
                     type="button"
                     onClick={() => appendSummary(s)}
-                    className="rounded-full border border-slate-200 px-2.5 py-1 text-left text-[11px] text-slate-600 transition-colors hover:border-purple-500/40 hover:bg-purple-50 hover:text-purple-700"
+                    className="rounded-full border border-slate-300 px-3 py-1.5 text-left text-[13px] text-slate-700 transition-colors hover:border-purple-500/40 hover:bg-purple-50 hover:text-purple-700"
                   >
                     + {s}
                   </button>
