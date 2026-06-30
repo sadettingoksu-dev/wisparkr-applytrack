@@ -77,8 +77,20 @@ async function fileToCompressedDataUrl(file: File, maxDim = 400, quality = 0.85)
   return canvas.toDataURL('image/jpeg', quality)
 }
 
-const emptyExperience: CvExperience = { company: '', role: '', location: '', start: '', end: '', current: false, bullets: [] }
-const emptyEducation: CvEducation = { school: '', degree: '', field: '', start: '', end: '', note: '' }
+const emptyExperience: CvExperience = { company: '', role: '', location: '', country: '', start: '', end: '', current: false, bullets: [] }
+const emptyEducation: CvEducation = { school: '', degree: '', field: '', location: '', gpa: '', start: '', end: '', current: false, note: '' }
+
+// "Daha fazla bilgi ekle" ile açılabilen opsiyonel kişisel alanlar.
+const PERSONAL_EXTRA_KEYS = [
+  'birthDate',
+  'nationality',
+  'militaryStatus',
+  'documentType',
+  'driversLicense',
+  'hobbies',
+  'awards',
+] as const
+type PersonalExtraKey = (typeof PERSONAL_EXTRA_KEYS)[number]
 const emptyProject: CvProject = { name: '', description: '', link: '', bullets: [] }
 const emptyLanguage: CvLanguage = { name: '', level: '' }
 const emptyCertification: CvCertification = { name: '', issuer: '', date: '' }
@@ -92,12 +104,25 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
   const [template, setTemplate] = useState<CvTemplate>('classic')
   const [skillInput, setSkillInput] = useState('')
   const [step, setStep] = useState(0)
+  // Hangi opsiyonel kişisel alanlar görünür — dolu olanlar baştan açık gelir.
+  const [shownExtras, setShownExtras] = useState<PersonalExtraKey[]>(() =>
+    PERSONAL_EXTRA_KEYS.filter((k) => (initial.personal[k] ?? '').trim() !== '')
+  )
 
   function patch(p: Partial<CvData>) {
     setCv((c) => ({ ...c, ...p }))
     setSaved(false)
   }
   const setPersonal = (p: Partial<CvData['personal']>) => patch({ personal: { ...cv.personal, ...p } })
+
+  // Özet ("kendinizden bahsedin") öneri cümlesini metnin sonuna ekler.
+  function appendSummary(sentence: string) {
+    setCv((c) => {
+      const base = c.summary.trim()
+      return { ...c, summary: base ? `${base} ${sentence}` : sentence }
+    })
+    setSaved(false)
+  }
 
   async function handleSave(): Promise<boolean> {
     setSaving(true)
@@ -411,12 +436,67 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
                 <AddButton label={t.cvBuilder.addLink} onClick={() => setPersonal({ links: [...cv.personal.links, { label: '', url: '' }] })} />
               </div>
               <p className="text-[11px] text-slate-400">{t.cvBuilder.linkHint}</p>
+
+              {/* Daha fazla bilgi ekle — opsiyonel kişisel alanlar */}
+              <div className="space-y-2 border-t border-slate-100 pt-3">
+                {shownExtras.map((key) => (
+                  key === 'hobbies' || key === 'awards' ? (
+                    <textarea
+                      key={key}
+                      className={inputClass}
+                      rows={2}
+                      placeholder={t.cvBuilder[key]}
+                      value={cv.personal[key]}
+                      onChange={(e) => setPersonal({ [key]: e.target.value } as Partial<CvData['personal']>)}
+                    />
+                  ) : (
+                    <input
+                      key={key}
+                      className={inputClass}
+                      placeholder={t.cvBuilder[key]}
+                      value={cv.personal[key]}
+                      onChange={(e) => setPersonal({ [key]: e.target.value } as Partial<CvData['personal']>)}
+                    />
+                  )
+                ))}
+                {PERSONAL_EXTRA_KEYS.some((k) => !shownExtras.includes(k)) && (
+                  <div className="space-y-1.5">
+                    <p className="text-[11px] font-medium text-slate-500">{t.cvBuilder.addMoreInfo}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {PERSONAL_EXTRA_KEYS.filter((k) => !shownExtras.includes(k)).map((k) => (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => setShownExtras((s) => [...s, k])}
+                          className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:border-purple-500/40 hover:text-purple-700"
+                        >
+                          <Plus className="h-3 w-3" />
+                          {t.cvBuilder[k].replace(/\s*\(.*\)\s*$/, '')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </Card>
 
-            {/* Özet */}
+            {/* Özet — "Bize kendinizden bahsedin" */}
             <Card className="space-y-3">
               <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.summary}</h2>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.summaryTip}</p>
               <textarea className={inputClass} rows={4} placeholder={t.cvBuilder.summaryPlaceholder} value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
+              <div className="flex flex-wrap gap-1.5">
+                {t.cvBuilder.summarySuggestions.map((s, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => appendSummary(s)}
+                    className="rounded-full border border-slate-200 px-2.5 py-1 text-left text-[11px] text-slate-600 transition-colors hover:border-purple-500/40 hover:bg-purple-50 hover:text-purple-700"
+                  >
+                    + {s}
+                  </button>
+                ))}
+              </div>
             </Card>
           </div>
         )}
@@ -435,7 +515,8 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <input className={inputClass} placeholder={t.cvBuilder.role} value={exp.role} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, role: e.target.value } : x)) })} />
                     <input className={inputClass} placeholder={t.cvBuilder.company} value={exp.company} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, company: e.target.value } : x)) })} />
-                    <input className={inputClass} placeholder={t.cvBuilder.expLocation} value={exp.location} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, location: e.target.value } : x)) })} />
+                    <input className={inputClass} placeholder={t.cvBuilder.expCity} value={exp.location} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, location: e.target.value } : x)) })} />
+                    <input className={inputClass} placeholder={t.cvBuilder.expCountry} value={exp.country} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, country: e.target.value } : x)) })} />
                     <div className="flex gap-2">
                       <input className={inputClass} placeholder={t.cvBuilder.startYear} value={exp.start} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
                       <input className={inputClass} placeholder={t.cvBuilder.end} value={exp.end} disabled={exp.current} onChange={(e) => patch({ experience: cv.experience.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
@@ -458,14 +539,20 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
               {cv.education.map((ed, i) => (
                 <ItemFrame key={i} index={i} total={cv.education.length} onMove={(to) => patch({ education: moveItem(cv.education, i, to) })} onRemove={() => patch({ education: cv.education.filter((_, idx) => idx !== i) })}>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <input className={inputClass} placeholder={t.cvBuilder.school} value={ed.school} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, school: e.target.value } : x)) })} />
+                    <input className={inputClass} placeholder={t.cvBuilder.eduCity} value={ed.location} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, location: e.target.value } : x)) })} />
                     <input className={inputClass} placeholder={t.cvBuilder.degree} value={ed.degree} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, degree: e.target.value } : x)) })} />
                     <input className={inputClass} placeholder={t.cvBuilder.field} value={ed.field} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, field: e.target.value } : x)) })} />
-                    <input className={inputClass} placeholder={t.cvBuilder.school} value={ed.school} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, school: e.target.value } : x)) })} />
+                    <input className={inputClass} placeholder={t.cvBuilder.gpa} value={ed.gpa} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, gpa: e.target.value } : x)) })} />
                     <div className="flex gap-2">
                       <input className={inputClass} placeholder={t.cvBuilder.start} value={ed.start} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
-                      <input className={inputClass} placeholder={t.cvBuilder.end} value={ed.end} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
+                      <input className={inputClass} placeholder={t.cvBuilder.end} value={ed.end} disabled={ed.current} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
                     </div>
                   </div>
+                  <label className="flex items-center gap-2 text-xs text-slate-500">
+                    <input type="checkbox" checked={ed.current} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, current: e.target.checked } : x)) })} />
+                    {t.cvBuilder.eduCurrent}
+                  </label>
                   <input className={inputClass} placeholder={t.cvBuilder.eduNote} value={ed.note} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, note: e.target.value } : x)) })} />
                 </ItemFrame>
               ))}
@@ -497,6 +584,26 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
                   }
                 }}
               />
+              {t.cvBuilder.skillSuggestions.some((s) => !cv.skills.includes(s)) && (
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-medium text-slate-500">{t.cvBuilder.skillSuggestTitle}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {t.cvBuilder.skillSuggestions
+                      .filter((s) => !cv.skills.includes(s))
+                      .map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => addSkill(s)}
+                          className="inline-flex items-center gap-1 rounded-full border border-dashed border-slate-200 px-2.5 py-1 text-[11px] font-medium text-slate-500 transition-colors hover:border-purple-500/40 hover:bg-purple-50 hover:text-purple-700"
+                        >
+                          <Plus className="h-3 w-3" />
+                          {s}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
             </Card>
 
             {/* Projeler */}

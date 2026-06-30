@@ -23,12 +23,21 @@ export const cvPersonalSchema = z.object({
   // Boş string = fotoğraf yok. İstemci tarafında küçültülüp sıkıştırılarak set edilir.
   photo: z.string().default(''),
   links: z.array(cvLinkSchema).default([]),
+  // Opsiyonel ek bilgiler ("Daha fazla bilgi ekle"). Boş string = gösterilmez.
+  birthDate: z.string().default(''),
+  nationality: z.string().default(''),
+  militaryStatus: z.string().default(''),
+  documentType: z.string().default(''),
+  driversLicense: z.string().default(''),
+  hobbies: z.string().default(''),
+  awards: z.string().default(''),
 })
 
 export const cvExperienceSchema = z.object({
   company: z.string().default(''),
   role: z.string().default(''),
   location: z.string().default(''),
+  country: z.string().default(''),
   start: z.string().default(''),
   end: z.string().default(''),
   current: z.boolean().default(false),
@@ -39,8 +48,11 @@ export const cvEducationSchema = z.object({
   school: z.string().default(''),
   degree: z.string().default(''),
   field: z.string().default(''),
+  location: z.string().default(''),
+  gpa: z.string().default(''),
   start: z.string().default(''),
   end: z.string().default(''),
+  current: z.boolean().default(false),
   note: z.string().default(''),
 })
 
@@ -189,6 +201,16 @@ export function flattenCvData(data: CvData): string {
     .filter(Boolean)
     .join(' | ')
   if (contact) lines.push(contact)
+  const details = [
+    p.birthDate && `Doğum tarihi: ${p.birthDate}`,
+    p.nationality && `Uyruk: ${p.nationality}`,
+    p.militaryStatus && `Askerlik: ${p.militaryStatus}`,
+    p.documentType && `Belge türü: ${p.documentType}`,
+    p.driversLicense && `Ehliyet: ${p.driversLicense}`,
+  ]
+    .filter(Boolean)
+    .join(' | ')
+  if (details) lines.push(details)
 
   if (data.summary.trim()) {
     lines.push('', 'ÖZET', data.summary.trim())
@@ -197,10 +219,11 @@ export function flattenCvData(data: CvData): string {
   if (data.experience.length) {
     lines.push('', 'DENEYİM')
     for (const e of data.experience) {
+      const place = [e.location, e.country].filter(Boolean).join(', ')
       const head = [
         e.role,
         e.company && `${e.role ? ', ' : ''}${e.company}`,
-        e.location && ` (${e.location})`,
+        place && ` (${place})`,
       ]
         .filter(Boolean)
         .join('')
@@ -216,8 +239,9 @@ export function flattenCvData(data: CvData): string {
       const head = [ed.degree, ed.field && ` - ${ed.field}`, ed.school && `, ${ed.school}`]
         .filter(Boolean)
         .join('')
-      const per = period(ed.start, ed.end)
-      lines.push(per ? `${head} (${per})` : head)
+      const per = period(ed.start, ed.end, ed.current)
+      const meta = [ed.location, ed.gpa && `Not ort.: ${ed.gpa}`].filter(Boolean).join(' · ')
+      lines.push([head, per && `(${per})`, meta && `— ${meta}`].filter(Boolean).join(' '))
       if (ed.note.trim()) lines.push(`- ${ed.note.trim()}`)
     }
   }
@@ -250,6 +274,14 @@ export function flattenCvData(data: CvData): string {
         [c.name, c.issuer && ` - ${c.issuer}`, c.date && ` (${c.date})`].filter(Boolean).join('')
       )
     }
+  }
+
+  if (p.awards.trim()) {
+    lines.push('', 'DERECELER & ÖDÜLLER', p.awards.trim())
+  }
+
+  if (p.hobbies.trim()) {
+    lines.push('', 'HOBİLER', p.hobbies.trim())
   }
 
   return lines.join('\n').slice(0, CV_TEXT_LIMIT)
