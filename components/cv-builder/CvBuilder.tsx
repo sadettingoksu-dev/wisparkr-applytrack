@@ -25,7 +25,7 @@ import { CvPreview } from '@/components/cv-builder/CvPreview'
 import { Stepper } from '@/components/cv-builder/Stepper'
 import { SharePanel } from '@/components/cv-builder/SharePanel'
 import { useI18n } from '@/components/i18n/I18nProvider'
-import { hasCvContent, sampleCvData } from '@/lib/cv'
+import { hasCvContent } from '@/lib/cv'
 import type {
   CvData,
   CvExperience,
@@ -327,17 +327,6 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
               {t.common.saved}
             </span>
           )}
-          <button
-            type="button"
-            onClick={() => {
-              if (hasCvContent(cv) && !window.confirm(t.cvBuilder.loadSampleConfirm)) return
-              setCv(sampleCvData())
-            }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-medium text-purple-700 transition-colors hover:bg-purple-100"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            {t.cvBuilder.loadSample}
-          </button>
           <Button onClick={handleSave} disabled={saving} variant="secondary">
             {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
             {t.common.save}
