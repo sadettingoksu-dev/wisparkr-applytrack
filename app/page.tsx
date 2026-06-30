@@ -19,6 +19,7 @@ import { HeroDemo } from '@/components/landing/HeroDemo'
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
 import { ShowcaseMock } from '@/components/landing/ShowcaseMock'
 import { Faq } from '@/components/landing/Faq'
+import { ParkrcanWidget } from '@/components/assistant/ParkrcanWidget'
 import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
 
@@ -226,6 +227,9 @@ export default async function LandingPage({
           </nav>
         </div>
       </footer>
+
+      {/* parkrcan — yalnızca panelden gelen (?home=1) görünümde */}
+      {searchParams.home === '1' && <ParkrcanWidget />}
     </div>
   )
 }

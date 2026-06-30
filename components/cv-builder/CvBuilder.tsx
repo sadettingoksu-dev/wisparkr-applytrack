@@ -704,15 +704,6 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
           <div className="mx-auto max-w-3xl space-y-4">
             <StepHeader title={t.cvBuilder.wizard.previewTitle} desc={t.cvBuilder.wizard.previewDesc} />
             <CvPreview data={cv} template={template} />
-            <div className="flex flex-col items-center gap-2">
-              <a href={`/api/cv/pdf?template=${template}`}>
-                <Button variant="primary">
-                  <Download className="h-4 w-4" />
-                  {t.cvBuilder.downloadPdf}
-                </Button>
-              </a>
-              <p className="text-center text-[11px] text-slate-400">{t.cvBuilder.pdfNote}</p>
-            </div>
           </div>
         )}
 
