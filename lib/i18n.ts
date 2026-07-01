@@ -498,6 +498,7 @@ const tr = {
     all: 'Tümü',
     connectionError: 'Bağlantı hatası.',
     error: 'Bir hata oluştu.',
+    refresh: 'Yenile',
   },
   status: {
     pending: 'Beklemede',
@@ -1584,6 +1585,7 @@ const en: Dictionary = {
     all: 'View all',
     connectionError: 'Connection error.',
     error: 'Something went wrong.',
+    refresh: 'Refresh',
   },
   status: {
     pending: 'Pending',
@@ -2668,6 +2670,7 @@ const de: Dictionary = {
     all: 'Alle ansehen',
     connectionError: 'Verbindungsfehler.',
     error: 'Etwas ist schiefgelaufen.',
+    refresh: 'Aktualisieren',
   },
   status: {
     pending: 'Offen',
@@ -3752,6 +3755,7 @@ const es: Dictionary = {
     all: 'Ver todo',
     connectionError: 'Error de conexión.',
     error: 'Algo salió mal.',
+    refresh: 'Actualizar',
   },
   status: {
     pending: 'Pendiente',
@@ -4836,6 +4840,7 @@ const fr: Dictionary = {
     all: 'Tout voir',
     connectionError: 'Erreur de connexion.',
     error: 'Une erreur est survenue.',
+    refresh: 'Actualiser',
   },
   status: {
     pending: 'En attente',
