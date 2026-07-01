@@ -899,6 +899,9 @@ const tr = {
     regenerateConfirm: 'Yeni bir token oluşturulursa eski token ile bağlı tarayıcı eklentileri çalışmayı durdurur. Devam edilsin mi?',
     regenerating: 'Oluşturuluyor...',
     regenerate: 'Anahtarı Yenile',
+    generate: 'Oluştur',
+    groupAccount: 'Hesap',
+    groupConnections: 'Bağlantılar & Entegrasyon',
     danger: {
       title: 'Tehlikeli bölge',
       exportTitle: 'Verilerini dışa aktar',
@@ -1995,6 +1998,9 @@ const en: Dictionary = {
     regenerateConfirm: 'If you generate a new token, browser extensions linked with the old token will stop working. Continue?',
     regenerating: 'Generating...',
     regenerate: 'Regenerate Key',
+    generate: 'Generate',
+    groupAccount: 'Account',
+    groupConnections: 'Connections & Integration',
     danger: {
       title: 'Danger zone',
       exportTitle: 'Export your data',
@@ -3089,6 +3095,9 @@ const de: Dictionary = {
     regenerateConfirm: 'Wenn du einen neuen Token erstellst, hören mit dem alten Token verbundene Browser-Erweiterungen auf zu funktionieren. Fortfahren?',
     regenerating: 'Wird erstellt...',
     regenerate: 'Schlüssel neu erstellen',
+    generate: 'Erstellen',
+    groupAccount: 'Konto',
+    groupConnections: 'Verbindungen & Integration',
     danger: {
       title: 'Gefahrenzone',
       exportTitle: 'Deine Daten exportieren',
@@ -4183,6 +4192,9 @@ const es: Dictionary = {
     regenerateConfirm: 'Si generas un nuevo token, las extensiones del navegador vinculadas con el antiguo dejarán de funcionar. ¿Continuar?',
     regenerating: 'Generando...',
     regenerate: 'Regenerar clave',
+    generate: 'Generar',
+    groupAccount: 'Cuenta',
+    groupConnections: 'Conexiones e integración',
     danger: {
       title: 'Zona de peligro',
       exportTitle: 'Exporta tus datos',
@@ -5277,6 +5289,9 @@ const fr: Dictionary = {
     regenerateConfirm: 'Si vous générez un nouveau jeton, les extensions de navigateur liées à l\'ancien cesseront de fonctionner. Continuer ?',
     regenerating: 'Génération...',
     regenerate: 'Régénérer la clé',
+    generate: 'Générer',
+    groupAccount: 'Compte',
+    groupConnections: 'Connexions et intégration',
     danger: {
       title: 'Zone de danger',
       exportTitle: 'Exportez vos données',
