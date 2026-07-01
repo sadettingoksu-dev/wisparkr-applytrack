@@ -8,7 +8,7 @@ import type { CvData } from '@/lib/cv'
  * CV verisini, seçilen PDF şablonunu birebir yansıtan "kâğıt" belge olarak
  * gösterir (layout + accent + başlık/beceri stili + yoğunluk). Gerçek WYSIWYG.
  */
-export function CvPreview({ data, template = 'classic' }: { data: CvData; template?: CvTemplate }) {
+export function CvPreview({ data, template = 'vitrin' }: { data: CvData; template?: CvTemplate }) {
   const { t, locale } = useI18n()
   const tpl = getTemplate(template)
   const { layout, accent, headerAlign, density } = tpl

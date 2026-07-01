@@ -101,7 +101,7 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [template, setTemplate] = useState<CvTemplate>('classic')
+  const [template, setTemplate] = useState<CvTemplate>('vitrin')
   // Kayıt sonrası PDF önizlemesini tazelemek için sayaç (iframe reloadKey).
   const [previewKey, setPreviewKey] = useState(0)
   const [skillInput, setSkillInput] = useState('')

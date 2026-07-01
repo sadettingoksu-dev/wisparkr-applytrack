@@ -19,7 +19,7 @@ export interface DocumentItem {
 
 export function DocumentsList({ items }: { items: DocumentItem[] }) {
   const { t } = useI18n()
-  const [template, setTemplate] = useState<CvTemplate>('classic')
+  const [template, setTemplate] = useState<CvTemplate>('vitrin')
 
   return (
     <div className="space-y-4">
