@@ -12,6 +12,13 @@ body {
   background: var(--background);
 }
 
+/* Başlıklar display fontu (Space Grotesk) + sıkı tracking; Türkçe glyph eksikse
+   var stack ile gövde fontuna (Inter) düşer. Uygulama genelinde otomatik. */
+h1, h2, h3, h4 {
+  font-family: var(--font-display), var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
 /* --- Login sahnesi animasyonları --- */
 @keyframes wisparkr-float {
   0%, 100% { transform: translateY(0) }
