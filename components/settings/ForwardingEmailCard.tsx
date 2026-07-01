@@ -1,45 +1,51 @@
 'use client'
 
 import { useState } from 'react'
-import { Copy, Check } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
-import { Button } from '@/components/ui/Button'
+import { Plus } from 'lucide-react'
 import { useI18n } from '@/components/i18n/I18nProvider'
+import { SettingsRow, ResultRow } from '@/components/settings/SettingsList'
+import { CopyButton } from '@/components/settings/CopyButton'
 
 export function ForwardingEmailCard({ userId }: { userId: string }) {
   const { t } = useI18n()
-  const [copied, setCopied] = useState(false)
+  const [shown, setShown] = useState(false)
   const address = `user_${userId}@inbox.wisparkr.com`
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(address)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   return (
-    <Card className="space-y-2">
-      <h2 className="text-sm font-semibold text-slate-900">{t.settings.forwardingTitle}</h2>
-      <p className="text-sm text-slate-500">
-        {t.settings.forwardingDesc}
-      </p>
-      <div className="flex items-center gap-2">
-        <Input value={address} disabled />
-        <Button variant="secondary" onClick={handleCopy}>
-          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          {copied ? t.common.copied : t.common.copy}
-        </Button>
-      </div>
+    <>
+      <SettingsRow label={t.settings.forwardingTitle} description={t.settings.forwardingDesc}>
+        {!shown && (
+          <button
+            type="button"
+            onClick={() => setShown(true)}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            {t.settings.generate}
+          </button>
+        )}
+      </SettingsRow>
 
-      <div className="rounded-lg bg-white p-3 text-sm text-slate-600">
-        <p className="font-medium text-slate-800">{t.settings.forwardingHowTitle}</p>
-        <ol className="mt-2 list-decimal space-y-1 pl-5">
-          <li>{t.settings.forwardingStep1}</li>
-          <li>{t.settings.forwardingStep2}</li>
-          <li>{t.settings.forwardingStep3}</li>
-        </ol>
-      </div>
-    </Card>
+      {/* Oluştur'a basınca: altında adres satırı + nasıl kullanılır */}
+      {shown && (
+        <>
+          <ResultRow value={address}>
+            <CopyButton text={address} />
+          </ResultRow>
+          <SettingsRow
+            description={
+              <div>
+                <p className="font-medium text-slate-700">{t.settings.forwardingHowTitle}</p>
+                <ol className="mt-1 list-decimal space-y-0.5 pl-4">
+                  <li>{t.settings.forwardingStep1}</li>
+                  <li>{t.settings.forwardingStep2}</li>
+                  <li>{t.settings.forwardingStep3}</li>
+                </ol>
+              </div>
+            }
+          />
+        </>
+      )}
+    </>
   )
 }
