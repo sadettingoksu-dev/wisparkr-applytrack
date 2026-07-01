@@ -47,10 +47,12 @@ export function SettingsShell(props: SettingsShellProps) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
-        {/* Başlık çubuğu */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+    <div className="mx-auto max-w-5xl">
+      {/* Sabit büyüklükte panel (Claude ayarlar modali ölçüsünde); içerik
+          artarsa panel büyümez — sol menü ve sağ içerik ayrı ayrı kayar. */}
+      <div className="flex h-[80vh] max-h-[780px] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+        {/* Başlık çubuğu (sabit) */}
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-4">
           <h1 className="text-lg font-bold text-slate-900">{t.settings.title}</h1>
           <button
             type="button"
@@ -62,9 +64,9 @@ export function SettingsShell(props: SettingsShellProps) {
           </button>
         </div>
 
-        <div className="flex flex-col md:flex-row">
-          {/* Sol: kategori menüsü */}
-          <nav className="flex gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 p-2 md:w-56 md:shrink-0 md:flex-col md:overflow-visible md:border-b-0 md:border-r">
+        <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+          {/* Sol: kategori menüsü (bağımsız kaydırılır) */}
+          <nav className="flex shrink-0 gap-1 overflow-x-auto border-b border-slate-200 bg-slate-50 p-2 md:w-60 md:flex-col md:overflow-y-auto md:overflow-x-visible md:border-b-0 md:border-r">
             {nav.map(({ id, label, icon: Icon, tone }) => {
               const selected = active === id
               return (
@@ -90,8 +92,8 @@ export function SettingsShell(props: SettingsShellProps) {
             })}
           </nav>
 
-          {/* Sağ: seçili kategori içeriği */}
-          <div className="min-w-0 flex-1 space-y-6 p-5 md:max-h-[70vh] md:overflow-y-auto">
+          {/* Sağ: seçili kategori içeriği (bağımsız kaydırılır) */}
+          <div className="min-w-0 flex-1 space-y-6 overflow-y-auto p-6">
             {active === 'account' && (
               <SettingsGroup>
                 <SettingsRow label={t.settings.email}>
