@@ -24,7 +24,7 @@ export function CoverLetterCard({ applicationId, initialText }: CoverLetterCardP
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [template, setTemplate] = useState<CvTemplate>('classic')
+  const [template, setTemplate] = useState<CvTemplate>('vitrin')
   // The PDF is rendered from the saved (last generated) version on the server.
   const [savedText, setSavedText] = useState(initialText ?? '')
 

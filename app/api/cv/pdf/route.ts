@@ -19,9 +19,13 @@ export async function GET(request: Request) {
     )
   }
 
-  // Free: temiz PDF indirme yalnızca 7 günlük ücretsiz pencere içinde.
+  // inline=1 → CV oluşturucudaki canlı önizleme (iframe içinde). Sadece görüntüleme
+  // olduğu için (indirme değil) trial kapısını atlarız; HTML önizleme de kısıtsızdı.
+  const inline = new URL(request.url).searchParams.get('inline') === '1'
+
+  // Free: temiz PDF *indirme* yalnızca 7 günlük ücretsiz pencere içinde.
   const plan = getPlan(profile.plan)
-  if (plan.id === 'free' && !isTrialActive(profile.cv_trial_started_at)) {
+  if (!inline && plan.id === 'free' && !isTrialActive(profile.cv_trial_started_at)) {
     return NextResponse.json(
       {
         error: {
@@ -41,7 +45,11 @@ export async function GET(request: Request) {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${filename}.pdf"`,
+      // inline → tarayıcıda göster (önizleme); değilse indir.
+      'Content-Disposition': inline
+        ? `inline; filename="${filename}.pdf"`
+        : `attachment; filename="${filename}.pdf"`,
+      'Cache-Control': 'no-store',
     },
   })
 }

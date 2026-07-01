@@ -23,7 +23,7 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
   const [ready, setReady] = useState(hasTailoredCv)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [template, setTemplate] = useState<CvTemplate>('classic')
+  const [template, setTemplate] = useState<CvTemplate>('vitrin')
 
   async function handleTailor() {
     setLoading(true)

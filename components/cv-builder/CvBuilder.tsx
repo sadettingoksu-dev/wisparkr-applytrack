@@ -21,7 +21,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
-import { CvPreview } from '@/components/cv-builder/CvPreview'
+import { PdfPreview } from '@/components/cv-builder/PdfPreview'
 import { Stepper } from '@/components/cv-builder/Stepper'
 import { SharePanel } from '@/components/cv-builder/SharePanel'
 import { useI18n } from '@/components/i18n/I18nProvider'
@@ -101,7 +101,9 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [template, setTemplate] = useState<CvTemplate>('classic')
+  const [template, setTemplate] = useState<CvTemplate>('vitrin')
+  // Kayıt sonrası PDF önizlemesini tazelemek için sayaç (iframe reloadKey).
+  const [previewKey, setPreviewKey] = useState(0)
   const [skillInput, setSkillInput] = useState('')
   const [step, setStep] = useState(0)
   // Hangi opsiyonel kişisel alanlar görünür — dolu olanlar baştan açık gelir.
@@ -141,6 +143,8 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
         return false
       }
       setSaved(true)
+      // Yeni kaydedilen veriyi PDF önizlemesine yansıt.
+      setPreviewKey((k) => k + 1)
       return true
     } catch {
       setError(t.common.connectionError)
@@ -693,7 +697,7 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <TemplatePicker value={template} onChange={setTemplate} />
               <div className="lg:sticky lg:top-6 lg:h-fit">
-                <CvPreview data={cv} template={template} />
+                <PdfPreview template={template} reloadKey={previewKey} />
               </div>
             </div>
           </div>
@@ -703,7 +707,7 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
         {step === 3 && (
           <div className="mx-auto max-w-3xl space-y-4">
             <StepHeader title={t.cvBuilder.wizard.previewTitle} desc={t.cvBuilder.wizard.previewDesc} />
-            <CvPreview data={cv} template={template} />
+            <PdfPreview template={template} reloadKey={previewKey} />
           </div>
         )}
 

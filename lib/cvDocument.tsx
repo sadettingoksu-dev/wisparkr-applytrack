@@ -16,8 +16,11 @@ import {
   getTemplate,
   CV_TEMPLATE_IDS,
   DENSITY_SCALE,
+  langLevelToScore,
+  pseudoSkillScore,
   type CvTemplate,
   type CvTemplateDef,
+  type CvSectionKey,
 } from './cvTemplates'
 
 // Rotaların ihtiyaç duyduğu yardımcıları buradan tekrar dışa aktar.
@@ -442,12 +445,387 @@ function BandCv({ data, t, s }: { data: CvData; t: CvTemplateDef; s: Styles }) {
   )
 }
 
+// ===========================================================================
+// FOTOĞRAFLI "tam tasarım" şablonlar (category === 'photo')
+// Tamamen token-güdümlü, renk-farkında iki kolon. Yıldız → nokta, çubuk → bar
+// (Roboto'da ★ glyph'i garanti değil; View tabanlı çizim her zaman render olur).
+// ===========================================================================
+
+/** Hex rengin koyu olup olmadığı (metin/başlık kontrastı için). */
+function isDarkColor(hex: string): boolean {
+  const h = (hex || '').replace('#', '')
+  if (h.length < 6) return false
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
+}
+
+interface Surf {
+  bg: string
+  text: string
+  title: string
+  meta: string
+  heading: string
+  divider: string
+  accent: string
+  dark: boolean
+}
+
+function buildSurfaces(t: CvTemplateDef): { side: Surf; main: Surf } {
+  const accent = t.accent
+  const sideBg = t.sidebarBg ?? (t.sidebarFilled ? accent : `${accent}12`)
+  const sideDark = isDarkColor(sideBg)
+  const side: Surf = {
+    bg: sideBg,
+    text: t.sidebarText ?? (sideDark ? '#e8edf3' : '#334155'),
+    title: sideDark ? '#ffffff' : '#1f2937',
+    meta: sideDark ? 'rgba(255,255,255,0.72)' : '#64748b',
+    heading: t.sidebarHeadColor ?? (sideDark ? '#ffffff' : accent),
+    divider: sideDark ? 'rgba(255,255,255,0.32)' : `${accent}55`,
+    accent,
+    dark: sideDark,
+  }
+  const mainBg = t.mainBg ?? '#ffffff'
+  const mainDark = isDarkColor(mainBg)
+  const main: Surf = {
+    bg: mainBg,
+    text: t.mainText ?? (mainDark ? '#e6eaf1' : '#374151'),
+    title: mainDark ? '#ffffff' : '#111827',
+    meta: mainDark ? 'rgba(255,255,255,0.7)' : '#64748b',
+    heading: accent,
+    divider: mainDark ? 'rgba(255,255,255,0.28)' : '#d1d5db',
+    accent,
+    dark: mainDark,
+  }
+  return { side, main }
+}
+
+function PhotoHeading({ t, surf, children }: { t: CvTemplateDef; surf: Surf; children: string }) {
+  const base = { fontSize: 10.5, fontWeight: 'bold' as const, color: surf.heading, marginBottom: 6 }
+  switch (t.headingStyle) {
+    case 'plain':
+      return <Text style={{ ...base, letterSpacing: 2 }}>{children}</Text>
+    case 'bar':
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+          <View style={{ width: 3, height: 11, backgroundColor: surf.accent, marginRight: 6 }} />
+          <Text style={{ fontSize: 10.5, fontWeight: 'bold', color: surf.heading, letterSpacing: 1 }}>{children}</Text>
+        </View>
+      )
+    case 'boxed':
+      return (
+        <View style={{ alignSelf: 'flex-start', backgroundColor: surf.accent, borderRadius: 2, paddingVertical: 2.5, paddingHorizontal: 8, marginBottom: 6 }}>
+          <Text style={{ fontSize: 9.5, fontWeight: 'bold', color: '#ffffff', letterSpacing: 1 }}>{children}</Text>
+        </View>
+      )
+    case 'pill':
+      return (
+        <View style={{ alignSelf: 'flex-start', borderWidth: 1, borderColor: surf.accent, borderRadius: 999, paddingVertical: 3, paddingHorizontal: 12, marginBottom: 7 }}>
+          <Text style={{ fontSize: 9.5, fontWeight: 'bold', color: surf.heading, letterSpacing: 1 }}>{children}</Text>
+        </View>
+      )
+    case 'timeline':
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6, marginLeft: -14 }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: surf.accent, marginRight: 6 }} />
+          <Text style={{ fontSize: 10.5, fontWeight: 'bold', color: surf.heading, letterSpacing: 1 }}>{children}</Text>
+        </View>
+      )
+    default: // underline
+      return (
+        <Text style={{ ...base, letterSpacing: 1.1, borderBottomWidth: 0.8, borderBottomColor: surf.divider, paddingBottom: 3 }}>{children}</Text>
+      )
+  }
+}
+
+/** Yıldız yerine 5 nokta (dolu/boş) — react-pdf'te güvenilir render. */
+function RatingDots({ score, surf }: { score: number; surf: Surf }) {
+  const off = surf.dark ? 'rgba(255,255,255,0.28)' : `${surf.accent}33`
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <View key={i} style={{ width: 7, height: 7, borderRadius: 3.5, marginRight: 3, backgroundColor: i < score ? surf.accent : off }} />
+      ))}
+    </View>
+  )
+}
+
+/** Seviye çubuğu (track + dolu kısım). */
+function RatingBar({ score, surf }: { score: number; surf: Surf }) {
+  const track = surf.dark ? 'rgba(255,255,255,0.2)' : `${surf.accent}22`
+  return (
+    <View style={{ width: 78, height: 5, borderRadius: 3, backgroundColor: track, overflow: 'hidden' }}>
+      <View style={{ width: `${(score / 5) * 100}%`, height: '100%', backgroundColor: surf.accent, borderRadius: 3 }} />
+    </View>
+  )
+}
+
+function PhotoBullets({ items, surf }: { items: string[]; surf: Surf }) {
+  return (
+    <>
+      {items.filter((b) => b.trim()).map((b, j) => (
+        <View key={j} style={{ flexDirection: 'row', marginTop: 2.5, paddingRight: 6 }}>
+          <Text style={{ width: 9, fontSize: 9.5, color: surf.accent }}>•</Text>
+          <Text style={{ flexGrow: 1, flexShrink: 1, fontSize: 9.5, color: surf.text, lineHeight: 1.38 }}>{b.trim()}</Text>
+        </View>
+      ))}
+    </>
+  )
+}
+
+/** Bir bölümü (key) verilen yüzeyde çizer. */
+function PhotoSection({
+  sectionKey, data, t, surf,
+}: { sectionKey: CvSectionKey; data: CvData; t: CvTemplateDef; surf: Surf }) {
+  const p = data.personal
+  const wrap = { marginBottom: 13 }
+  const label = {
+    summary: H.summary, experience: H.experience, education: H.education,
+    skills: H.skills, languages: H.languages, certifications: H.certifications,
+    projects: H.projects, contact: H.contact,
+  }[sectionKey]
+  const Head = () => <PhotoHeading t={t} surf={surf}>{label}</PhotoHeading>
+  const meta = { fontSize: 9, color: surf.meta, marginTop: 1 }
+  const title = { fontSize: 10.5, fontWeight: 'bold' as const, color: surf.title }
+  const body = { fontSize: 9.5, color: surf.text, lineHeight: 1.4 }
+  const periodStyle = { fontSize: 8.5, color: surf.accent, fontWeight: 'bold' as const, flexShrink: 0, marginLeft: 8 }
+
+  if (sectionKey === 'contact') {
+    const lines = [p.email, p.phone, p.location, ...p.links.map((l) => l.url || l.label).filter(Boolean)].filter(Boolean)
+    if (lines.length === 0) return null
+    return (
+      <View style={wrap}>
+        <Head />
+        {lines.map((l, i) => <Text key={i} style={{ fontSize: 9, color: surf.text, marginBottom: 3, lineHeight: 1.35 }}>{l}</Text>)}
+      </View>
+    )
+  }
+
+  if (sectionKey === 'summary') {
+    if (!data.summary.trim()) return null
+    return <View style={wrap}><Head /><Text style={body}>{data.summary.trim()}</Text></View>
+  }
+
+  if (sectionKey === 'experience') {
+    const items = data.experience.filter((e) => e.role || e.company)
+    if (items.length === 0) return null
+    return (
+      <View style={wrap}>
+        <Head />
+        {items.map((e, i) => (
+          <View key={i} style={{ marginBottom: 8 }} wrap={false}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Text style={{ ...title, flexGrow: 1, flexShrink: 1, flexBasis: 0 }}>{[e.role, e.company].filter(Boolean).join(' · ')}</Text>
+              <Text style={periodStyle}>{period(e.start, e.end, e.current)}</Text>
+            </View>
+            {!!e.location && <Text style={meta}>{e.location}</Text>}
+            <PhotoBullets items={e.bullets} surf={surf} />
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (sectionKey === 'education') {
+    const items = data.education.filter((e) => e.school || e.degree)
+    if (items.length === 0) return null
+    return (
+      <View style={wrap}>
+        <Head />
+        {items.map((ed, i) => (
+          <View key={i} style={{ marginBottom: 7 }} wrap={false}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <Text style={{ ...title, flexGrow: 1, flexShrink: 1, flexBasis: 0 }}>{[ed.degree, ed.field].filter(Boolean).join(' - ') || ed.school}</Text>
+              <Text style={periodStyle}>{period(ed.start, ed.end)}</Text>
+            </View>
+            {!!(ed.degree || ed.field) && !!ed.school && <Text style={meta}>{ed.school}</Text>}
+            {!!ed.note.trim() && <Text style={{ ...body, marginTop: 2 }}>{ed.note.trim()}</Text>}
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (sectionKey === 'certifications') {
+    const items = data.certifications.filter((c) => c.name)
+    if (items.length === 0) return null
+    return (
+      <View style={wrap}>
+        <Head />
+        {items.map((c, i) => <Text key={i} style={{ ...body, marginBottom: 2.5 }}>{[c.name, c.issuer, c.date].filter(Boolean).join(' · ')}</Text>)}
+      </View>
+    )
+  }
+
+  if (sectionKey === 'projects') {
+    const items = data.projects.filter((pr) => pr.name)
+    if (items.length === 0) return null
+    return (
+      <View style={wrap}>
+        <Head />
+        {items.map((pr, i) => (
+          <View key={i} style={{ marginBottom: 7 }} wrap={false}>
+            <Text style={title}>{pr.name}</Text>
+            {!!pr.link && <Text style={meta}>{pr.link}</Text>}
+            {!!pr.description.trim() && <Text style={{ ...body, marginTop: 2 }}>{pr.description.trim()}</Text>}
+            <PhotoBullets items={pr.bullets} surf={surf} />
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (sectionKey === 'languages') {
+    const items = data.languages.filter((l) => l.name)
+    if (items.length === 0) return null
+    const style = t.langStyle ?? 'text'
+    return (
+      <View style={wrap}>
+        <Head />
+        {style === 'text' ? (
+          items.map((l, i) => <Text key={i} style={{ ...body, marginBottom: 2 }}>{l.level ? `${l.name} (${l.level})` : l.name}</Text>)
+        ) : (
+          items.map((l, i) => (
+            <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <Text style={{ fontSize: 9.5, color: surf.text, flexShrink: 1, paddingRight: 8 }}>{l.name}</Text>
+              {style === 'stars' ? <RatingDots score={langLevelToScore(l.level)} surf={surf} /> : <RatingBar score={langLevelToScore(l.level)} surf={surf} />}
+            </View>
+          ))
+        )}
+      </View>
+    )
+  }
+
+  // skills
+  const items = data.skills.filter(Boolean)
+  if (items.length === 0) return null
+  const style = t.skillStyle
+  return (
+    <View style={wrap}>
+      <Head />
+      {style === 'chips' ? (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          {items.map((sk, i) => <Text key={i} style={{ fontSize: 9, color: surf.accent, backgroundColor: `${surf.accent}1e`, borderRadius: 3, paddingVertical: 2.5, paddingHorizontal: 7, marginRight: 5, marginBottom: 5 }}>{sk}</Text>)}
+        </View>
+      ) : style === 'inline' ? (
+        <Text style={body}>{items.join('   ·   ')}</Text>
+      ) : style === 'stars' ? (
+        items.map((sk, i) => (
+          <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <Text style={{ fontSize: 9.5, color: surf.text, flexShrink: 1, paddingRight: 8 }}>{sk}</Text>
+            <RatingDots score={pseudoSkillScore(i)} surf={surf} />
+          </View>
+        ))
+      ) : style === 'bars' ? (
+        items.map((sk, i) => (
+          <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <Text style={{ fontSize: 9.5, color: surf.text, flexShrink: 1, paddingRight: 8 }}>{sk}</Text>
+            <RatingBar score={pseudoSkillScore(i)} surf={surf} />
+          </View>
+        ))
+      ) : (
+        <PhotoBullets items={items} surf={surf} />
+      )}
+    </View>
+  )
+}
+
+function PhotoFrame({ src, t }: { src: string; t: CvTemplateDef }) {
+  const shape = t.photoShape ?? 'circle'
+  if (shape === 'circle') {
+    const inner = t.photoBorder
+      ? { borderWidth: 3, borderColor: t.photoBorder }
+      : {}
+    return (
+      <View style={{ alignItems: 'center', marginBottom: 14 }}>
+        <View style={{ width: 92, height: 92, borderRadius: 46, overflow: 'hidden', ...inner }}>
+          <Image src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </View>
+      </View>
+    )
+  }
+  const radius = shape === 'rounded' ? 10 : 3
+  const border = t.photoBorder ? { borderWidth: 3, borderColor: t.photoBorder } : {}
+  return (
+    <View style={{ width: '100%', height: 132, borderRadius: radius, overflow: 'hidden', marginBottom: 14, ...border }}>
+      <Image src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    </View>
+  )
+}
+
+function NameBlock({ data, t, surf, onBand }: { data: CvData; t: CvTemplateDef; surf: Surf; onBand?: boolean }) {
+  const p = data.personal
+  const nameColor = onBand ? '#ffffff' : surf.dark ? '#ffffff' : t.accent
+  const headlineColor = onBand ? (t.headlineColor ?? 'rgba(255,255,255,0.9)') : (t.headlineColor ?? surf.accent)
+  return (
+    <View style={{ marginBottom: 10 }}>
+      <Text style={{ fontSize: t.nameSize, fontWeight: 'bold', color: nameColor, lineHeight: 1.12 }}>{p.fullName || 'Ad Soyad'}</Text>
+      {!!p.headline && <Text style={{ fontSize: 12, color: headlineColor, marginTop: 3, fontWeight: 'bold' }}>{p.headline}</Text>}
+    </View>
+  )
+}
+
+function PhotoCv({ data, t }: { data: CvData; t: CvTemplateDef }) {
+  const p = data.personal
+  const photo = photoSrc(p.photo)
+  const { side, main } = buildSurfaces(t)
+  const sideW = t.sideWidth ?? 0.34
+  const onRight = t.sidebarSide === 'right'
+  const sidePct = `${Math.round(sideW * 100)}%`
+  const mainPct = `${Math.round((1 - sideW) * 100)}%`
+  const nameIn = t.nameIn ?? 'main'
+  const sideSecs = t.sidebarSections ?? ['contact', 'skills', 'languages', 'certifications']
+  const mainSecs = t.mainSections ?? ['summary', 'experience', 'education', 'projects']
+
+  const SideCol = (
+    <View style={{ width: sidePct, paddingVertical: 30, paddingHorizontal: 18 }}>
+      {photo && <PhotoFrame src={photo} t={t} />}
+      {nameIn === 'sidebar' && <NameBlock data={data} t={t} surf={side} />}
+      {sideSecs.map((k) => <PhotoSection key={k} sectionKey={k} data={data} t={t} surf={side} />)}
+    </View>
+  )
+
+  const timeline = t.headingStyle === 'timeline'
+  const MainInner = (
+    <View style={timeline ? { paddingLeft: 14, borderLeftWidth: 1.2, borderLeftColor: `${main.accent}44` } : {}}>
+      {nameIn === 'main' && <NameBlock data={data} t={t} surf={main} />}
+      {mainSecs.map((k) => <PhotoSection key={k} sectionKey={k} data={data} t={t} surf={main} />)}
+    </View>
+  )
+
+  const MainCol =
+    nameIn === 'band' ? (
+      <View style={{ width: mainPct }}>
+        <View style={{ backgroundColor: t.accent, paddingVertical: 22, paddingHorizontal: 26 }}>
+          <NameBlock data={data} t={t} surf={main} onBand />
+        </View>
+        <View style={{ paddingVertical: 22, paddingHorizontal: 26 }}>{MainInner}</View>
+      </View>
+    ) : (
+      <View style={{ width: mainPct, paddingVertical: 30, paddingHorizontal: 26 }}>{MainInner}</View>
+    )
+
+  return (
+    <Page size="A4" style={{ fontFamily: 'Roboto', fontSize: 10 }}>
+      {/* Tam yükseklik kolon arka planları (kısa içerikte de zemin dolu kalsın). */}
+      <View fixed style={{ position: 'absolute', top: 0, bottom: 0, width: sidePct, backgroundColor: side.bg, ...(onRight ? { right: 0 } : { left: 0 }) }} />
+      <View fixed style={{ position: 'absolute', top: 0, bottom: 0, width: mainPct, backgroundColor: main.bg, ...(onRight ? { left: 0 } : { right: 0 }) }} />
+      <View style={{ flexDirection: 'row' }}>
+        {onRight ? (<>{MainCol}{SideCol}</>) : (<>{SideCol}{MainCol}</>)}
+      </View>
+    </Page>
+  )
+}
+
 function CvDocument({ data, template }: { data: CvData; template: CvTemplate }) {
   const t = getTemplate(template)
   const s = buildStyles(t)
   return (
     <Document author="Wisparkr" title={data.personal.fullName || 'CV'}>
-      {t.layout === 'sidebar' ? (
+      {t.category === 'photo' ? (
+        <PhotoCv data={data} t={t} />
+      ) : t.layout === 'sidebar' ? (
         <SidebarCv data={data} t={t} s={s} />
       ) : t.layout === 'band' ? (
         <BandCv data={data} t={t} s={s} />
