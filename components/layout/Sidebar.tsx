@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, Settings, CreditCard, GraduationCap, Bot, Mic, ChevronDown, Lock, Briefcase } from 'lucide-react'
+import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, CreditCard, GraduationCap, Bot, Mic, ChevronDown, Lock, Briefcase } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { useI18n } from '@/components/i18n/I18nProvider'
@@ -36,7 +36,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/cv-builder', key: 'cvBuilder', icon: FilePlus },
   { href: '/documents', key: 'documents', icon: Files },
   { href: '/settings/billing', key: 'billing', icon: CreditCard },
-  { href: '/settings', key: 'settings', icon: Settings },
 ]
 
 const BILLING_HREF = '/settings/billing'
