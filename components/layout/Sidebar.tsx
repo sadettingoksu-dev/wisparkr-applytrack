@@ -143,13 +143,16 @@ export function Sidebar({ name, email, avatarUrl, plan, effectivePlan, mobileOpe
                   onClick={onMobileClose}
                   title={effCollapsed ? label : undefined}
                   className={clsx(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     effCollapsed && 'justify-center',
                     active
-                      ? 'bg-purple-50 text-purple-600'
+                      ? 'bg-purple-50 text-purple-600 shadow-sm shadow-purple-100'
                       : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                   )}
                 >
+                  {active && (
+                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-purple-600" aria-hidden />
+                  )}
                   <Icon className="h-4 w-4 shrink-0" />
                   {!effCollapsed && label}
                 </Link>
@@ -175,15 +178,18 @@ export function Sidebar({ name, email, avatarUrl, plan, effectivePlan, mobileOpe
                   title={locked ? lockTitle : effCollapsed ? childLabel : undefined}
                   aria-disabled={locked}
                   className={clsx(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     effCollapsed ? 'justify-center' : 'pl-9',
                     locked
                       ? 'text-slate-300 hover:bg-slate-50 hover:text-slate-400'
                       : active
-                        ? 'bg-purple-50 text-purple-600'
+                        ? 'bg-purple-50 text-purple-600 shadow-sm shadow-purple-100'
                         : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                   )}
                 >
+                  {active && (
+                    <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-purple-600" aria-hidden />
+                  )}
                   <ChildIcon className="h-4 w-4 shrink-0" />
                   {!effCollapsed && <span className="flex-1">{childLabel}</span>}
                   {!effCollapsed && locked && <Lock className="h-3.5 w-3.5 shrink-0 text-slate-300" />}
