@@ -21,7 +21,7 @@ export function Navbar() {
   const m = getMarketing(getServerLocale())
 
   return (
-    <header className="mx-4 mt-4 overflow-hidden rounded-[2rem] bg-white shadow-lg shadow-slate-300/50 sm:mx-6">
+    <header className="relative z-40 mx-4 mt-4 rounded-[2rem] bg-white shadow-lg shadow-slate-300/50 sm:mx-6">
       {/* Üst yardımcı şerit (masaüstü) */}
       <div className="hidden items-center justify-between border-b border-slate-100 px-6 py-2 text-xs text-slate-500 md:flex">
         <div className="flex items-center gap-4">
