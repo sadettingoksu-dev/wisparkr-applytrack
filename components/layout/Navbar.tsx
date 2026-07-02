@@ -5,19 +5,19 @@ import { APP_NAME } from '@/utils/constants'
 import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { ThemeToggleButton } from '@/components/layout/ThemeToggleButton'
-import { MegaMenu } from '@/components/layout/MegaMenu'
-import { getServerLocale } from '@/lib/i18n-server'
+import { getServerDict, getServerLocale } from '@/lib/i18n-server'
 import { getMarketing } from '@/lib/marketing'
 
 /**
  * paytr tarzı iki katlı pazarlama navbar'ı — tek yüzen kart içinde:
  *  1) Üst yardımcı şerit: ikincil bağlantılar (Rehber, Yardım) + Müşteri Paneli girişi.
- *  2) Ana bar: logo · mega-menü · dil/tema/hesap.
+ *  2) Ana bar: logo · sade landing menüsü (Özellikler / Fiyatlandırma / SSS) · dil/tema/hesap.
  *
  * Auth/dil/tema kontrolleri mevcut bileşenlerle (değiştirilmeden) yeniden kullanılır;
  * hiçbir akış değişmez, yalnızca yerleşim paytr iskeletine yaklaştırılır.
  */
 export function Navbar() {
+  const t = getServerDict()
   const m = getMarketing(getServerLocale())
 
   return (
@@ -45,8 +45,10 @@ export function Navbar() {
           <span className="text-xl font-bold text-slate-900">{APP_NAME}</span>
         </Link>
 
-        <nav className="col-start-2 hidden md:flex">
-          <MegaMenu />
+        <nav className="col-start-2 hidden items-center gap-6 text-sm text-slate-500 md:flex">
+          <Link href="/#features" className="transition-colors hover:text-slate-900">{t.nav.features}</Link>
+          <Link href="/#pricing" className="transition-colors hover:text-slate-900">{t.nav.pricing}</Link>
+          <Link href="/#faq" className="transition-colors hover:text-slate-900">{t.nav.faq}</Link>
         </nav>
 
         <div className="col-start-3 flex items-center justify-end gap-3">
