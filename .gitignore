@@ -31,3 +31,6 @@ next-env.d.ts
 
 # tasarim araci (puppeteer/screenshot scratch alani — repoya girmez)
 /tasarim
+
+# Claude Code gecici worktree klasoru
+/.claude/worktrees
