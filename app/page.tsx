@@ -13,9 +13,11 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { PLANS, PLAN_ORDER } from '@/lib/plans'
-import { NavbarAuth } from '@/components/layout/NavbarAuth'
-import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
-import { ThemeToggleButton } from '@/components/layout/ThemeToggleButton'
+import { Navbar } from '@/components/layout/Navbar'
+import { Footer } from '@/components/layout/Footer'
+import { PromoBar } from '@/components/landing/PromoBar'
+import { StatsBand } from '@/components/landing/StatsBand'
+import { IntegrationsBand } from '@/components/landing/IntegrationsBand'
 import { HeroDemo } from '@/components/landing/HeroDemo'
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
 import { ShowcaseMock } from '@/components/landing/ShowcaseMock'
@@ -43,26 +45,9 @@ export default async function LandingPage({
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
-      {/* Navbar */}
-      <header className="mx-4 mt-4 rounded-[2rem] bg-white shadow-lg shadow-slate-300/50 sm:mx-6">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-6 py-4">
-          <Link href="/" className="col-start-1 flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Wisparkr" width={32} height={32} className="rounded-lg" />
-            <span className="text-xl font-bold text-slate-900">Wisparkr</span>
-          </Link>
-          <nav className="col-start-2 hidden items-center gap-6 text-sm text-slate-500 md:flex">
-            <Link href="/#features" className="hover:text-slate-900 transition-colors">{t.nav.features}</Link>
-            <Link href="/#pricing" className="hover:text-slate-900 transition-colors">{t.nav.pricing}</Link>
-            <Link href="/#faq" className="hover:text-slate-900 transition-colors">{t.nav.faq}</Link>
-          </nav>
-          <div className="col-start-3 flex items-center justify-end gap-3">
-            <LanguageSwitcher />
-            <ThemeToggleButton />
-            <NavbarAuth />
-          </div>
-        </div>
-      </header>
+      {/* paytr tarzı kampanya şeridi + iki katlı navbar */}
+      <PromoBar />
+      <Navbar />
 
       <main className="flex-1">
         {/* Hero — solda metin+CTA, sağda animasyonlu ürün demosu */}
@@ -122,6 +107,9 @@ export default async function LandingPage({
           </div>
         </section>
 
+        {/* paytr tarzı istatistik bloğu */}
+        <StatsBand />
+
         {/* Features */}
         <section id="features" className="bg-slate-50 py-24">
           <div className="mx-auto max-w-6xl px-6">
@@ -155,6 +143,9 @@ export default async function LandingPage({
           subtitle={t.howItWorks.subtitle}
           shots={t.howItWorks.steps.map((s, i) => ({ ...s, mock: <ShowcaseMock index={i} t={t} /> }))}
         />
+
+        {/* paytr tarzı entegrasyon/bağlantı bölümü */}
+        <IntegrationsBand />
 
         {/* Fiyatlandırma */}
         <section id="pricing" className="bg-slate-50 py-24">
@@ -218,17 +209,7 @@ export default async function LandingPage({
         <Faq heading={t.faq.heading} subtitle={t.faq.subtitle} items={t.faq.items} />
       </main>
 
-      <footer className="bg-slate-50 py-8 text-sm text-slate-400">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-6 sm:flex-row sm:justify-between">
-          <span>© {new Date().getFullYear()} Wisparkr. {t.footer.rights}</span>
-          <nav className="flex items-center gap-4">
-            <Link href="/rehber" className="transition-colors hover:text-slate-700">{t.guides.title}</Link>
-            <Link href="/yardim" className="transition-colors hover:text-slate-700">{t.footer.help}</Link>
-            <Link href="/privacy" className="transition-colors hover:text-slate-700">{t.footer.privacy}</Link>
-            <Link href="/terms" className="transition-colors hover:text-slate-700">{t.footer.terms}</Link>
-          </nav>
-        </div>
-      </footer>
+      <Footer />
 
       {/* parkrcan — yalnızca panelden gelen (?home=1) görünümde */}
       {searchParams.home === '1' && <ParkrcanWidget />}
