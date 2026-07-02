@@ -1,24 +1,23 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, UserRound } from 'lucide-react'
+import { UserRound } from 'lucide-react'
 import { APP_NAME } from '@/utils/constants'
 import { NavbarAuth } from '@/components/layout/NavbarAuth'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { ThemeToggleButton } from '@/components/layout/ThemeToggleButton'
 import { MegaMenu } from '@/components/layout/MegaMenu'
-import { getServerDict, getServerLocale } from '@/lib/i18n-server'
+import { getServerLocale } from '@/lib/i18n-server'
 import { getMarketing } from '@/lib/marketing'
 
 /**
  * paytr tarzı iki katlı pazarlama navbar'ı — tek yüzen kart içinde:
- *  1) Üst yardımcı şerit: ikincil bağlantılar (Rehber, Yardım) + destek notu.
- *  2) Ana bar: logo · mega-menü · dil/tema/hesap + "Ücretsiz Başla" CTA.
+ *  1) Üst yardımcı şerit: ikincil bağlantılar (Rehber, Yardım) + Müşteri Paneli girişi.
+ *  2) Ana bar: logo · mega-menü · dil/tema/hesap.
  *
  * Auth/dil/tema kontrolleri mevcut bileşenlerle (değiştirilmeden) yeniden kullanılır;
  * hiçbir akış değişmez, yalnızca yerleşim paytr iskeletine yaklaştırılır.
  */
 export function Navbar() {
-  const t = getServerDict()
   const m = getMarketing(getServerLocale())
 
   return (
@@ -54,12 +53,6 @@ export function Navbar() {
           <LanguageSwitcher />
           <ThemeToggleButton />
           <NavbarAuth />
-          <Link href="/signup" className="hidden sm:block">
-            <button className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300">
-              {m.topbar.start}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </Link>
         </div>
       </div>
     </header>
