@@ -29,4 +29,5 @@ next-env.d.ts
 # gecici notlar / yapıştırma talimatları
 /yapistirilacaklar
 
-.vercel
+# tasarim araci (puppeteer/screenshot scratch alani — repoya girmez)
+/tasarim
