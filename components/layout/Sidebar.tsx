@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, CreditCard, GraduationCap, Bot, Mic, ChevronDown, Lock, Briefcase } from 'lucide-react'
+import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, CreditCard, GraduationCap, Bot, Mic, ChevronDown, Lock, Briefcase, Globe } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { useI18n } from '@/components/i18n/I18nProvider'
@@ -227,6 +227,22 @@ export function Sidebar({ name, email, avatarUrl, plan, effectivePlan, mobileOpe
             )
           })}
         </nav>
+
+        {/* Web sitesine (pazarlama sayfası) dön — mor metin linki, buton değil */}
+        <div className={clsx('px-3 pb-1', effCollapsed && 'px-0')}>
+          <Link
+            href="/?home=1"
+            onClick={onMobileClose}
+            title={effCollapsed ? t.userMenu.website : undefined}
+            className={clsx(
+              'flex items-center gap-2 rounded-lg py-2 text-sm font-medium text-purple-600 transition-colors hover:text-purple-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300',
+              effCollapsed ? 'justify-center px-0' : 'px-3'
+            )}
+          >
+            <Globe className="h-4 w-4 shrink-0" />
+            {!effCollapsed && t.userMenu.website}
+          </Link>
+        </div>
 
         <div className="border-t border-slate-200 p-2">
           <UserMenu

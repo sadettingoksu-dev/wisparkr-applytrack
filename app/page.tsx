@@ -16,7 +16,6 @@ import { PLANS, PLAN_ORDER } from '@/lib/plans'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { PromoBar } from '@/components/landing/PromoBar'
-import { StatsBand } from '@/components/landing/StatsBand'
 import { IntegrationsBand } from '@/components/landing/IntegrationsBand'
 import { HeroDemo } from '@/components/landing/HeroDemo'
 import { FeatureShowcase } from '@/components/landing/FeatureShowcase'
@@ -106,9 +105,6 @@ export default async function LandingPage({
             ))}
           </div>
         </section>
-
-        {/* paytr tarzı istatistik bloğu */}
-        <StatsBand />
 
         {/* Features */}
         <section id="features" className="bg-slate-50 py-24">
