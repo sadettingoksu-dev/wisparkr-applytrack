@@ -902,6 +902,9 @@ const tr = {
     generate: 'Oluştur',
     groupAccount: 'Hesap',
     groupConnections: 'Bağlantılar & Entegrasyon',
+    groupAppearance: 'Görünüm & Dil',
+    theme: 'Tema',
+    language: 'Dil',
     danger: {
       title: 'Tehlikeli bölge',
       exportTitle: 'Verilerini dışa aktar',
@@ -2001,6 +2004,9 @@ const en: Dictionary = {
     generate: 'Generate',
     groupAccount: 'Account',
     groupConnections: 'Connections & Integration',
+    groupAppearance: 'Appearance & Language',
+    theme: 'Theme',
+    language: 'Language',
     danger: {
       title: 'Danger zone',
       exportTitle: 'Export your data',
@@ -3098,6 +3104,9 @@ const de: Dictionary = {
     generate: 'Erstellen',
     groupAccount: 'Konto',
     groupConnections: 'Verbindungen & Integration',
+    groupAppearance: 'Darstellung & Sprache',
+    theme: 'Design',
+    language: 'Sprache',
     danger: {
       title: 'Gefahrenzone',
       exportTitle: 'Deine Daten exportieren',
@@ -4195,6 +4204,9 @@ const es: Dictionary = {
     generate: 'Generar',
     groupAccount: 'Cuenta',
     groupConnections: 'Conexiones e integración',
+    groupAppearance: 'Apariencia e idioma',
+    theme: 'Tema',
+    language: 'Idioma',
     danger: {
       title: 'Zona de peligro',
       exportTitle: 'Exporta tus datos',
@@ -5292,6 +5304,9 @@ const fr: Dictionary = {
     generate: 'Générer',
     groupAccount: 'Compte',
     groupConnections: 'Connexions et intégration',
+    groupAppearance: 'Apparence et langue',
+    theme: 'Thème',
+    language: 'Langue',
     danger: {
       title: 'Zone de danger',
       exportTitle: 'Exportez vos données',

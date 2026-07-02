@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Wand2, Plug, Bell, AlertTriangle, X, type LucideIcon } from 'lucide-react'
+import { User, Wand2, Plug, Bell, AlertTriangle, Palette, X, type LucideIcon } from 'lucide-react'
 import clsx from 'clsx'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { SettingsGroup, SettingsRow } from '@/components/settings/SettingsList'
+import { ThemeToggleButton } from '@/components/layout/ThemeToggleButton'
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { CvUploadCard } from '@/components/settings/CvUploadCard'
 import { CvPolishCard } from '@/components/settings/CvPolishCard'
 import { ForwardingEmailCard } from '@/components/settings/ForwardingEmailCard'
@@ -17,7 +19,7 @@ import { LockedFeatureCard } from '@/components/billing/LockedFeatureCard'
 import { format } from '@/lib/i18n'
 import { PLANS, requiredPlanForFeature } from '@/lib/plans'
 
-type Section = 'account' | 'polish' | 'connections' | 'notifications' | 'danger'
+type Section = 'account' | 'appearance' | 'polish' | 'connections' | 'notifications' | 'danger'
 
 export interface SettingsShellProps {
   email: string
@@ -36,6 +38,7 @@ export function SettingsShell(props: SettingsShellProps) {
 
   const nav: { id: Section; label: string; icon: LucideIcon; tone?: 'danger' }[] = [
     { id: 'account', label: t.settings.groupAccount, icon: User },
+    { id: 'appearance', label: t.settings.groupAppearance, icon: Palette },
     { id: 'polish', label: t.cvPolish.title, icon: Wand2 },
     { id: 'connections', label: t.settings.groupConnections, icon: Plug },
     { id: 'notifications', label: t.settings.notify.title, icon: Bell },
@@ -100,6 +103,17 @@ export function SettingsShell(props: SettingsShellProps) {
                   <span className="truncate text-sm text-slate-500">{props.email}</span>
                 </SettingsRow>
                 <CvUploadCard initialFilename={props.cvFilename} />
+              </SettingsGroup>
+            )}
+
+            {active === 'appearance' && (
+              <SettingsGroup>
+                <SettingsRow label={t.settings.theme}>
+                  <ThemeToggleButton />
+                </SettingsRow>
+                <SettingsRow label={t.settings.language}>
+                  <LanguageSwitcher />
+                </SettingsRow>
               </SettingsGroup>
             )}
 

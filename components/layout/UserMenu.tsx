@@ -11,7 +11,6 @@ import {
   Puzzle,
   HelpCircle,
   Info,
-  Globe,
   LogOut,
   ChevronsUpDown,
 } from 'lucide-react'
@@ -196,14 +195,6 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar', co
               onClick={() => setOpen(false)}
             />
             <MenuLink href="/#features" icon={Info} label={t.userMenu.moreInfo} onClick={() => setOpen(false)} />
-            <MenuLink
-              href="/?home=1"
-              icon={Globe}
-              label={t.userMenu.website}
-              external
-              newTab
-              onClick={() => setOpen(false)}
-            />
           </div>
 
           {/* Account actions */}
