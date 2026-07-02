@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { NotificationBell } from '@/components/layout/NotificationBell'
 import { ProductTour } from '@/components/dashboard/ProductTour'
 import { CommandPalette } from '@/components/layout/CommandPalette'
-import type { PlanId } from '@/lib/plans'
+import { getPlan, type PlanId } from '@/lib/plans'
 
 interface DashboardShellProps {
   name: string
@@ -26,6 +26,9 @@ interface DashboardShellProps {
  */
 export function DashboardShell({ name, email, avatarUrl, plan, effectivePlan, children }: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const planName = getPlan(plan).name
+  const isPaid = plan === 'pro' || plan === 'career_coach'
+  const initial = (name || email || '?').trim().charAt(0).toUpperCase()
 
   return (
     <div className="flex min-h-screen bg-slate-50 lg:h-screen lg:overflow-hidden">
@@ -41,8 +44,9 @@ export function DashboardShell({ name, email, avatarUrl, plan, effectivePlan, ch
         onMobileClose={() => setMobileOpen(false)}
       />
       <div className="flex min-w-0 flex-1 flex-col lg:overflow-hidden">
-        {/* Üst bar: mobilde hamburger, her zaman bildirim zili — masaüstünde sabit kalır */}
-        <div className="flex shrink-0 items-center gap-3 px-4 py-3 sm:px-8 sm:py-4">
+        {/* Panel başlığı (paytr tarzı): solda hesap bağlamı, sağda arama + bildirim.
+            Masaüstünde sabit; mobilde sticky kalır. */}
+        <header className="sticky top-0 z-30 flex shrink-0 items-center gap-3 border-b border-slate-200 bg-white/85 px-4 py-3 backdrop-blur sm:px-8">
           <button
             onClick={() => setMobileOpen(true)}
             aria-label="Menü"
@@ -50,20 +54,45 @@ export function DashboardShell({ name, email, avatarUrl, plan, effectivePlan, ch
           >
             <Menu className="h-5 w-5" />
           </button>
-          {/* Komut paletini aç (Cmd/Ctrl+K) */}
-          <button
-            onClick={() => window.dispatchEvent(new Event('wisparkr:cmdk'))}
-            className="ml-auto flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-400 transition-colors hover:bg-slate-50"
-          >
-            <Search className="h-4 w-4" />
-            <kbd className="hidden text-xs font-medium text-slate-400 sm:inline">Ctrl K</kbd>
-          </button>
-          <div>
+
+          {/* Hesap bağlamı — çeviri gerektirmez (isim + plan rozeti) */}
+          <div className="flex min-w-0 items-center gap-2.5">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt={name} className="h-9 w-9 shrink-0 rounded-full object-cover" />
+            ) : (
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-purple-100 text-sm font-bold text-purple-700">
+                {initial}
+              </span>
+            )}
+            <div className="hidden min-w-0 leading-tight sm:block">
+              <p className="truncate text-sm font-semibold text-slate-900">{name || email}</p>
+              <p className="truncate text-xs text-slate-400">{email}</p>
+            </div>
+            <span
+              className={
+                'ml-1 hidden shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold sm:inline-flex ' +
+                (isPaid ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500')
+              }
+            >
+              {planName}
+            </span>
+          </div>
+
+          <div className="ml-auto flex items-center gap-3">
+            {/* Komut paletini aç (Cmd/Ctrl+K) */}
+            <button
+              onClick={() => window.dispatchEvent(new Event('wisparkr:cmdk'))}
+              className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-400 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300"
+            >
+              <Search className="h-4 w-4" />
+              <kbd className="hidden text-xs font-medium text-slate-400 sm:inline">Ctrl K</kbd>
+            </button>
             <NotificationBell />
           </div>
-        </div>
+        </header>
         {/* Yalnızca bu alan kaydırılır (masaüstünde) */}
-        <main className="px-4 pb-8 sm:px-8 lg:flex-1 lg:overflow-y-auto">{children}</main>
+        <main className="px-4 pb-8 pt-6 sm:px-8 lg:flex-1 lg:overflow-y-auto">{children}</main>
       </div>
     </div>
   )
