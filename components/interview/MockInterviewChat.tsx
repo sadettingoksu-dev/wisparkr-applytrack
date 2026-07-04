@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Send, Mic, Volume2, ChevronDown } from 'lucide-react'
+import { Mic, Volume2, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { InterviewAvatar } from '@/components/interview/InterviewAvatar'
@@ -48,7 +48,6 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   const { t, locale } = useI18n()
   const speechLang = localeToSpeechLang(locale)
   const [messages, setMessages] = useState(initialMessages)
-  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState(interview.status)
@@ -158,10 +157,6 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, voiceMode])
 
-  useEffect(() => {
-    if (speech.transcript) setInput(speech.transcript)
-  }, [speech.transcript])
-
   // ELLER SERBEST: mikrofon hep açık; kullanıcı bir süre (≈2.3 sn) konuşmayı
   // bırakınca cevabı OTOMATİK gönderir. Her yeni konuşma parçası zamanlayıcıyı
   // sıfırlar; AI konuşurken/işlerken tetiklenmez (yankı/erken gönderim önlenir).
@@ -172,7 +167,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     silenceTimerRef.current = setTimeout(() => {
       sendMessage(text)
-    }, 2800)
+    }, 2600)
     return () => {
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     }
@@ -188,13 +183,12 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function sendMessage(override?: string) {
-    const content = (override ?? input).trim()
+  async function sendMessage(spoken: string) {
+    const content = spoken.trim()
     if (!content || loading) return
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     setError(null)
     setLoading(true)
-    setInput('')
     if (speech.isListening) speech.stop()
 
     setMessages((prev) => [...prev, { role: 'candidate', content } as MockInterviewMessage])
@@ -210,7 +204,6 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
       if (!res.ok) {
         setError(json.error?.message ?? t.common.error)
         setMessages((prev) => prev.slice(0, -1))
-        setInput(content)
         return
       }
 
@@ -231,7 +224,6 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     } catch {
       setError(t.common.connectionError)
       setMessages((prev) => prev.slice(0, -1))
-      setInput(content)
     } finally {
       setLoading(false)
     }
@@ -337,7 +329,8 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
         }}
       />
 
-      {/* BAŞLANGIÇ KAPISI — tarayıcı izni için tek dokunuş gerekir */}
+      {/* BAŞLANGIÇ KAPISI — tarayıcı izni için tek dokunuş gerekir.
+          Kullanıcı BAŞLAMADAN ÖNCE kadın/erkek koç seçer. */}
       {speechSupported && !started && (
         <div
           className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-5 px-6 text-center"
@@ -353,6 +346,28 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
             <div className="text-lg font-semibold text-purple-50">{jobTitle}</div>
             <div className="text-sm text-purple-300">{company}</div>
           </div>
+
+          {/* Koç / ses seçimi — başlamadan önce */}
+          <div className="flex flex-col items-center gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-purple-300/70">
+              {t.interview.coachLabel}
+            </span>
+            <div className="flex overflow-hidden rounded-full border border-white/15 text-sm">
+              <button
+                onClick={() => setVoiceGender('female')}
+                className={`px-5 py-2 font-medium transition-colors ${voiceGender === 'female' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:bg-white/10'}`}
+              >
+                {t.interview.voiceFemale}
+              </button>
+              <button
+                onClick={() => setVoiceGender('male')}
+                className={`px-5 py-2 font-medium transition-colors ${voiceGender === 'male' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:bg-white/10'}`}
+              >
+                {t.interview.voiceMale}
+              </button>
+            </div>
+          </div>
+
           <p className="max-w-sm text-sm leading-relaxed text-purple-200/80">
             {t.interview.beginHint}
           </p>
@@ -367,6 +382,19 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
             <Mic className="h-5 w-5" />
             {t.interview.begin}
           </button>
+        </div>
+      )}
+
+      {/* Tarayıcı sesli mülakatı desteklemiyorsa bilgilendir (yazılı mod yok). */}
+      {!speechSupported && !started && (
+        <div
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 px-6 text-center"
+          style={{ background: 'rgba(7,4,17,0.85)', backdropFilter: 'blur(4px)' }}
+        >
+          <div className="text-lg font-semibold text-purple-50">{jobTitle}</div>
+          <p className="max-w-sm text-sm leading-relaxed text-amber-200/90">
+            {t.interview.voiceUnsupported}
+          </p>
         </div>
       )}
 
@@ -533,12 +561,13 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
           </div>
         )}
 
-        {/* canlı cevap paneli */}
+        {/* canlı cevap paneli — SADECE SES. Konuşulan metin anlık görünür,
+            yazı yazma/gönderme yok; sessizlikte cevap otomatik gider. */}
         <div
-          className="w-full max-w-2xl rounded-2xl border border-purple-400/20 p-3.5"
+          className="w-full max-w-2xl rounded-2xl border border-purple-400/20 p-4"
           style={{ background: 'rgba(124,58,237,0.07)', backdropFilter: 'blur(6px)' }}
         >
-          <div className="flex items-end gap-3">
+          <div className="flex items-center gap-3">
             {speech.isListening && (
               <div className="flex h-8 shrink-0 items-center gap-[3px]">
                 {USER_BARS.map((b, i) => (
@@ -556,43 +585,46 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
                 ))}
               </div>
             )}
-            <textarea
-              rows={1}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  sendMessage()
-                }
-              }}
-              placeholder={speech.isListening ? t.interview.listening : t.interview.answerPlaceholder}
-              disabled={loading}
-              className="max-h-40 min-h-[40px] flex-1 resize-none bg-transparent text-[15px] leading-relaxed text-purple-50 placeholder:text-purple-300/50 focus:outline-none"
-            />
+            <p className="min-h-[26px] flex-1 text-left text-[15px] leading-relaxed text-purple-50">
+              {speech.transcript || (
+                <span className="text-purple-300/50">
+                  {isSpeaking
+                    ? t.interview.statusSpeaking
+                    : speech.isListening
+                      ? t.interview.listening
+                      : t.interview.answerPlaceholder}
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
-        {/* kontroller — mikrofon her zaman açık; sessizlikte cevap otomatik gider.
-            "Gönder" yalnızca beklemeden hemen göndermek isteyenler için yedek. */}
-        <div className="flex flex-col items-center gap-2">
-          <button
-            onClick={() => sendMessage()}
-            disabled={loading || !input.trim()}
-            className="flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[15px] font-semibold text-white transition-opacity disabled:opacity-50"
-            style={{
-              background: 'linear-gradient(135deg,#a855f7,#6d28d9)',
-              boxShadow: '0 8px 26px rgba(124,58,237,0.5)',
-            }}
-          >
-            {loading ? <Spinner /> : <Send className="h-4 w-4" />}
-            {t.interview.sendAnswer}
-          </button>
-          {voiceMode && speech.isListening && !loading && (
-            <span className="font-mono text-[10px] uppercase tracking-wider text-purple-300/70">
+        {/* durum bilgisi / güvenlik ağı — GÖNDER butonu YOK.
+            Dinleme kendiliğinden başlamazsa kullanıcı yeniden dinlemeyi tetikleyebilir. */}
+        <div className="flex min-h-[36px] flex-col items-center gap-2">
+          {loading ? (
+            <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-amber-300/80">
+              <Spinner /> {t.interview.statusThinking}
+            </span>
+          ) : speech.isListening && !isSpeaking ? (
+            <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-300/80">
               {t.interview.statusListening} · {t.interview.autoSendHint}
             </span>
-          )}
+          ) : voiceMode && !isSpeaking ? (
+            <button
+              onClick={() => {
+                try {
+                  speech.start()
+                } catch {
+                  /* yoksay */
+                }
+              }}
+              className="flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-medium text-purple-100 transition-colors hover:bg-white/10"
+            >
+              <Mic className="h-3.5 w-3.5" />
+              {t.interview.listenAgain}
+            </button>
+          ) : null}
         </div>
       </footer>
     </div>
