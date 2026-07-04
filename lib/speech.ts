@@ -108,26 +108,58 @@ export async function speakText(text: string, opts: SpeakOptions = {}): Promise<
     utterance.lang = selectedVoice.lang
   }
 
-  // Seçilen ses gerçekten istenen cinsiyette değilse (ör. sistemde yalnızca erkek
-  // Türkçe ses varsa) pitch ile cinsiyet hissini güçlendir.
-  const nameMatchesWanted =
-    selectedVoice && (gender === 'female' ? FEMALE_NAME_RE : MALE_NAME_RE).test(selectedVoice.name)
+  // Sistemde çoğu zaman tek bir Türkçe ses bulunur (ör. Chrome'da "Google
+  // Türkçe"). Bu durumda kadın/erkek AYNI sesi kullanır; ayrımı pitch ile
+  // belirginleştiririz. Ses zaten istenen cinsiyetteyse doğal pitch bırakılır,
+  // karşı cinsiyetteyse güçlü, nötrse orta bir kaydırma uygulanır.
+  const voiceName = selectedVoice?.name ?? ''
+  const isWantedVoice = (gender === 'female' ? FEMALE_NAME_RE : MALE_NAME_RE).test(voiceName)
+  const isOppositeVoice = (gender === 'female' ? MALE_NAME_RE : FEMALE_NAME_RE).test(voiceName)
   if (gender === 'female') {
-    utterance.pitch = nameMatchesWanted ? 1.0 : 1.35
-    utterance.rate = 1.0
+    utterance.pitch = isWantedVoice ? 1.05 : isOppositeVoice ? 1.5 : 1.25
+    utterance.rate = 1.02
   } else {
-    utterance.pitch = nameMatchesWanted ? 0.95 : 0.8
-    utterance.rate = 0.98
+    utterance.pitch = isWantedVoice ? 0.9 : isOppositeVoice ? 0.65 : 0.8
+    utterance.rate = 0.96
   }
 
-  if (onEnd) {
-    utterance.onend = onEnd
-    utterance.onerror = onEnd
+  // Chrome hatası: uzun metinlerde konuşma ~15 sn sonra sessizce durur ve
+  // onend HİÇ tetiklenmez. Bu, "ilk soru okununca dinlemeye geçilmiyor / metin
+  // gelmiyor" sorununun sinsi bir nedeni. pause()/resume() ile motoru canlı
+  // tutar ve bittiğinde kesin haber almasını sağlarız.
+  let keepAlive: ReturnType<typeof setInterval> | null = null
+  const stopKeepAlive = () => {
+    if (keepAlive) {
+      clearInterval(keepAlive)
+      keepAlive = null
+    }
   }
+
+  let finished = false
+  const finish = () => {
+    if (finished) return
+    finished = true
+    stopKeepAlive()
+    onEnd?.()
+  }
+
+  utterance.onend = finish
+  utterance.onerror = finish
   if (onBoundary) {
     utterance.onboundary = () => onBoundary()
   }
+
   window.speechSynthesis.speak(utterance)
+
+  keepAlive = setInterval(() => {
+    if (!window.speechSynthesis.speaking) {
+      // Konuşma bitmiş ama onend gelmemişse güvenlik ağı olarak tetikle.
+      finish()
+      return
+    }
+    window.speechSynthesis.pause()
+    window.speechSynthesis.resume()
+  }, 9000)
 }
 
 export function cancelSpeech(): void {

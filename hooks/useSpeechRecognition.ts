@@ -42,16 +42,15 @@ export function useSpeechRecognition(lang: string = 'tr-TR') {
     recognition.lang = langRef.current
     recognition.interimResults = true
     recognition.continuous = true
-    let lastFinalIndex = -1
+    // Standart (MDN) desen: event.resultIndex'ten itibaren işle. Kesinleşen
+    // parçaları ref'te biriktir; ara sonuçları anlık göster. Bu desen otomatik
+    // yeniden başlatmadan sonra da metni KAYBETMEZ (eski index-takibi kaybediyordu).
     recognition.onresult = (event: any) => {
       let interim = ''
-      for (let i = 0; i < event.results.length; i++) {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i]
         if (result.isFinal) {
-          if (i > lastFinalIndex) {
-            finalTranscriptRef.current += `${result[0].transcript} `
-            lastFinalIndex = i
-          }
+          finalTranscriptRef.current += `${result[0].transcript} `
         } else {
           interim += result[0].transcript
         }
@@ -60,12 +59,19 @@ export function useSpeechRecognition(lang: string = 'tr-TR') {
     }
     recognition.onend = () => {
       // Tarayıcı sessizlik nedeniyle dinlemeyi otomatik kapatabilir;
-      // kullanıcı durdurmadıysa dinlemeye devam et.
+      // kullanıcı durdurmadıysa yeni bir oturumla dinlemeye devam et.
       if (shouldListenRef.current) {
         try {
           recognition.start()
         } catch {
-          /* "already started" gibi durumları yoksay */
+          // "already started" olursa kısa bir gecikmeyle tekrar dene.
+          setTimeout(() => {
+            try {
+              recognition.start()
+            } catch {
+              /* yoksay */
+            }
+          }, 250)
         }
       } else {
         setIsListening(false)
