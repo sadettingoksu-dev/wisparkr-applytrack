@@ -17,9 +17,12 @@ import { useI18n } from '@/components/i18n/I18nProvider'
 type AssistantLink = { label: string; href: string }
 type Message = { role: 'user' | 'assistant'; text: string; links?: AssistantLink[] }
 
-export function ParkrcanWidget() {
+export function ParkrcanWidget({ lower = false }: { lower?: boolean } = {}) {
   const { t, locale } = useI18n()
   const p = t.parkrcan
+  // Panelde FeedbackWidget'in üstünde durur (bottom-24). Pazarlama ana
+  // sayfasında altta boşluk kalmasın diye daha aşağıya alınır (bottom-6).
+  const anchorY = lower ? 'bottom-6' : 'bottom-24'
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -70,7 +73,7 @@ export function ParkrcanWidget() {
         <button
           onClick={() => setOpen(true)}
           aria-label={p.open}
-          className="fixed bottom-24 right-5 z-40 h-16 w-16 overflow-hidden rounded-full bg-white shadow-lg shadow-purple-400/40 ring-2 ring-purple-200 transition-transform hover:scale-105"
+          className={`fixed ${anchorY} right-5 z-40 h-16 w-16 overflow-hidden rounded-full bg-white shadow-lg shadow-purple-400/40 ring-2 ring-purple-200 transition-transform hover:scale-105`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/parkrcan.png" alt="parkrcan" className="h-full w-full object-cover" />
@@ -79,7 +82,7 @@ export function ParkrcanWidget() {
 
       {/* Sohbet paneli */}
       {open && (
-        <div className="fixed bottom-24 right-5 z-40 flex h-[28rem] max-h-[calc(100vh-8rem)] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+        <div className={`fixed ${anchorY} right-5 z-40 flex h-[28rem] max-h-[calc(100vh-8rem)] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl`}>
           {/* Başlık */}
           <div className="flex items-center gap-3 bg-gradient-to-r from-purple-600 to-fuchsia-500 px-4 py-3 text-white">
             {/* eslint-disable-next-line @next/next/no-img-element */}
