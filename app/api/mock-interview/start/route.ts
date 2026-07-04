@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { checkAndIncrementUsage } from '@/lib/usage'
 import { getAnthropicClient, generateMockInterviewTurn, MOCK_INTERVIEW_QUESTION_COUNT } from '@/lib/anthropic'
 import { getPlan } from '@/lib/plans'
+import { getServerLocale } from '@/lib/i18n-server'
 import type { Application, RequiredDocument } from '@/lib/types'
 
 const bodySchema = z.object({
@@ -103,6 +104,7 @@ export async function POST(request: Request) {
       history: [],
       questionNumber: 1,
       totalQuestions: MOCK_INTERVIEW_QUESTION_COUNT,
+      language: getServerLocale(),
     })
   } catch {
     return NextResponse.json(

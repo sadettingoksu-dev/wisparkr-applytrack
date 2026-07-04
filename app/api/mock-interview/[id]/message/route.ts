@@ -8,6 +8,7 @@ import {
   generateMockInterviewFeedback,
   MOCK_INTERVIEW_QUESTION_COUNT,
 } from '@/lib/anthropic'
+import { getServerLocale } from '@/lib/i18n-server'
 import type { Application, MockInterview, MockInterviewMessage, RequiredDocument } from '@/lib/types'
 
 const bodySchema = z.object({
@@ -97,6 +98,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     : []
 
   const nextQuestionNumber = interview.question_count + 1
+  const locale = getServerLocale()
 
   let result
   try {
@@ -111,6 +113,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       history: [...history, { role: 'candidate', content: message }],
       questionNumber: nextQuestionNumber,
       totalQuestions: MOCK_INTERVIEW_QUESTION_COUNT,
+      language: locale,
     })
   } catch {
     return NextResponse.json(
@@ -152,6 +155,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         },
         cvText,
         transcript,
+        language: locale,
       })
       await supabase
         .from('mock_interviews')

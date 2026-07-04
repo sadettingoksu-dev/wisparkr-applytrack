@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { rateLimit, rateLimitResponse, AI_RATE_LIMIT } from '@/lib/rateLimit'
 import { getAnthropicClient, generateMockInterviewFeedback } from '@/lib/anthropic'
+import { getServerLocale } from '@/lib/i18n-server'
 import type { Application, MockInterview, MockInterviewMessage } from '@/lib/types'
 
 export async function POST(_request: Request, { params }: { params: { id: string } }) {
@@ -88,6 +89,7 @@ export async function POST(_request: Request, { params }: { params: { id: string
       },
       cvText,
       transcript: history,
+      language: getServerLocale(),
     })
   } catch {
     return NextResponse.json(
