@@ -79,7 +79,9 @@ export async function POST(request: Request) {
     )
   }
   const { message, locale } = parsed.data
-  const lang = LANG_NAMES[locale ?? 'tr']
+  // Arayüz dili yalnızca yedek (çok kısa/belirsiz mesajlarda) ipucu olarak kullanılır;
+  // asıl kural kullanıcının yazdığı mesajın dilinde yanıtlamaktır.
+  const fallbackLang = LANG_NAMES[locale ?? 'tr']
 
   const systemPrompt = [
     `Sen "parkrcan"sın: ${APP_NAME} uygulamasının sevimli, samimi ve yardımsever yapay zeka rehberisin.`,
@@ -91,12 +93,13 @@ export async function POST(request: Request) {
     ...ROUTES.map((r) => `- ${r.href} → ${r.desc}`),
     '',
     'Kurallar:',
-    `- TÜM çıktıyı (hem "reply" hem link "label" değerleri) ${lang} dilinde yaz. Kullanıcı hangi dili seçtiyse o dilde yanıtla.`,
+    '- Kullanıcının mesajını HANGİ dilde yazdıysa, TÜM çıktıyı (hem "reply" hem link "label" değerleri) o dilde yaz.',
+    `- Mesajın dili belirsizse veya çok kısaysa (ör. sadece selamlama) ${fallbackLang} dilini kullan.`,
     '- Yanıt 1-3 cümle, sıcak ve aksiyon odaklı olsun.',
     '- Kullanıcının isteğine en uygun sayfa(ları) "links" olarak ver (en fazla 3, en alakalısı ilk sırada).',
     '- href MUTLAKA yukarıdaki listeden olmalı; uydurma yol verme.',
     '- İstek uygulamayla ilgisizse kibarca yalnızca uygulama içi konularda yardımcı olabileceğini söyle ve links\'i boş bırak.',
-    locale === 'tr' || !locale ? `- ${TURKISH_WRITING_RULE}` : null,
+    `- Türkçe yanıt verdiğinde: ${TURKISH_WRITING_RULE}`,
     '',
     'SADECE şu JSON formatında yanıt ver, başka hiçbir metin yazma:',
     '{"reply": "...", "links": [{"label": "Sayfa adı", "href": "/yol"}]}',
