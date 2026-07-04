@@ -139,7 +139,7 @@ const SUMMARY_SUGGESTIONS_FR: string[] = [
 const tr = {
   nav: {
     features: 'Özellikler',
-    pricing: 'Fiyatlandırma',
+    pricing: 'Planlar',
     faq: 'Sıkça Sorulan Sorular',
     login: 'Giriş Yap',
   },
@@ -1245,7 +1245,7 @@ type Dictionary = typeof tr
 const en: Dictionary = {
   nav: {
     features: 'Features',
-    pricing: 'Pricing',
+    pricing: 'Plans',
     faq: 'FAQ',
     login: 'Sign In',
   },
@@ -2349,7 +2349,7 @@ const en: Dictionary = {
 const de: Dictionary = {
   nav: {
     features: 'Funktionen',
-    pricing: 'Preise',
+    pricing: 'Pläne',
     faq: 'FAQ',
     login: 'Anmelden',
   },
@@ -3453,7 +3453,7 @@ const de: Dictionary = {
 const es: Dictionary = {
   nav: {
     features: 'Funciones',
-    pricing: 'Precios',
+    pricing: 'Planes',
     faq: 'Preguntas frecuentes',
     login: 'Iniciar sesión',
   },
@@ -4557,7 +4557,7 @@ const es: Dictionary = {
 const fr: Dictionary = {
   nav: {
     features: 'Fonctionnalités',
-    pricing: 'Tarifs',
+    pricing: 'Offres',
     faq: 'FAQ',
     login: 'Se connecter',
   },

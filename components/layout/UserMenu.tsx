@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
 import {
-  LayoutDashboard,
   Settings,
   Sparkles,
   Puzzle,
@@ -166,27 +165,31 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar', co
             </span>
           </div>
 
-          {/* Items */}
+          {/* Items — panel (sidebar) menüsü tam kalır; pazarlama (navbar)
+              menüsü sadeleştirildi: yalnızca "Daha fazla bilgi" ve "Yardım al".
+              Panele git / Ayarlar / Planı yükselt / Uygulama & eklentiler / Koyu
+              tema navbar'dan kaldırıldı (ayarlar zaten uygulama içi Ayarlar'da). */}
           <div className="py-1">
-            {variant === 'navbar' && (
-              <MenuLink href="/dashboard" icon={LayoutDashboard} label={t.userMenu.goToPanel} onClick={() => setOpen(false)} />
+            {variant === 'sidebar' && (
+              <>
+                <MenuLink href="/settings" icon={Settings} label={t.userMenu.settings} onClick={() => setOpen(false)} />
+                {canUpgrade && (
+                  <MenuLink
+                    href="/settings/billing"
+                    icon={Sparkles}
+                    label={t.userMenu.upgrade}
+                    accent
+                    onClick={() => setOpen(false)}
+                  />
+                )}
+                <MenuLink
+                  href="/settings#extension"
+                  icon={Puzzle}
+                  label={t.userMenu.extensions}
+                  onClick={() => setOpen(false)}
+                />
+              </>
             )}
-            <MenuLink href="/settings" icon={Settings} label={t.userMenu.settings} onClick={() => setOpen(false)} />
-            {canUpgrade && (
-              <MenuLink
-                href="/settings/billing"
-                icon={Sparkles}
-                label={t.userMenu.upgrade}
-                accent
-                onClick={() => setOpen(false)}
-              />
-            )}
-            <MenuLink
-              href="/settings#extension"
-              icon={Puzzle}
-              label={t.userMenu.extensions}
-              onClick={() => setOpen(false)}
-            />
             <MenuLink
               href={`mailto:${HELP_EMAIL}`}
               icon={HelpCircle}
@@ -194,12 +197,14 @@ export function UserMenu({ name, email, avatarUrl, plan, variant = 'sidebar', co
               external
               onClick={() => setOpen(false)}
             />
-            <MenuLink href="/#features" icon={Info} label={t.userMenu.moreInfo} onClick={() => setOpen(false)} />
+            <MenuLink href="/ozellikler" icon={Info} label={t.userMenu.moreInfo} onClick={() => setOpen(false)} />
           </div>
 
-          {/* Account actions */}
+          {/* Account actions — Koyu tema yalnızca panelde (navbar'da kaldırıldı) */}
           <div className="border-t border-slate-200 py-1">
-            <ThemeToggle labelDark={t.userMenu.darkMode} labelLight={t.userMenu.lightMode} />
+            {variant === 'sidebar' && (
+              <ThemeToggle labelDark={t.userMenu.darkMode} labelLight={t.userMenu.lightMode} />
+            )}
             <button
               onClick={handleSwitchAccount}
               disabled={busy}

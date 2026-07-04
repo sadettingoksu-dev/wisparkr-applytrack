@@ -16,9 +16,10 @@ export function Footer() {
   const t = getServerDict()
   const m = getMarketing(getServerLocale())
 
+  // Rehber/Yardım/Demo kaldırıldı; Kaynaklar sütunu boşaldığı için çıkarıldı.
+  // SSS, Ürün sütununa taşındı (marketing.ts). Yalnızca Ürün + Yasal kalır.
   const columns: { title: string; links: { label: string; href: string }[] }[] = [
     { title: m.footer.colProduct, links: m.footer.links.product },
-    { title: m.footer.colResources, links: m.footer.links.resources },
     { title: m.footer.colLegal, links: m.footer.links.legal },
   ]
 

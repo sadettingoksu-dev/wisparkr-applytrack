@@ -103,15 +103,11 @@ const tr: MarketingChrome = {
     colLegal: 'Yasal',
     links: {
       product: [
-        { label: 'Özellikler', href: '/#features' },
-        { label: 'Fiyatlandırma', href: '/pricing' },
-        { label: 'Demo', href: '/demo' },
+        { label: 'Özellikler', href: '/ozellikler' },
+        { label: 'Planlar', href: '/pricing' },
+        { label: 'SSS', href: '/sss' },
       ],
-      resources: [
-        { label: 'Rehber', href: '/rehber' },
-        { label: 'Yardım', href: '/yardim' },
-        { label: 'SSS', href: '/#faq' },
-      ],
+      resources: [],
       legal: [
         { label: 'Gizlilik Politikası', href: '/privacy' },
         { label: 'Kullanım Şartları', href: '/terms' },
@@ -170,15 +166,11 @@ const en: MarketingChrome = {
     colLegal: 'Legal',
     links: {
       product: [
-        { label: 'Features', href: '/#features' },
-        { label: 'Pricing', href: '/pricing' },
-        { label: 'Demo', href: '/demo' },
+        { label: 'Features', href: '/ozellikler' },
+        { label: 'Plans', href: '/pricing' },
+        { label: 'FAQ', href: '/sss' },
       ],
-      resources: [
-        { label: 'Guides', href: '/rehber' },
-        { label: 'Help', href: '/yardim' },
-        { label: 'FAQ', href: '/#faq' },
-      ],
+      resources: [],
       legal: [
         { label: 'Privacy Policy', href: '/privacy' },
         { label: 'Terms of Use', href: '/terms' },
@@ -237,15 +229,11 @@ const de: MarketingChrome = {
     colLegal: 'Rechtliches',
     links: {
       product: [
-        { label: 'Funktionen', href: '/#features' },
-        { label: 'Preise', href: '/pricing' },
-        { label: 'Demo', href: '/demo' },
+        { label: 'Funktionen', href: '/ozellikler' },
+        { label: 'Pläne', href: '/pricing' },
+        { label: 'FAQ', href: '/sss' },
       ],
-      resources: [
-        { label: 'Ratgeber', href: '/rehber' },
-        { label: 'Hilfe', href: '/yardim' },
-        { label: 'FAQ', href: '/#faq' },
-      ],
+      resources: [],
       legal: [
         { label: 'Datenschutz', href: '/privacy' },
         { label: 'Nutzungsbedingungen', href: '/terms' },
@@ -304,15 +292,11 @@ const es: MarketingChrome = {
     colLegal: 'Legal',
     links: {
       product: [
-        { label: 'Funciones', href: '/#features' },
-        { label: 'Precios', href: '/pricing' },
-        { label: 'Demo', href: '/demo' },
+        { label: 'Funciones', href: '/ozellikler' },
+        { label: 'Planes', href: '/pricing' },
+        { label: 'FAQ', href: '/sss' },
       ],
-      resources: [
-        { label: 'Guías', href: '/rehber' },
-        { label: 'Ayuda', href: '/yardim' },
-        { label: 'FAQ', href: '/#faq' },
-      ],
+      resources: [],
       legal: [
         { label: 'Política de privacidad', href: '/privacy' },
         { label: 'Términos de uso', href: '/terms' },
@@ -371,15 +355,11 @@ const fr: MarketingChrome = {
     colLegal: 'Mentions légales',
     links: {
       product: [
-        { label: 'Fonctionnalités', href: '/#features' },
-        { label: 'Tarifs', href: '/pricing' },
-        { label: 'Démo', href: '/demo' },
+        { label: 'Fonctionnalités', href: '/ozellikler' },
+        { label: 'Offres', href: '/pricing' },
+        { label: 'FAQ', href: '/sss' },
       ],
-      resources: [
-        { label: 'Guides', href: '/rehber' },
-        { label: 'Aide', href: '/yardim' },
-        { label: 'FAQ', href: '/#faq' },
-      ],
+      resources: [],
       legal: [
         { label: 'Confidentialité', href: '/privacy' },
         { label: 'Conditions d’utilisation', href: '/terms' },
