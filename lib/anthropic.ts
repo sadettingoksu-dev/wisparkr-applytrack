@@ -51,6 +51,24 @@ export const TURKISH_WRITING_RULE =
   'bitişik/ayrı yazım ve ek kullanımı doğru olsun; yapay zeka kokan kalıp ifadelerden kaçın.'
 
 /**
+ * Mülakat gibi kullanıcıya doğrudan gösterilen/sesli okunan AI çıktılarının dili,
+ * arayüz diline (locale) göre belirlenir. Varsayılan Türkçe; diğer diller için
+ * modele o dilde yazması net biçimde söylenir.
+ */
+const INTERVIEW_LANGUAGE_RULE: Record<string, string> = {
+  tr: TURKISH_WRITING_RULE,
+  en: 'CRITICAL: Write EVERYTHING (every question, message and closing) in natural, fluent ENGLISH. Do not use any Turkish. Avoid robotic, AI-sounding phrasing.',
+  de: 'WICHTIG: Schreibe ALLES (jede Frage, Nachricht und den Abschluss) in natürlichem, flüssigem DEUTSCH. Verwende kein Türkisch. Vermeide roboterhafte, KI-typische Formulierungen.',
+  es: 'IMPORTANTE: Escribe TODO (cada pregunta, mensaje y el cierre) en un ESPAÑOL natural y fluido. No uses nada de turco. Evita frases robóticas o que suenen a IA.',
+  fr: 'IMPORTANT : Rédige TOUT (chaque question, message et la conclusion) dans un FRANÇAIS naturel et fluide. N\'utilise pas de turc. Évite les formulations robotiques ou qui sonnent « IA ».',
+}
+
+/** Verilen locale için mülakat dili talimatını döndürür (bilinmiyorsa Türkçe). */
+function interviewLanguageRule(locale?: string | null): string {
+  return INTERVIEW_LANGUAGE_RULE[locale ?? 'tr'] ?? TURKISH_WRITING_RULE
+}
+
+/**
  * Analyzes a job posting and returns up to 5 sector-specific
  * documents/certificates candidates are typically expected to have
  * (e.g. "Kimyasal Güvenlik Sertifikası" for a chemistry role). Returns an
@@ -671,9 +689,10 @@ export async function generateMockInterviewTurn(
     history: MockInterviewHistoryEntry[]
     questionNumber: number
     totalQuestions: number
+    language?: string | null
   }
 ): Promise<MockInterviewTurnResult> {
-  const { job, cvText, requiredDocuments, history, questionNumber, totalQuestions } = params
+  const { job, cvText, requiredDocuments, history, questionNumber, totalQuestions, language } = params
 
   const documentLines = requiredDocuments.map((doc) => {
     const status = doc.has === true ? 'VAR' : doc.has === false ? 'YOK' : 'BELİRTİLMEDİ'
@@ -722,9 +741,9 @@ export async function generateMockInterviewTurn(
     'Sektöre özel beklenen belgeler:',
     documentLines.length > 0 ? documentLines.join('\n') : '(bu ilan için ek belge belirtilmemiş)',
     '',
-    TURKISH_WRITING_RULE,
+    interviewLanguageRule(language),
     '',
-    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme (JSON anahtarları İngilizce kalsın, sadece "message" değeri istenen dilde olsun):',
     `{"message": "<soru veya kapanış mesajı>", "is_final": ${isFinalTurn ? 'true' : 'false'}}`,
   ].join('\n')
 
@@ -787,9 +806,10 @@ export async function generateMockInterviewFeedback(
     job: { company_name: string; position_title: string; job_description: string | null }
     cvText: string | null
     transcript: MockInterviewHistoryEntry[]
+    language?: string | null
   }
 ): Promise<MockInterviewFeedback> {
-  const { job, cvText, transcript } = params
+  const { job, cvText, transcript, language } = params
 
   const transcriptLines = transcript.map((entry) =>
     entry.role === 'interviewer' ? `Mülakatçı: ${entry.content}` : `Aday: ${entry.content}`
@@ -809,7 +829,7 @@ export async function generateMockInterviewFeedback(
     'Ayrıca genel bir mülakat performans skoru (0-100), 3-5 güçlü nokta,',
     '3-5 geliştirilmesi gereken nokta ve genel bir değerlendirme özeti yaz.',
     '',
-    TURKISH_WRITING_RULE,
+    interviewLanguageRule(language),
     '',
     'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
     '{"summary": "...", "strengths": ["...","..."], "improvements": ["...","..."],',

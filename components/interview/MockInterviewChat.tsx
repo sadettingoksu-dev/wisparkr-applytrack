@@ -7,7 +7,14 @@ import { Spinner } from '@/components/ui/Spinner'
 import { InterviewAvatar } from '@/components/interview/InterviewAvatar'
 import { InterviewFeedbackReport } from '@/components/interview/InterviewFeedbackReport'
 import { MOCK_INTERVIEW_QUESTION_COUNT } from '@/utils/constants'
-import { isSpeechSynthesisSupported, speakText, cancelSpeech, type VoiceGender } from '@/lib/speech'
+import {
+  isSpeechSynthesisSupported,
+  speakText,
+  cancelSpeech,
+  warmUpVoices,
+  localeToSpeechLang,
+  type VoiceGender,
+} from '@/lib/speech'
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import type { MockInterview, MockInterviewMessage, MockInterviewFeedback } from '@/lib/types'
@@ -38,7 +45,8 @@ const STAGE_BG =
   'radial-gradient(120% 120% at 50% 18%, #2a1458 0%, #18103a 38%, #0d0820 72%, #070411 100%)'
 
 export function MockInterviewChat({ interview, initialMessages, jobTitle, company }: MockInterviewChatProps) {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+  const speechLang = localeToSpeechLang(locale)
   const [messages, setMessages] = useState(initialMessages)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -59,14 +67,18 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [started, setStarted] = useState(false)
   const [micBlocked, setMicBlocked] = useState(false)
-  const speech = useSpeechRecognition()
+  const speech = useSpeechRecognition(speechLang)
   const prevMessageCountRef = useRef(initialMessages.length)
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function speak(text: string) {
     if (!isSpeechSynthesisSupported()) return
     setIsSpeaking(true)
-    speakText(text, voiceGender, () => setIsSpeaking(false))
+    void speakText(text, {
+      gender: voiceGender,
+      lang: speechLang,
+      onEnd: () => setIsSpeaking(false),
+    })
   }
 
   // Soruyu sesli oku, bittiğinde mikrofonu otomatik dinlemeye başlat (el değmeden).
@@ -80,13 +92,17 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
       return
     }
     setIsSpeaking(true)
-    speakText(text, voiceGender, () => {
-      setIsSpeaking(false)
-      try {
-        speech.start()
-      } catch {
-        /* izin verilmemişse kullanıcı mikrofon butonuna basabilir */
-      }
+    void speakText(text, {
+      gender: voiceGender,
+      lang: speechLang,
+      onEnd: () => {
+        setIsSpeaking(false)
+        try {
+          speech.start()
+        } catch {
+          /* izin verilmemişse kullanıcı mikrofon butonuna basabilir */
+        }
+      },
     })
   }
 
@@ -113,6 +129,8 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
 
   useEffect(() => {
     setSpeechSupported(isSpeechSynthesisSupported() && speech.isSupported)
+    // Tarayıcı seslerini önceden yükle: ilk soru okunurken doğru (kadın) ses hazır olsun.
+    warmUpVoices()
   }, [speech.isSupported])
 
   // Mikrofon izni reddedilirse: sesli modu kapat, kullanıcıyı bilgilendir, yazıya düş.
