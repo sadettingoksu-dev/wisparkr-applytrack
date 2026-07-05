@@ -11,15 +11,12 @@ import { ParkrcanWidget } from '@/components/assistant/ParkrcanWidget'
 import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
 
-// Soluk kareli arka plan (referans tasarımdaki gibi) — üstte belirgin, aşağı
-// doğru maskeyle silinir. Yalnızca sunum; hiçbir yapıyı bozmaz.
-const GRID_BG: React.CSSProperties = {
+// Yumuşak marka ışıması — kareli zemin kaldırıldı. Üstte hafif mor/fuşya
+// glow, aşağı doğru temiz beyaza karışır. Yalnızca sunum; yapıyı bozmaz.
+const HERO_BG: React.CSSProperties = {
   backgroundColor: '#f8fafc',
   backgroundImage:
-    'linear-gradient(to right, rgba(100,116,139,0.09) 1px, transparent 1px), linear-gradient(to bottom, rgba(100,116,139,0.09) 1px, transparent 1px)',
-  backgroundSize: '44px 44px',
-  maskImage: 'radial-gradient(125% 100% at 50% 0%, #000 45%, transparent 88%)',
-  WebkitMaskImage: 'radial-gradient(125% 100% at 50% 0%, #000 45%, transparent 88%)',
+    'radial-gradient(60% 55% at 50% 0%, rgba(168,85,247,0.10), transparent 70%)',
 }
 
 export default async function LandingPage({
@@ -44,7 +41,7 @@ export default async function LandingPage({
         {/* Hero — soluk kareli zemin üzerinde ortalanmış metin + tek CTA.
             (Sağdaki ürün animasyonu kaldırıldı; yeni sahne sonra eklenecek.) */}
         <section className="relative overflow-hidden">
-          <div aria-hidden className="pointer-events-none absolute inset-0" style={GRID_BG} />
+          <div aria-hidden className="pointer-events-none absolute inset-0" style={HERO_BG} />
           <div className="relative mx-auto flex max-w-3xl flex-col items-center px-6 py-24 text-center lg:py-32">
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-purple-200 bg-purple-50 px-4 py-1.5 text-sm text-purple-700">
               <Sparkles className="h-3.5 w-3.5" />
