@@ -142,6 +142,7 @@ export interface Database {
           status: 'active' | 'cancelled' | 'expired' | 'past_due' | 'on_trial'
           renews_at: string | null
           ends_at: string | null
+          renewal_reminder_sent_at: string | null
           created_at: string
           updated_at: string
         }
