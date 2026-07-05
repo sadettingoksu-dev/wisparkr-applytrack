@@ -42,7 +42,8 @@ export default async function ApplicationsPage({
         <div className="flex items-center gap-2">
           <PageInfo page="applications" />
           {apps.length >= 2 && <CompareSelector apps={apps} />}
-          {!limitReached && (
+          {/* Liste boşken üstteki buton gizlenir; ortadaki empty-state CTA tek giriş noktası kalır. */}
+          {!limitReached && apps.length > 0 && (
             <Link href="/applications/new">
               <Button>
                 <Plus className="h-4 w-4" />

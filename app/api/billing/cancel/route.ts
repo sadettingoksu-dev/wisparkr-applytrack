@@ -6,9 +6,11 @@ import { isLemonSqueezyConfigured, cancelSubscription } from '@/lib/lemonsqueezy
 export const runtime = 'nodejs'
 
 /**
- * Cancels the user's active subscription at the end of the current period.
- * The user keeps access until `renews_at`; the billing webhook (or the next
- * effective-plan check) downgrades them to the trial/free state afterwards.
+ * Cancels the user's active subscription. Lemon Squeezy stops future billing at
+ * period end, but a *voluntary* cancellation takes effect immediately in our app:
+ * we downgrade the profile to `free` right away so the UI doesn't show a
+ * misleading "active until <date>" countdown. Natural expiry (subscription_expired
+ * webhook) also lands on free, so both paths are consistent.
  */
 export async function POST() {
   const ctx = await requireAuth()
@@ -33,7 +35,7 @@ export async function POST() {
     )
   }
 
-  // İptal dönem sonunda geçerli olur: kullanıcı renews_at'e kadar planını korur.
+  // LS'de fatura dönem sonunda durur; bizde iptal anında geçerli olur (aşağıda plan=free).
   let endsAt = subscription.renews_at
 
   if (isLemonSqueezyConfigured() && subscription.ls_subscription_id) {
@@ -60,5 +62,8 @@ export async function POST() {
     )
   }
 
-  return NextResponse.json({ data: { ends_at: endsAt } })
+  // Gönüllü iptal anında etki eder: kullanıcıyı hemen ücretsiz plana düşür.
+  await admin.from('profiles').update({ plan: 'free' } as never).eq('id', userId)
+
+  return NextResponse.json({ data: { ends_at: endsAt, plan: 'free' } })
 }

@@ -27,6 +27,8 @@ export interface PlanConfig {
     competitorAnalysis: boolean
     unlimitedAi: boolean
     mockInterview: boolean
+    /** CV'ye göre eşleşen benzer iş ilanları sayfası — Pro ve üzeri. */
+    similarJobs: boolean
   }
 }
 
@@ -56,6 +58,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       competitorAnalysis: false,
       unlimitedAi: false,
       mockInterview: false,
+      similarJobs: false,
     },
   },
   pro: {
@@ -79,6 +82,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       competitorAnalysis: false,
       unlimitedAi: false,
       mockInterview: true, // mülakat provası Pro'da
+      similarJobs: true,
     },
   },
   career_coach: {
@@ -102,6 +106,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       competitorAnalysis: true,
       unlimitedAi: true,
       mockInterview: true,
+      similarJobs: true,
     },
   },
 }

@@ -2,8 +2,11 @@ import { Briefcase, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { JobCard } from '@/components/jobs/JobCard'
+import { LockedFeatureCard } from '@/components/billing/LockedFeatureCard'
 import { getCvMatchedJobs } from '@/lib/jobFeed'
+import { getEffectivePlan, requiredPlanForFeature, PLANS } from '@/lib/plans'
 import { getServerDict } from '@/lib/i18n-server'
+import { format } from '@/lib/i18n'
 import type { Profile } from '@/lib/types'
 
 export default async function JobsPage() {
@@ -12,10 +15,14 @@ export default async function JobsPage() {
   const { data: userData } = await supabase.auth.getUser()
   const { data: profileData } = await supabase
     .from('profiles')
-    .select('cv_text')
+    .select('cv_text, plan, trial_ends_at')
     .eq('id', userData.user!.id)
     .single()
-  const cvText = (profileData as Pick<Profile, 'cv_text'> | null)?.cv_text ?? ''
+  const profile = profileData as Pick<Profile, 'cv_text' | 'plan' | 'trial_ends_at'> | null
+  const cvText = profile?.cv_text ?? ''
+
+  // Benzer iş ilanları Pro ve üzeri planlara açık; free kullanıcı upsell kartı görür.
+  const hasFeature = getEffectivePlan(profile).features.similarJobs
 
   return (
     <div className="space-y-6">
@@ -24,9 +31,21 @@ export default async function JobsPage() {
         <p className="text-sm text-slate-500">{t.jobs.subtitle}</p>
       </div>
 
-      <JobsContent cvText={cvText} t={t} />
-
-      <p className="text-center text-xs text-slate-400">{t.jobs.source}</p>
+      {hasFeature ? (
+        <>
+          <JobsContent cvText={cvText} t={t} />
+          <p className="text-center text-xs text-slate-400">{t.jobs.source}</p>
+        </>
+      ) : (
+        <LockedFeatureCard
+          title={t.jobs.title}
+          description={format(t.billing.lockCardDesc, {
+            plan: PLANS[requiredPlanForFeature('similarJobs')].name,
+          })}
+          planId={requiredPlanForFeature('similarJobs') as 'pro' | 'career_coach'}
+          ctaLabel={t.billing.lockCta}
+        />
+      )}
     </div>
   )
 }
