@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
-import { getPlan, getEffectivePlan, isTrialActive, PLANS } from '@/lib/plans'
+import { getPlan, getEffectivePlan, isTrialActive, currencySymbol } from '@/lib/plans'
 import { formatDate } from '@/utils/format'
 import { format } from '@/lib/i18n'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
-import { UpgradeButton } from '@/components/billing/UpgradeButton'
 import { CancelButton } from '@/components/billing/CancelButton'
+import { ProUpgradeCard } from '@/components/billing/ProUpgradeCard'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Profile, Subscription, AiUsage } from '@/lib/types'
@@ -94,33 +94,8 @@ export default async function BillingPage() {
     (usage?.cover_letters_used ?? 0) +
     (usage?.cv_polish_used ?? 0)
 
-  // Plan seçimi: Pro mu Career Coach mı — kullanıcı karar versin (tek "Pro" butonu yerine).
-  const planChooser = (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {(['pro', 'career_coach'] as const).map((pid) => {
-        const p = PLANS[pid]
-        const popular = pid === 'pro'
-        return (
-          <div
-            key={pid}
-            className={`relative rounded-xl border p-4 ${popular ? 'border-purple-400 bg-purple-50/50' : 'border-slate-200'}`}
-          >
-            {popular && (
-              <span className="absolute right-3 top-3 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-700">
-                {t.pricing.popular}
-              </span>
-            )}
-            <p className="text-sm font-semibold text-slate-900">{p.name}</p>
-            <p className="mb-3 text-2xl font-bold text-slate-900">
-              ${p.priceMonthly}
-              <span className="text-xs font-normal text-slate-400">{t.billing.perMonth}</span>
-            </p>
-            <UpgradeButton planId={pid} label={t.billing.upgradeNow} />
-          </div>
-        )
-      })}
-    </div>
-  )
+  // Tek ücretli plan: Pro (aylık/yıllık geçişli).
+  const planChooser = <ProUpgradeCard />
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -140,7 +115,7 @@ export default async function BillingPage() {
               <div>
                 <p className="text-xs text-slate-500">{t.billing.currentPlan}</p>
                 <p className="text-2xl font-bold text-purple-600">{realPlan.name}</p>
-                <p className="text-sm text-slate-500">${realPlan.priceMonthly}{t.billing.perMonth}</p>
+                <p className="text-sm text-slate-500">{currencySymbol(realPlan.currency)}{realPlan.priceMonthly.toLocaleString('tr-TR')}{t.billing.perMonth}</p>
                 {profile?.plan_started_at && (
                   <p className="mt-1 text-xs text-slate-400">{format(t.billing.planStarted, { date: formatDate(profile.plan_started_at) })}</p>
                 )}
@@ -156,10 +131,7 @@ export default async function BillingPage() {
                 ) : null}
               </div>
             </div>
-            <div className="flex items-center justify-between gap-3">
-              {realPlan.id !== 'career_coach' && (
-                <UpgradeButton planId="career_coach" label={t.billing.upgrade} />
-              )}
+            <div className="flex items-center justify-end gap-3">
               {!isCancelled && <CancelButton />}
             </div>
           </>

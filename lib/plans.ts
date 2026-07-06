@@ -3,8 +3,15 @@ export type PlanId = 'free' | 'pro' | 'career_coach'
 export interface PlanConfig {
   id: PlanId
   name: string
+  /** Aylık fiyat (para birimi `currency` alanında). */
   priceMonthly: number
+  /** Yıllık fiyat — 2 ay bedava (~%17 indirim). */
+  priceYearly: number
+  /** ISO para birimi kodu; TR pazarı için 'TRY'. */
+  currency: 'TRY' | 'USD'
   lemonSqueezyVariantId: string | null
+  /** Yıllık faturalama için Lemon Squeezy variant ID'si. */
+  lemonSqueezyVariantIdYearly: string | null
   limits: {
     /** null = unlimited */
     maxApplications: number | null
@@ -40,7 +47,10 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     id: 'free',
     name: 'Ücretsiz',
     priceMonthly: 0,
+    priceYearly: 0,
+    currency: 'TRY',
     lemonSqueezyVariantId: null,
+    lemonSqueezyVariantIdYearly: null,
     // Kalıcı ücretsiz tier: deneme bittikten sonra düşülen kısıtlı seviye.
     limits: { maxApplications: 10, aiQuestionsPerMonth: 15 },
     features: {
@@ -61,12 +71,16 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       similarJobs: false,
     },
   },
+  // Tek ücretli plan. Eski "Career Coach" tier'ının tüm özellikleri buraya taşındı.
   pro: {
     id: 'pro',
     name: 'Pro',
-    priceMonthly: 12,
+    priceMonthly: 299,
+    priceYearly: 2990, // yıllıkta 2 ay bedava
+    currency: 'TRY',
     lemonSqueezyVariantId: process.env.LEMONSQUEEZY_VARIANT_PRO || null,
-    limits: { maxApplications: null, aiQuestionsPerMonth: 200 },
+    lemonSqueezyVariantIdYearly: process.env.LEMONSQUEEZY_VARIANT_PRO_YEARLY || null,
+    limits: { maxApplications: null, aiQuestionsPerMonth: null },
     features: {
       kanban: true,
       cvFitScore: true,
@@ -76,20 +90,25 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       skillsGap: true,
       permanentShareLinks: true,
       shareAnalytics: true,
-      aiAssistant: false, // sohbet asistanı Career Coach'a özel
-      companyInsights: false,
-      salaryNegotiationCoach: false,
-      competitorAnalysis: false,
-      unlimitedAi: false,
-      mockInterview: true, // mülakat provası Pro'da
+      aiAssistant: true,
+      companyInsights: true,
+      salaryNegotiationCoach: true,
+      competitorAnalysis: true,
+      unlimitedAi: true,
+      mockInterview: true,
       similarJobs: true,
     },
   },
+  // Geriye dönük uyumluluk: plan='career_coach' olan eski DB kayıtları bozulmasın diye
+  // tutuluyor; Pro ile birebir aynı erişimi verir. Pricing/UI'da GÖSTERİLMEZ.
   career_coach: {
     id: 'career_coach',
-    name: 'Career Coach',
-    priceMonthly: 29,
+    name: 'Pro',
+    priceMonthly: 299,
+    priceYearly: 2990,
+    currency: 'TRY',
     lemonSqueezyVariantId: process.env.LEMONSQUEEZY_VARIANT_CAREER_COACH || null,
+    lemonSqueezyVariantIdYearly: process.env.LEMONSQUEEZY_VARIANT_CAREER_COACH_YEARLY || null,
     limits: { maxApplications: null, aiQuestionsPerMonth: null },
     features: {
       kanban: true,
@@ -119,7 +138,7 @@ export function requiredPlanForFeature(feature: FeatureKey): PlanId {
   for (const id of PLAN_ORDER) {
     if (PLANS[id].features[feature]) return id
   }
-  return 'career_coach'
+  return 'pro'
 }
 
 export function getPlan(planId: string | null | undefined): PlanConfig {
@@ -162,5 +181,15 @@ export function getPlanByVariantId(variantId: string | number): PlanConfig | nul
   return Object.values(PLANS).find((p) => p.lemonSqueezyVariantId === id) ?? null
 }
 
-/** Ordered list for rendering pricing cards (Free -> Pro -> Career Coach). */
-export const PLAN_ORDER: PlanId[] = ['free', 'pro', 'career_coach']
+/** Ordered list for rendering pricing cards. Tek ücretli plan: Free -> Pro. */
+export const PLAN_ORDER: PlanId[] = ['free', 'pro']
+
+/** Kart/UI'da gösterilecek para birimi sembolü. */
+export function currencySymbol(currency: PlanConfig['currency']): string {
+  return currency === 'TRY' ? '₺' : '$'
+}
+
+/** Yıllık planın aya bölünmüş efektif fiyatı (yuvarlanmış). */
+export function effectiveMonthlyFromYearly(plan: PlanConfig): number {
+  return Math.round(plan.priceYearly / 12)
+}

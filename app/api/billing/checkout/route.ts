@@ -6,6 +6,7 @@ import { getPlan } from '@/lib/plans'
 
 const bodySchema = z.object({
   plan: z.enum(['pro', 'career_coach']),
+  period: z.enum(['monthly', 'yearly']).optional().default('monthly'),
 })
 
 export async function POST(request: Request) {
@@ -35,12 +36,14 @@ export async function POST(request: Request) {
   }
 
   const plan = getPlan(parsed.data.plan)
-  if (!plan.lemonSqueezyVariantId) {
+  const yearly = parsed.data.period === 'yearly'
+  const variantId = yearly ? plan.lemonSqueezyVariantIdYearly : plan.lemonSqueezyVariantId
+  if (!variantId) {
     return NextResponse.json(
       {
         error: {
           code: 'BILLING_NOT_CONFIGURED',
-          message: `${plan.name} planı için Lemon Squeezy variant ID tanımlı değil.`,
+          message: `${plan.name} planı (${yearly ? 'yıllık' : 'aylık'}) için Lemon Squeezy variant ID tanımlı değil.`,
         },
       },
       { status: 503 }
@@ -49,7 +52,7 @@ export async function POST(request: Request) {
 
   try {
     const checkoutUrl = await createCheckoutUrl({
-      variantId: plan.lemonSqueezyVariantId,
+      variantId,
       userId,
       email: profile.email,
     })
