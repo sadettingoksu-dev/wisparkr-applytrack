@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Download, Sparkles, CheckCircle2 } from 'lucide-react'
+import { Download, Sparkles, CheckCircle2, Gift } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { UpgradeButton } from '@/components/billing/UpgradeButton'
 import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 import { MIN_APPLY_SCORE, getApplyReadiness } from '@/utils/constants'
 import { useI18n } from '@/components/i18n/I18nProvider'
@@ -14,9 +15,19 @@ interface CvTailorCardProps {
   applicationId: string
   initialScore?: number | null
   hasTailoredCv: boolean
+  /** Pro/deneme → sınırsız uyarlama. false ise ücretsiz kredi modeli geçerli. */
+  isPro?: boolean
+  /** Ücretsiz kullanıcının kalan ömür boyu CV uyarlama kredisi. */
+  freeCredits?: number
 }
 
-export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvTailorCardProps) {
+export function CvTailorCard({
+  applicationId,
+  initialScore,
+  hasTailoredCv,
+  isPro = true,
+  freeCredits = 0,
+}: CvTailorCardProps) {
   const { t } = useI18n()
   const [score, setScore] = useState(initialScore ?? null)
   const [suggestions, setSuggestions] = useState<string[] | null>(null)
@@ -24,6 +35,11 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [template, setTemplate] = useState<CvTemplate>('vitrin')
+  // Ücretsiz kalan kredi; başarılı uyarlamadan sonra yerelde düşer.
+  const [credits, setCredits] = useState(freeCredits)
+
+  // Ücretsiz kullanıcı ve kredisi kalmadı → uyarlama yapamaz, sadece Pro daveti.
+  const outOfCredits = !isPro && credits <= 0
 
   async function handleTailor() {
     setLoading(true)
@@ -42,6 +58,7 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
       setScore(json.data.score)
       setSuggestions(json.data.suggestions)
       setReady(true)
+      if (!isPro) setCredits((c) => Math.max(0, c - 1))
     } catch {
       setError(t.common.connectionError)
     } finally {
@@ -65,6 +82,13 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
         {format(t.cvTailor.desc, { min: MIN_APPLY_SCORE })}
       </p>
 
+      {!isPro && !outOfCredits && (
+        <div className="flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-medium text-purple-700">
+          <Gift className="h-4 w-4 shrink-0" />
+          <span>{format(t.cvTailor.freeBadge, { n: credits })}</span>
+        </div>
+      )}
+
       {readiness && <p className={`text-sm font-medium ${readiness.className}`}>{t.readiness[readiness.levelKey]}</p>}
 
       {suggestions && suggestions.length > 0 && (
@@ -82,17 +106,32 @@ export function CvTailorCard({ applicationId, initialScore, hasTailoredCv }: CvT
 
       {ready && canDownload && <TemplatePicker value={template} onChange={setTemplate} />}
 
+      {outOfCredits && (
+        <div className="flex flex-col gap-2 rounded-lg border border-purple-200 bg-purple-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-purple-700">{t.cvTailor.freeExhausted}</p>
+          <div className="shrink-0">
+            <UpgradeButton planId="pro" label={t.cvTailor.upgradeCta} />
+          </div>
+        </div>
+      )}
+
+      {!isPro && !outOfCredits && (
+        <p className="text-xs text-slate-400">{t.cvTailor.freeHint}</p>
+      )}
+
       <div className="flex flex-wrap gap-2">
-        <Button onClick={handleTailor} disabled={loading} variant="secondary">
-          {loading ? (
-            <Spinner />
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4" />
-              {score === null ? t.cvTailor.optimize : t.cvTailor.reoptimize}
-            </>
-          )}
-        </Button>
+        {!outOfCredits && (
+          <Button onClick={handleTailor} disabled={loading} variant="secondary">
+            {loading ? (
+              <Spinner />
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4" />
+                {score === null ? t.cvTailor.optimize : t.cvTailor.reoptimize}
+              </>
+            )}
+          </Button>
+        )}
 
         {ready && (
           <a

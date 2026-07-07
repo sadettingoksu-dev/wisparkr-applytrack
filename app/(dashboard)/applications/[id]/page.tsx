@@ -23,7 +23,11 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
   const { data: userData } = await supabase.auth.getUser()
   const [{ data: application }, { data: profileData }] = await Promise.all([
     supabase.from('applications').select('*').eq('id', params.id).single(),
-    supabase.from('profiles').select('plan, trial_ends_at').eq('id', userData.user!.id).single(),
+    supabase
+      .from('profiles')
+      .select('plan, trial_ends_at, free_cv_credits')
+      .eq('id', userData.user!.id)
+      .single(),
   ])
 
   if (!application) notFound()
@@ -32,6 +36,10 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
 
   // Efektif plana göre özellik kilidi: kapsam dışı AI kartları yerinde kilitli görünür.
   const planFeatures = getEffectivePlan(profileData as Profile | null).features
+  // Ücretsiz plan: CV AI-uyarlamayı ömür boyu 1 kez (free_cv_credits) deneyebilir.
+  const isProCv = planFeatures.cvAutoTailoring
+  const freeCvCredits = (profileData as { free_cv_credits?: number } | null)?.free_cv_credits ?? 0
+  const canUseTailor = isProCv || freeCvCredits > 0
   const lockedTitle = (feature: FeatureKey, title: string) => {
     const reqPlan = requiredPlanForFeature(feature)
     return (
@@ -91,11 +99,13 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
         lockedTitle('skillsGap', t.skillsGap.title)
       )}
 
-      {planFeatures.cvAutoTailoring ? (
+      {canUseTailor ? (
         <CvTailorCard
           applicationId={app.id}
           initialScore={app.tailored_fit_score}
           hasTailoredCv={Boolean(app.tailored_cv_text)}
+          isPro={isProCv}
+          freeCredits={freeCvCredits}
         />
       ) : (
         lockedTitle('cvAutoTailoring', t.cvTailor.title)
