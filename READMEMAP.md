@@ -12,6 +12,18 @@
 
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
+### 2026-07-07 — Faz 3: CV araba-tamiri sihirbazı
+> ⚠️ **Migration `0018_cv_diagnosis.sql` UYGULANMASI GEREKİR** (`applications.cv_diagnosis jsonb`). Kod migration olmadan da çalışır (teşhis üretilir) ama sonuç KALICI OLMAZ; kolon eklenince kalıcılık gelir. Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ — canlıda değil.
+
+- [x] **Ayrı tam sayfa sihirbaz** `/applications/[id]/cv-repair` — 3 adım: **Teşhis → Onarım → Teslim**. `components/cv/CvRepairWizard.tsx` (adım göstergeci, arıza listesi, belge var/yok, otomatik onarılacaklar, önce→sonra skor, PDF indirme + Pro daveti).
+- [x] **`diagnoseCv` (lib/anthropic.ts):** CV'yi ilana karşı usta gibi muayene → arızalar (kategori: document/skill/experience/keyword/format; şiddet: critical/important/minor; etki puanı; arıza+onarım metni) + genel hazırlık skoru. `CvDiagnosisResult`/`CvDiagnosisItem` tipleri `lib/types.ts`'ten export.
+- [x] **`/api/ai/cv-repair/diagnose`:** teşhis TÜM planlara **BEDAVA** (kredi/aylık kota harcamaz, yalnızca AI rate limit). Sonuç `applications.cv_diagnosis`'e kaydedilir.
+- [x] **Optimize CV = mevcut `/api/ai/tailor-cv`:** kredi mantığı orada (Pro sınırsız, free ömür boyu 1 `free_cv_credits`). Sihirbazın `have_or_not` arızaları belge (`RequiredDocument`) olarak beslenir; şiddet→önem eşlenir.
+- [x] **Seçenek B sadeleştirme:** başvuru detay sayfasında RequiredDocuments/FitScore/SkillsGap/CvTailor kartları tek **"CV Servisi" giriş kartı**na indi (mevcut skoru gösterir + sihirbaza link). CoverLetter + Notes kaldı. Eski kart bileşenleri + `/api/ai/{required-documents,fit-score,skills-gap}` route'ları kodda duruyor (UI'dan link verilmiyor).
+- [x] **i18n:** `cvRepair` namespace 5 dilde (tr/en/de/es/fr).
+- Commit: 41be789. Branch: feat/web-landing-redesign. Build + tsc temiz.
+- **Durum: Kod hazır, build+tsc temiz, push edildi. Migration 0018 bekliyor. Sonraki: Faz 4 (AI asistan Claude-tarzı redesign).**
+
 ### 2026-07-07 — Faz 2 monetizasyon: free plan yeniden dengeleme
 > ✅ **`0017_free_cv_credits.sql` UYGULANDI (2026-07-07):** `profiles.free_cv_credits` kolonu REST probe ile doğrulandı (HTTP 200); mevcut tüm kullanıcılar default=1 backfill aldı. CV kredisi + referral ödülü canlı-hazır.
 
