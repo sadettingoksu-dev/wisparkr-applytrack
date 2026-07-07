@@ -1,11 +1,11 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ArrowRight, Wrench } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
-import { FitScoreCard } from '@/components/cv/FitScoreCard'
-import { CvTailorCard } from '@/components/cv/CvTailorCard'
 import { CoverLetterCard } from '@/components/cv/CoverLetterCard'
-import { SkillsGapCard } from '@/components/cv/SkillsGapCard'
-import { RequiredDocumentsCard } from '@/components/cv/RequiredDocumentsCard'
+import { CompetitorAnalysisCard } from '@/components/cv/CompetitorAnalysisCard'
+import { SalaryCoachCard } from '@/components/cv/SalaryCoachCard'
 import { LockedFeatureCard } from '@/components/billing/LockedFeatureCard'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { InterviewDateField } from '@/components/applications/InterviewDateField'
@@ -14,7 +14,13 @@ import { StatusSelector } from '@/components/applications/StatusSelector'
 import { getServerDict } from '@/lib/i18n-server'
 import { format } from '@/lib/i18n'
 import { getEffectivePlan, requiredPlanForFeature, PLANS, type FeatureKey } from '@/lib/plans'
-import type { Application, RequiredDocument, Profile } from '@/lib/types'
+import type {
+  Application,
+  Profile,
+  CvDiagnosisResult,
+  CompetitorAnalysisResult,
+  SalaryCoachResult,
+} from '@/lib/types'
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
   const t = getServerDict()
@@ -23,7 +29,11 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
   const { data: userData } = await supabase.auth.getUser()
   const [{ data: application }, { data: profileData }] = await Promise.all([
     supabase.from('applications').select('*').eq('id', params.id).single(),
-    supabase.from('profiles').select('plan, trial_ends_at').eq('id', userData.user!.id).single(),
+    supabase
+      .from('profiles')
+      .select('plan, trial_ends_at, free_cv_credits')
+      .eq('id', userData.user!.id)
+      .single(),
   ])
 
   if (!application) notFound()
@@ -44,6 +54,11 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
     )
   }
 
+  // CV Servisi (araba-tamiri sihirbazı) giriş noktası. Teşhis tüm planlara bedava;
+  // optimize CV üretimi sihirbaz içinde krediyi/kotayı harcar. Mevcut skoru göster.
+  const diagnosis = (app.cv_diagnosis as CvDiagnosisResult | null) ?? null
+  const repairScore = app.tailored_fit_score ?? diagnosis?.overall_score ?? null
+
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -61,45 +76,43 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
         <InterviewDateField applicationId={app.id} initialDate={app.interview_date} />
       </Card>
 
-      {planFeatures.cvAutoTailoring ? (
-        <RequiredDocumentsCard
+      {/* CV Servisi — teşhis + onarım + optimize CV tek sihirbazda */}
+      <Link href={`/applications/${app.id}/cv-repair`} className="block">
+        <Card className="group flex items-center gap-4 border-purple-200 transition hover:border-purple-300 hover:shadow-sm">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-50 text-purple-600">
+            <Wrench className="h-6 w-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm font-semibold text-slate-900">{t.cvRepair.title}</h2>
+            <p className="text-sm text-slate-500">{t.cvRepair.subtitle}</p>
+          </div>
+          {repairScore !== null && (
+            <span className="shrink-0 text-2xl font-bold text-purple-600">%{repairScore}</span>
+          )}
+          <ArrowRight className="h-5 w-5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-purple-500" />
+        </Card>
+      </Link>
+
+      {/* Rakip analizi — her başvuruda kullanılabilir (Pro). */}
+      {planFeatures.competitorAnalysis ? (
+        <CompetitorAnalysisCard
           applicationId={app.id}
-          initialDocuments={app.required_documents as RequiredDocument[] | null}
+          initialResult={(app.competitor_analysis as CompetitorAnalysisResult | null) ?? null}
         />
       ) : (
-        lockedTitle('cvAutoTailoring', t.requiredDocs.title)
+        lockedTitle('competitorAnalysis', t.competitor.title)
       )}
 
-      {planFeatures.cvFitScore ? (
-        <FitScoreCard
-          applicationId={app.id}
-          initialScore={app.fit_score}
-          initialSuggestions={(app.fit_suggestions as string[] | null) ?? null}
-        />
-      ) : (
-        lockedTitle('cvFitScore', t.fitScore.title)
-      )}
-
-      {planFeatures.skillsGap ? (
-        <SkillsGapCard
-          applicationId={app.id}
-          initialData={
-            app.skills_gap as { matched: string[]; missing: string[]; summary: string } | null
-          }
-        />
-      ) : (
-        lockedTitle('skillsGap', t.skillsGap.title)
-      )}
-
-      {planFeatures.cvAutoTailoring ? (
-        <CvTailorCard
-          applicationId={app.id}
-          initialScore={app.tailored_fit_score}
-          hasTailoredCv={Boolean(app.tailored_cv_text)}
-        />
-      ) : (
-        lockedTitle('cvAutoTailoring', t.cvTailor.title)
-      )}
+      {/* Maaş müzakere koçu — teklif aşamasında en değerlisi; yalnızca 'offer' statüsünde gösterilir. */}
+      {app.status === 'offer' &&
+        (planFeatures.salaryNegotiationCoach ? (
+          <SalaryCoachCard
+            applicationId={app.id}
+            initialResult={(app.salary_coach as SalaryCoachResult | null) ?? null}
+          />
+        ) : (
+          lockedTitle('salaryNegotiationCoach', t.salaryCoach.title)
+        ))}
 
       {planFeatures.coverLetter ? (
         <CoverLetterCard applicationId={app.id} initialText={app.cover_letter_text} />

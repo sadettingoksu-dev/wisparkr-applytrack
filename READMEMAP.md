@@ -12,6 +12,44 @@
 
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
+### 2026-07-07 — Faz 5: Maaş müzakere koçu + rakip analizi (gerçek özellikler)
+> ⚠️ **Migration `0019_salary_competitor.sql` UYGULANMASI GEREKİR** (`applications.salary_coach` + `competitor_analysis` jsonb). Kod kolonlarsız da çalışır (sonuç kalıcı olmaz). Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ.
+
+- [x] **Maaş müzakere koçu (gerçek özellik):** `analyzeSalary` (lib/anthropic.ts) → pozisyon/şehir/(teklif) için TR aylık brüt piyasa aralığı + teklif değerlendirmesi + karşı-teklif + hazır müzakere replikleri + ipuçları. `/api/ai/salary-coach` (Pro `salaryNegotiationCoach`, metered). `SalaryCoachCard` başvuru detayında **yalnızca `offer` statüsünde** (teklif aşamasında değerli).
+- [x] **Rakip analizi (gerçek özellik):** `analyzeCompetition` (lib/anthropic.ts) → tipik aday profili + adayın havuzda nerede durduğu + farklılaştırıcılar + rekabetçi konum skoru (0-100). `/api/ai/competitor-analysis` (Pro `competitorAnalysis`, metered). `CompetitorAnalysisCard` detayda her zaman. NOT: `/compare` sayfasından FARKLI (o kendi başvurularını karşılaştırır).
+- [x] **i18n:** `salaryCoach` + `competitor` namespace 5 dilde.
+- Commit: (Faz 5). Branch: feat/web-landing-redesign. Build + tsc temiz.
+
+### 2026-07-07 — Faz 4: AI asistan Claude-tarzı redesign
+- [x] **AIChatPanel kökten yenilendi:** geniş/akıcı düzen, asistan avatarı + **markdown render**, kullanıcı baloncukları, otomatik kaydırma, autosize textarea (Enter gönder / Shift+Enter yeni satır), animasyonlu "düşünüyor" göstergesi, boş durumda öneri çipsleri, her yanıtta kopyala butonu.
+- [x] **`components/chat/Markdown.tsx`:** bağımlılıksız, güvenli markdown renderer (başlık/liste/alıntı/kod bloğu/satır içi biçim; `dangerouslySetInnerHTML` YOK, link'ler http(s)/iç yol ile sınırlı).
+- [x] chat route "Career Coach" → "Pro" metin düzeltmesi. i18n `chat.thinking/copy/copied` 5 dilde. NOT: parkrcan nav baloncuğu ayrı, korundu. Streaming eklenmedi (gelecekte).
+- Commit: (Faz 4). Branch: feat/web-landing-redesign. Build + tsc temiz.
+
+### 2026-07-07 — Faz 3: CV araba-tamiri sihirbazı
+> ⚠️ **Migration `0018_cv_diagnosis.sql` UYGULANMASI GEREKİR** (`applications.cv_diagnosis jsonb`). Kod migration olmadan da çalışır (teşhis üretilir) ama sonuç KALICI OLMAZ; kolon eklenince kalıcılık gelir. Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ — canlıda değil.
+
+- [x] **Ayrı tam sayfa sihirbaz** `/applications/[id]/cv-repair` — 3 adım: **Teşhis → Onarım → Teslim**. `components/cv/CvRepairWizard.tsx` (adım göstergeci, arıza listesi, belge var/yok, otomatik onarılacaklar, önce→sonra skor, PDF indirme + Pro daveti).
+- [x] **`diagnoseCv` (lib/anthropic.ts):** CV'yi ilana karşı usta gibi muayene → arızalar (kategori: document/skill/experience/keyword/format; şiddet: critical/important/minor; etki puanı; arıza+onarım metni) + genel hazırlık skoru. `CvDiagnosisResult`/`CvDiagnosisItem` tipleri `lib/types.ts`'ten export.
+- [x] **`/api/ai/cv-repair/diagnose`:** teşhis TÜM planlara **BEDAVA** (kredi/aylık kota harcamaz, yalnızca AI rate limit). Sonuç `applications.cv_diagnosis`'e kaydedilir.
+- [x] **Optimize CV = mevcut `/api/ai/tailor-cv`:** kredi mantığı orada (Pro sınırsız, free ömür boyu 1 `free_cv_credits`). Sihirbazın `have_or_not` arızaları belge (`RequiredDocument`) olarak beslenir; şiddet→önem eşlenir.
+- [x] **Seçenek B sadeleştirme:** başvuru detay sayfasında RequiredDocuments/FitScore/SkillsGap/CvTailor kartları tek **"CV Servisi" giriş kartı**na indi (mevcut skoru gösterir + sihirbaza link). CoverLetter + Notes kaldı. Eski kart bileşenleri + `/api/ai/{required-documents,fit-score,skills-gap}` route'ları kodda duruyor (UI'dan link verilmiyor).
+- [x] **i18n:** `cvRepair` namespace 5 dilde (tr/en/de/es/fr).
+- Commit: 41be789. Branch: feat/web-landing-redesign. Build + tsc temiz.
+- **Durum: Kod hazır, build+tsc temiz, push edildi. Migration 0018 bekliyor. Sonraki: Faz 4 (AI asistan Claude-tarzı redesign).**
+
+### 2026-07-07 — Faz 2 monetizasyon: free plan yeniden dengeleme
+> ✅ **`0017_free_cv_credits.sql` UYGULANDI (2026-07-07):** `profiles.free_cv_credits` kolonu REST probe ile doğrulandı (HTTP 200); mevcut tüm kullanıcılar default=1 backfill aldı. CV kredisi + referral ödülü canlı-hazır.
+
+- [x] **Free başvuru limiti → SINIRSIZ** (`plans.ts` maxApplications null). Takip = retention kancası; paywall %100 AI değerinde. Aylık AI havuzu 15→10.
+- [x] **CV AI-uyarlama free'de ömür boyu 1 hak:** `profiles.free_cv_credits` (default 1, migration 0017). `lib/usage.ts` `consumeFreeCvCredit` (koşullu `.gt(0)` update → çift-harcama yok) + `refundFreeCvCredit` (AI hatasında iade). `tailor-cv` route: Pro/deneme sınırsız, free krediden düşer, 0 ise `FREE_CV_CREDIT_EXHAUSTED`. Başvuru detay sayfası free+kredi>0 ise kartı gösterir (eskiden komple kilitliydi).
+- [x] **Paylaşılabilir link (cv_shares) Pro'ya özel:** `/api/cv/share` POST efektif-free'yi 403 ile reddeder (deneme=Pro seviyesi dahil). Free artık link üretemez, sadece PDF indirir. `cv-builder` sayfası ham plan yerine `getEffectivePlanId` geçer (trial doğru tanınır). `SharePanel` free'de create formu yerine Pro daveti gösterir.
+- [x] **Referral ödülü değişti:** +5 gün Pro → **+1 CV uyarlama kredisi** (`referral/claim` route). Gün ödülü trial'ı bitmiş free kullanıcıya yaramıyordu; kredi herkese yarar. Metinler 5 dilde güncellendi.
+- [x] **i18n (5 dil):** cvTailor.freeBadge/freeHint/freeExhausted/upgradeCta, share.proOnly, referral desc/reward.
+- Commit'ler: c3f2ec0 (backend), 497d191 (frontend). Branch: feat/web-landing-redesign.
+- **Durum: Kod hazır, build+tsc temiz, push edildi. Migration 0017 bekliyor. Sonraki: Faz 3 (CV araba-tamiri sihirbazı).**
+
+
 ### 2026-06-28 oturumu — Güvenlik sertleştirme + Mülakat insanlaştırma + "10 eksik" paketi + çoklu dil
 > ✅ **MANUEL ADIMLAR TAMAMLANDI (2026-06-28):**
 > - **SQL uygulandı:** `0013_feedback.sql` (feedback tablosu + `profiles.notify_*`) ve `0014_referral.sql` (`profiles.referral_code/referred_by/referral_count`) Supabase'de çalıştırıldı — REST probe + geçici hesapla uçtan uca doğrulandı (#10/#8/#9 ✅, RLS doğru).

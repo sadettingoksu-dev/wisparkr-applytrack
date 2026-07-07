@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { CvBuilder } from '@/components/cv-builder/CvBuilder'
 import { PageInfo } from '@/components/ui/PageInfo'
 import { parseCvData, emptyCvData } from '@/lib/cv'
+import { getEffectivePlanId } from '@/lib/plans'
 import type { Profile } from '@/lib/types'
 
 export default async function CvBuilderPage() {
@@ -23,7 +24,7 @@ export default async function CvBuilderPage() {
       <div className="flex justify-end">
         <PageInfo page="cvBuilder" />
       </div>
-      <CvBuilder initial={initial} plan={profile?.plan ?? 'free'} />
+      <CvBuilder initial={initial} plan={getEffectivePlanId(profile)} />
     </div>
   )
 }

@@ -80,3 +80,60 @@ export async function checkAndIncrementUsage(
 
   return { allowed: true, used: used + 1, limit }
 }
+
+export interface LifetimeCreditResult {
+  allowed: boolean
+  /** Kalan kredi (harcamadan sonra). */
+  remaining: number
+}
+
+/**
+ * Ücretsiz planın ömür boyu CV AI-uyarlama kredisini ({@link profiles.free_cv_credits})
+ * atomik olarak tüketir. Aylık `ai_usage` havuzundan bağımsızdır — bu tek seferlik/ömür
+ * boyu bir sayaçtır. Kredi > 0 ise 1 düşürür ve `allowed:true` döner; 0 ise dokunmaz.
+ *
+ * Yarış koşulunu önlemek için `free_cv_credits > 0` koşullu bir UPDATE ... RETURNING
+ * yapar: iki eşzamanlı istek asla aynı krediyi iki kez harcayamaz.
+ */
+export async function consumeFreeCvCredit(
+  admin: AdminClient,
+  userId: string
+): Promise<LifetimeCreditResult> {
+  const { data: current } = await admin
+    .from('profiles')
+    .select('free_cv_credits')
+    .eq('id', userId)
+    .maybeSingle()
+
+  const have = current ? Number((current as { free_cv_credits: number }).free_cv_credits) || 0 : 0
+  if (have <= 0) return { allowed: false, remaining: 0 }
+
+  // Koşullu update: yalnızca kredi hâlâ > 0 ise düşür (eşzamanlı çift-harcamayı engeller).
+  const { data: updated } = await admin
+    .from('profiles')
+    .update({ free_cv_credits: have - 1 } as never)
+    .eq('id', userId)
+    .gt('free_cv_credits', 0)
+    .select('free_cv_credits')
+    .maybeSingle()
+
+  if (!updated) return { allowed: false, remaining: 0 }
+  return { allowed: true, remaining: Number((updated as { free_cv_credits: number }).free_cv_credits) || 0 }
+}
+
+/**
+ * Harcanan ücretsiz CV kredisini geri verir (ör. AI çağrısı başarısız olursa —
+ * kullanıcının tek hakkı bir hatadan dolayı yanmasın). En fazla +1 ekler.
+ */
+export async function refundFreeCvCredit(admin: AdminClient, userId: string): Promise<void> {
+  const { data: current } = await admin
+    .from('profiles')
+    .select('free_cv_credits')
+    .eq('id', userId)
+    .maybeSingle()
+  const have = current ? Number((current as { free_cv_credits: number }).free_cv_credits) || 0 : 0
+  await admin
+    .from('profiles')
+    .update({ free_cv_credits: have + 1 } as never)
+    .eq('id', userId)
+}

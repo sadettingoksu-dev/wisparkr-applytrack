@@ -37,6 +37,7 @@ export interface Database {
           referral_code: string | null
           referred_by: string | null
           referral_count: number
+          free_cv_credits: number
           created_at: string
           updated_at: string
         }
@@ -98,6 +99,9 @@ export interface Database {
           tailored_cv_text: string | null
           tailored_fit_score: number | null
           required_documents: Json | null
+          cv_diagnosis: Json | null
+          salary_coach: Json | null
+          competitor_analysis: Json | null
           cover_letter_text: string | null
           skills_gap: Json | null
           notes: string | null
@@ -142,6 +146,7 @@ export interface Database {
           status: 'active' | 'cancelled' | 'expired' | 'past_due' | 'on_trial'
           renews_at: string | null
           ends_at: string | null
+          renewal_reminder_sent_at: string | null
           created_at: string
           updated_at: string
         }

@@ -9,11 +9,13 @@ import type { PlanId } from '@/lib/types'
 
 export function UpgradeButton({
   planId,
+  period = 'monthly',
   label,
   variant,
   fullWidth,
 }: {
   planId: Exclude<PlanId, 'free'>
+  period?: 'monthly' | 'yearly'
   label?: string
   variant?: 'primary' | 'secondary'
   fullWidth?: boolean
@@ -29,7 +31,7 @@ export function UpgradeButton({
       const res = await fetch('/api/billing/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: planId }),
+        body: JSON.stringify({ plan: planId, period }),
       })
       const json = await res.json()
       if (!res.ok) {

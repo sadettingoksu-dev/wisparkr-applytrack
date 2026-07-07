@@ -24,7 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/calendar', key: 'calendar', icon: CalendarDays },
   { href: '/board', key: 'board', icon: Kanban },
   { href: '/applications', key: 'applications', icon: FileText },
-  { href: '/jobs', key: 'jobs', icon: Briefcase },
+  { href: '/jobs', key: 'jobs', icon: Briefcase, feature: 'similarJobs' },
   {
     key: 'careerCoach',
     icon: GraduationCap,
@@ -134,27 +134,34 @@ export function Sidebar({ name, email, avatarUrl, plan, effectivePlan, mobileOpe
             // Tekil link (alt menüsü olmayan)
             if (!('children' in item)) {
               const { href, key, icon: Icon } = item
-              const active = pathname === href
+              const locked = isLocked(item)
+              const active = !locked && pathname === href
               const label = navLabel(key)
+              // Kilitliyse: tıklayınca planı yükseltmek için faturalama sayfasına git.
+              const lockTitle = `${label} — ${t.sidebar.locked}`
               return (
                 <Link
                   key={href}
-                  href={href}
+                  href={locked ? BILLING_HREF : href}
                   onClick={onMobileClose}
-                  title={effCollapsed ? label : undefined}
+                  title={locked ? lockTitle : effCollapsed ? label : undefined}
+                  aria-disabled={locked}
                   className={clsx(
                     'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                     effCollapsed && 'justify-center',
-                    active
-                      ? 'bg-purple-50 text-purple-600 shadow-sm shadow-purple-100'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+                    locked
+                      ? 'text-slate-300 hover:bg-slate-50 hover:text-slate-400'
+                      : active
+                        ? 'bg-purple-50 text-purple-600 shadow-sm shadow-purple-100'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
                   )}
                 >
                   {active && (
                     <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-purple-600" aria-hidden />
                   )}
                   <Icon className="h-4 w-4 shrink-0" />
-                  {!effCollapsed && label}
+                  {!effCollapsed && <span className="flex-1">{label}</span>}
+                  {!effCollapsed && locked && <Lock className="h-3.5 w-3.5 shrink-0 text-slate-300" />}
                 </Link>
               )
             }

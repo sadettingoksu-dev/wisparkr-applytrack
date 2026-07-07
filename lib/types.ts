@@ -36,6 +36,18 @@ export interface JobParseResult {
 
 export type { RequiredDocument, DocumentImportance } from '@/lib/anthropic'
 export type { MockInterviewFeedback, MockInterviewTurnResult } from '@/lib/anthropic'
+export type {
+  CvDiagnosisResult,
+  CvDiagnosisItem,
+  CvDiagnosisCategory,
+  CvDiagnosisSeverity,
+  CvDiagnosisKind,
+} from '@/lib/anthropic'
+export type {
+  SalaryCoachResult,
+  SalaryNegotiationScript,
+  CompetitorAnalysisResult,
+} from '@/lib/anthropic'
 
 export interface FitScoreResult {
   score: number

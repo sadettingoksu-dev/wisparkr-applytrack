@@ -5,7 +5,8 @@ import { Share2, Copy, Check, Trash2, Link2, Crown, Eye } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { isShareActive, SHARE_FREE_TTL_DAYS } from '@/lib/cv'
+import { UpgradeButton } from '@/components/billing/UpgradeButton'
+import { isShareActive } from '@/lib/cv'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { format } from '@/lib/i18n'
 
@@ -89,33 +90,44 @@ export function SharePanel({ plan }: { plan: string }) {
         <h2 className="text-sm font-semibold text-slate-900">{t.share.title}</h2>
       </div>
       <p className="text-sm text-slate-500">
-        {t.share.descMain}{' '}
-        {isPaid ? t.share.descPaid : format(t.share.descFree, { days: SHARE_FREE_TTL_DAYS })}{' '}
-        {t.share.descSave}
+        {t.share.descMain}
+        {isPaid && ` ${t.share.descPaid} ${t.share.descSave}`}
       </p>
 
-      <div className="flex flex-wrap gap-2">
-        <input className={inputClass} placeholder={t.share.labelPlaceholder} value={label} onChange={(e) => setLabel(e.target.value)} />
-        {isPaid && (
-          <input
-            className={`${inputClass} max-w-[180px]`}
-            placeholder={t.share.slugPlaceholder}
-            value={slug}
-            onChange={(e) => setSlug(e.target.value.toLowerCase())}
-          />
-        )}
-        <Button onClick={handleCreate} disabled={creating} variant="primary">
-          {creating ? (
-            <Spinner />
-          ) : (
-            <>
-              <Link2 className="h-4 w-4" />
-              {t.share.create}
-            </>
-          )}
-        </Button>
-      </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {isPaid ? (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <input className={inputClass} placeholder={t.share.labelPlaceholder} value={label} onChange={(e) => setLabel(e.target.value)} />
+            <input
+              className={`${inputClass} max-w-[180px]`}
+              placeholder={t.share.slugPlaceholder}
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.toLowerCase())}
+            />
+            <Button onClick={handleCreate} disabled={creating} variant="primary">
+              {creating ? (
+                <Spinner />
+              ) : (
+                <>
+                  <Link2 className="h-4 w-4" />
+                  {t.share.create}
+                </>
+              )}
+            </Button>
+          </div>
+          {error && <p className="text-xs text-red-500">{error}</p>}
+        </>
+      ) : (
+        <div className="flex flex-col gap-2 rounded-lg border border-purple-200 bg-purple-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-center gap-2 text-xs text-purple-700">
+            <Crown className="h-4 w-4 shrink-0" />
+            {t.share.proOnly}
+          </p>
+          <div className="shrink-0">
+            <UpgradeButton planId="pro" label={t.share.makePermanent} />
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-xs text-slate-400">{t.share.loading}</p>

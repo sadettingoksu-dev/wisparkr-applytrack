@@ -11,6 +11,7 @@ export default function CheckoutRedirectPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan')
+  const period = searchParams.get('period') === 'yearly' ? 'yearly' : 'monthly'
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function CheckoutRedirectPage() {
     fetch('/api/billing/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, period }),
     })
       .then(async (res) => {
         const json = await res.json()
@@ -33,7 +34,7 @@ export default function CheckoutRedirectPage() {
         window.location.href = json.data.checkout_url
       })
       .catch(() => setError(t.common.connectionError))
-  }, [plan, router, t])
+  }, [plan, period, router, t])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">

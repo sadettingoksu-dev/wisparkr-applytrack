@@ -35,13 +35,13 @@ export async function POST(request: Request) {
   if (!rl.allowed) return rateLimitResponse(rl)
   const { supabase, userId, profile } = ctx
 
-  // AI Kariyer Asistanı (sohbet) Career Coach planına özel.
+  // AI Kariyer Asistanı (sohbet) Pro planına özel.
   if (!getPlan(profile.plan).features.aiAssistant) {
     return NextResponse.json(
       {
         error: {
           code: 'FEATURE_NOT_AVAILABLE',
-          message: 'AI Kariyer Asistanı yalnızca Career Coach planında mevcut.',
+          message: 'AI Kariyer Asistanı yalnızca Pro planında mevcut.',
         },
       },
       { status: 403 }

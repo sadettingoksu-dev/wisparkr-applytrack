@@ -6,18 +6,23 @@ import { Button } from '@/components/ui/Button'
 import { UpgradeButton } from '@/components/billing/UpgradeButton'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { format } from '@/lib/i18n'
-import type { PlanConfig } from '@/lib/plans'
+import { currencySymbol, effectiveMonthlyFromYearly, type PlanConfig } from '@/lib/plans'
 
 interface PricingCardProps {
   plan: PlanConfig
   featureList: string[]
   highlighted?: boolean
   ctaHref?: string
+  period?: 'monthly' | 'yearly'
 }
 
-export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup' }: PricingCardProps) {
+export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup', period = 'monthly' }: PricingCardProps) {
   const { t } = useI18n()
   const isFree = plan.priceMonthly === 0
+  const yearly = period === 'yearly' && !isFree
+  const symbol = currencySymbol(plan.currency)
+  const price = yearly ? plan.priceYearly : plan.priceMonthly
+  const periodSuffix = yearly ? t.pricing.perYear : t.pricing.perMonth
   const tagline = (t.pricing.taglines as Record<string, string>)[plan.id]
   const credits =
     plan.limits.aiQuestionsPerMonth === null
@@ -47,9 +52,14 @@ export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup
 
       {/* Fiyat */}
       <div className="mt-5">
-        <span className="text-4xl font-bold tracking-tight text-slate-900">${plan.priceMonthly}</span>
-        <span className="text-sm font-normal text-slate-400">{t.pricing.perMonth}</span>
+        <span className="text-4xl font-bold tracking-tight text-slate-900">{symbol}{price.toLocaleString('tr-TR')}</span>
+        <span className="text-sm font-normal text-slate-400">{periodSuffix}</span>
         {isFree && <p className="mt-1.5 text-xs font-medium text-purple-600">{t.pricing.trialPrice}</p>}
+        {yearly && (
+          <p className="mt-1.5 text-xs font-medium text-emerald-600">
+            {format(t.pricing.yearlyEffective, { price: `${symbol}${effectiveMonthlyFromYearly(plan).toLocaleString('tr-TR')}` })} · {t.pricing.yearlySave}
+          </p>
+        )}
       </div>
 
       {/* AI işlem (kredi) rozeti */}
@@ -71,6 +81,7 @@ export function PricingCard({ plan, featureList, highlighted, ctaHref = '/signup
         ) : (
           <UpgradeButton
             planId={plan.id as 'pro' | 'career_coach'}
+            period={period}
             label={t.pricing.paidCta}
             variant={highlighted ? 'primary' : 'secondary'}
             fullWidth
