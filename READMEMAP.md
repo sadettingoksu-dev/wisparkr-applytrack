@@ -12,6 +12,20 @@
 
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
+### 2026-07-07 — Faz 5: Maaş müzakere koçu + rakip analizi (gerçek özellikler)
+> ⚠️ **Migration `0019_salary_competitor.sql` UYGULANMASI GEREKİR** (`applications.salary_coach` + `competitor_analysis` jsonb). Kod kolonlarsız da çalışır (sonuç kalıcı olmaz). Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ.
+
+- [x] **Maaş müzakere koçu (gerçek özellik):** `analyzeSalary` (lib/anthropic.ts) → pozisyon/şehir/(teklif) için TR aylık brüt piyasa aralığı + teklif değerlendirmesi + karşı-teklif + hazır müzakere replikleri + ipuçları. `/api/ai/salary-coach` (Pro `salaryNegotiationCoach`, metered). `SalaryCoachCard` başvuru detayında **yalnızca `offer` statüsünde** (teklif aşamasında değerli).
+- [x] **Rakip analizi (gerçek özellik):** `analyzeCompetition` (lib/anthropic.ts) → tipik aday profili + adayın havuzda nerede durduğu + farklılaştırıcılar + rekabetçi konum skoru (0-100). `/api/ai/competitor-analysis` (Pro `competitorAnalysis`, metered). `CompetitorAnalysisCard` detayda her zaman. NOT: `/compare` sayfasından FARKLI (o kendi başvurularını karşılaştırır).
+- [x] **i18n:** `salaryCoach` + `competitor` namespace 5 dilde.
+- Commit: (Faz 5). Branch: feat/web-landing-redesign. Build + tsc temiz.
+
+### 2026-07-07 — Faz 4: AI asistan Claude-tarzı redesign
+- [x] **AIChatPanel kökten yenilendi:** geniş/akıcı düzen, asistan avatarı + **markdown render**, kullanıcı baloncukları, otomatik kaydırma, autosize textarea (Enter gönder / Shift+Enter yeni satır), animasyonlu "düşünüyor" göstergesi, boş durumda öneri çipsleri, her yanıtta kopyala butonu.
+- [x] **`components/chat/Markdown.tsx`:** bağımlılıksız, güvenli markdown renderer (başlık/liste/alıntı/kod bloğu/satır içi biçim; `dangerouslySetInnerHTML` YOK, link'ler http(s)/iç yol ile sınırlı).
+- [x] chat route "Career Coach" → "Pro" metin düzeltmesi. i18n `chat.thinking/copy/copied` 5 dilde. NOT: parkrcan nav baloncuğu ayrı, korundu. Streaming eklenmedi (gelecekte).
+- Commit: (Faz 4). Branch: feat/web-landing-redesign. Build + tsc temiz.
+
 ### 2026-07-07 — Faz 3: CV araba-tamiri sihirbazı
 > ⚠️ **Migration `0018_cv_diagnosis.sql` UYGULANMASI GEREKİR** (`applications.cv_diagnosis jsonb`). Kod migration olmadan da çalışır (teşhis üretilir) ama sonuç KALICI OLMAZ; kolon eklenince kalıcılık gelir. Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ — canlıda değil.
 
