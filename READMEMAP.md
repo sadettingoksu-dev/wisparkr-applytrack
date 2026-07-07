@@ -12,6 +12,18 @@
 
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
+### 2026-07-07 — Faz 2 monetizasyon: free plan yeniden dengeleme
+> ⚠️ **BEKLEYEN MANUEL ADIM:** `0017_free_cv_credits.sql` Supabase SQL editöründe çalıştırılmalı (`profiles.free_cv_credits` kolonu — REST probe ile YOK olduğu doğrulandı 2026-07-07). Kolon gelene kadar CV uyarlama kredisi ve referral ödülü çalışmaz.
+
+- [x] **Free başvuru limiti → SINIRSIZ** (`plans.ts` maxApplications null). Takip = retention kancası; paywall %100 AI değerinde. Aylık AI havuzu 15→10.
+- [x] **CV AI-uyarlama free'de ömür boyu 1 hak:** `profiles.free_cv_credits` (default 1, migration 0017). `lib/usage.ts` `consumeFreeCvCredit` (koşullu `.gt(0)` update → çift-harcama yok) + `refundFreeCvCredit` (AI hatasında iade). `tailor-cv` route: Pro/deneme sınırsız, free krediden düşer, 0 ise `FREE_CV_CREDIT_EXHAUSTED`. Başvuru detay sayfası free+kredi>0 ise kartı gösterir (eskiden komple kilitliydi).
+- [x] **Paylaşılabilir link (cv_shares) Pro'ya özel:** `/api/cv/share` POST efektif-free'yi 403 ile reddeder (deneme=Pro seviyesi dahil). Free artık link üretemez, sadece PDF indirir. `cv-builder` sayfası ham plan yerine `getEffectivePlanId` geçer (trial doğru tanınır). `SharePanel` free'de create formu yerine Pro daveti gösterir.
+- [x] **Referral ödülü değişti:** +5 gün Pro → **+1 CV uyarlama kredisi** (`referral/claim` route). Gün ödülü trial'ı bitmiş free kullanıcıya yaramıyordu; kredi herkese yarar. Metinler 5 dilde güncellendi.
+- [x] **i18n (5 dil):** cvTailor.freeBadge/freeHint/freeExhausted/upgradeCta, share.proOnly, referral desc/reward.
+- Commit'ler: c3f2ec0 (backend), 497d191 (frontend). Branch: feat/web-landing-redesign.
+- **Durum: Kod hazır, build+tsc temiz, push edildi. Migration 0017 bekliyor. Sonraki: Faz 3 (CV araba-tamiri sihirbazı).**
+
+
 ### 2026-06-28 oturumu — Güvenlik sertleştirme + Mülakat insanlaştırma + "10 eksik" paketi + çoklu dil
 > ✅ **MANUEL ADIMLAR TAMAMLANDI (2026-06-28):**
 > - **SQL uygulandı:** `0013_feedback.sql` (feedback tablosu + `profiles.notify_*`) ve `0014_referral.sql` (`profiles.referral_code/referred_by/referral_count`) Supabase'de çalıştırıldı — REST probe + geçici hesapla uçtan uca doğrulandı (#10/#8/#9 ✅, RLS doğru).
