@@ -16,6 +16,8 @@ export function useSpeechRecognition(lang: string = 'tr-TR') {
   const shouldListenRef = useRef(false)
   const finalTranscriptRef = useRef('')
   const langRef = useRef(lang)
+  // 'network' hatası için sessiz yeniden deneme sayacı (geçici kesintileri yut).
+  const netRetriesRef = useRef(0)
 
   // Dil değişince güncel tut; bir sonraki start() bu dille başlar.
   useEffect(() => {
@@ -46,6 +48,8 @@ export function useSpeechRecognition(lang: string = 'tr-TR') {
     // parçaları ref'te biriktir; ara sonuçları anlık göster. Bu desen otomatik
     // yeniden başlatmadan sonra da metni KAYBETMEZ (eski index-takibi kaybediyordu).
     recognition.onresult = (event: any) => {
+      // Başarılı sonuç geldi → 'network' yeniden deneme sayacını sıfırla.
+      netRetriesRef.current = 0
       let interim = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i]
@@ -58,27 +62,38 @@ export function useSpeechRecognition(lang: string = 'tr-TR') {
       setTranscript(`${finalTranscriptRef.current}${interim}`.trim())
     }
     recognition.onend = () => {
-      // Tarayıcı sessizlik nedeniyle dinlemeyi otomatik kapatabilir;
-      // kullanıcı durdurmadıysa yeni bir oturumla dinlemeye devam et.
+      // Tarayıcı sessizlik nedeniyle veya geçici 'network' hatasıyla dinlemeyi
+      // kapatabilir; kullanıcı durdurmadıysa yeni bir oturumla devam et.
+      // 'network' yeniden denemesinde motora nefes aldırmak için kısa gecikme.
       if (shouldListenRef.current) {
-        try {
-          recognition.start()
-        } catch {
-          // "already started" olursa kısa bir gecikmeyle tekrar dene.
-          setTimeout(() => {
-            try {
-              recognition.start()
-            } catch {
-              /* yoksay */
-            }
-          }, 250)
-        }
+        const delay = netRetriesRef.current > 0 ? 700 : 0
+        setTimeout(() => {
+          try {
+            recognition.start()
+          } catch {
+            // "already started" olursa kısa bir gecikmeyle tekrar dene.
+            setTimeout(() => {
+              try {
+                recognition.start()
+              } catch {
+                /* yoksay */
+              }
+            }, 250)
+          }
+        }, delay)
       } else {
         setIsListening(false)
       }
     }
     recognition.onerror = (event: any) => {
       if (event.error === 'no-speech' || event.error === 'aborted') return
+      // 'network': ses Google sunucusuna gidemedi. Sık sık GEÇİCİDİR (ilk deneme
+      // veya kısa kesinti). Hemen pes etme; birkaç kez sessizce yeniden dene,
+      // onend zaten gecikmeli olarak yeniden başlatır. Bütçe dolunca kullanıcıya bildir.
+      if (event.error === 'network' && shouldListenRef.current && netRetriesRef.current < 4) {
+        netRetriesRef.current += 1
+        return
+      }
       setError(event.error)
       shouldListenRef.current = false
       setIsListening(false)
@@ -95,6 +110,7 @@ export function useSpeechRecognition(lang: string = 'tr-TR') {
     finalTranscriptRef.current = ''
     setTranscript('')
     setError(null)
+    netRetriesRef.current = 0
     shouldListenRef.current = true
     setIsListening(true)
     createAndStart()

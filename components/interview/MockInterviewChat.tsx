@@ -15,7 +15,7 @@ import {
   localeToSpeechLang,
   type VoiceGender,
 } from '@/lib/speech'
-import { useSpeechRecognition } from '@/hooks/useSpeechRecognition'
+import { useAudioRecorder } from '@/hooks/useAudioRecorder'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import type { MockInterview, MockInterviewMessage, MockInterviewFeedback } from '@/lib/types'
 
@@ -62,19 +62,18 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
 
   const [voiceMode, setVoiceMode] = useState(false)
   const [voiceGender, setVoiceGender] = useState<VoiceGender>('female')
-  // canSTT: eller-serbest sesle cevap (Chrome/Edge). canTTS: soruları sesli
-  // okuma (çoğu tarayıcıda var). Ayrı tutulur ki STT olmayan tarayıcıda
-  // (Firefox) sorular yine sesli okunsun, cevap yazılsın.
+  // canSTT: sesle cevap (sunucu STT + MediaRecorder — her tarayıcıda çalışır).
+  // canTTS: soruları sesli okuma. Ayrı tutulur ki TTS yoksa da metin akar.
   const [speechSupported, setSpeechSupported] = useState(false)
   const [canTTS, setCanTTS] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [transcribing, setTranscribing] = useState(false)
   const [started, setStarted] = useState(false)
   const [micBlocked, setMicBlocked] = useState(false)
-  // Sesle cevap alınmıyorsa (mikrofon/tarayıcı/internet) yazarak gönderme yedeği.
+  // Ses alınmıyorsa yazarak gönderme yedeği.
   const [typed, setTyped] = useState('')
-  const speech = useSpeechRecognition(speechLang)
+  const recorder = useAudioRecorder()
   const prevMessageCountRef = useRef(initialMessages.length)
-  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function speak(text: string) {
     if (!isSpeechSynthesisSupported()) return
@@ -86,14 +85,39 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     })
   }
 
-  // Soruyu sesli oku, bittiğinde mikrofonu otomatik dinlemeye başlat (el değmeden).
+  // Kaydı başlat → sessizlikte otomatik dur → sunucuda yazıya çevir → gönder.
+  // (webkitSpeechRecognition YOK; Google konuşma sunucusuna bağımlı değil.)
+  function startAnswerCapture() {
+    if (!recorder.isSupported) return
+    void recorder.start(async (blob) => {
+      if (!blob) return // hiç ses yakalanmadı; kullanıcı tekrar deneyebilir/yazabilir
+      setTranscribing(true)
+      setError(null)
+      try {
+        const fd = new FormData()
+        fd.append('audio', blob, 'answer.webm')
+        fd.append('lang', locale ?? 'tr')
+        const res = await fetch('/api/mock-interview/transcribe', { method: 'POST', body: fd })
+        const json = await res.json().catch(() => null)
+        if (!res.ok) {
+          setError(json?.error?.message ?? t.common.error)
+          return
+        }
+        const text = (json?.data?.text || '').trim()
+        if (text) sendMessage(text)
+        // boşsa: kullanıcı "yeniden dinle" ile tekrar dener veya yazar
+      } catch {
+        setError(t.common.connectionError)
+      } finally {
+        setTranscribing(false)
+      }
+    })
+  }
+
+  // Soruyu sesli oku, bittiğinde kaydı otomatik başlat (el değmeden).
   function speakThenListen(text: string) {
     if (!isSpeechSynthesisSupported()) {
-      try {
-        speech.start()
-      } catch {
-        /* yoksay */
-      }
+      startAnswerCapture()
       return
     }
     setIsSpeaking(true)
@@ -102,18 +126,13 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
       lang: speechLang,
       onEnd: () => {
         setIsSpeaking(false)
-        try {
-          speech.start()
-        } catch {
-          /* izin verilmemişse kullanıcı mikrofon butonuna basabilir */
-        }
+        startAnswerCapture()
       },
     })
   }
 
   // Görüşmeyi başlat: tek dokunuş (kullanıcı hareketi) ile mikrofon iznini al,
-  // sesli modu aç, ilk soruyu oku ve dinlemeye geç. Tarayıcılar izinsiz/otomatik
-  // mikrofon başlatmayı engellediği için bu jest şart.
+  // sesli modu aç, ilk soruyu oku ve kayda geç.
   async function beginInterview() {
     setStarted(true)
     setMicBlocked(false)
@@ -133,21 +152,19 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   }
 
   useEffect(() => {
-    // Eller-serbest voice mode STT gerektirir (Chrome/Edge). TTS (sesli okuma)
-    // ayrı algılanır — böylece Firefox gibi STT'siz tarayıcıda da sorular okunur.
-    setSpeechSupported(speech.isSupported)
+    // Sesle cevap MediaRecorder + sunucu STT ile (her tarayıcıda). TTS ayrı.
+    setSpeechSupported(recorder.isSupported)
     setCanTTS(isSpeechSynthesisSupported())
-    // Tarayıcı seslerini önceden yükle: ilk soru okunurken doğru (kadın) ses hazır olsun.
     warmUpVoices()
-  }, [speech.isSupported])
+  }, [recorder.isSupported])
 
-  // Mikrofon izni reddedilirse: sesli modu kapat, kullanıcıyı bilgilendir, yazıya düş.
+  // Mikrofon izni reddedilir / cihaz yoksa: sesli modu kapat, bilgilendir, yazıya düş.
   useEffect(() => {
-    if (speech.error === 'not-allowed' || speech.error === 'service-not-allowed') {
+    if (recorder.error === 'not-allowed' || recorder.error === 'audio-capture' || recorder.error === 'mic-error') {
       setMicBlocked(true)
       setVoiceMode(false)
     }
-  }, [speech.error])
+  }, [recorder.error])
 
   // Süre sayacı: mülakat devam ederken çalışır.
   useEffect(() => {
@@ -156,8 +173,8 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     return () => clearInterval(id)
   }, [status])
 
-  // Yeni mülakatçı sorusu geldiğinde: sesli modda oku + dinlemeye geç;
-  // metin modunda (STT yok ama TTS var) yalnızca sesli oku (cevap yazılır).
+  // Yeni mülakatçı sorusu geldiğinde: sesli modda oku + kaydet;
+  // metin modunda (yalnızca TTS) sadece sesli oku (cevap yazılır).
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current) {
       const last = messages[messages.length - 1]
@@ -170,28 +187,10 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages, voiceMode])
 
-  // ELLER SERBEST: mikrofon hep açık; kullanıcı bir süre (≈2.3 sn) konuşmayı
-  // bırakınca cevabı OTOMATİK gönderir. Her yeni konuşma parçası zamanlayıcıyı
-  // sıfırlar; AI konuşurken/işlerken tetiklenmez (yankı/erken gönderim önlenir).
-  useEffect(() => {
-    if (!voiceMode || !speech.isListening || loading || isSpeaking) return
-    const text = speech.transcript.trim()
-    if (text.length < 2) return
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
-    silenceTimerRef.current = setTimeout(() => {
-      sendMessage(text)
-    }, 3200)
-    return () => {
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [speech.transcript, speech.isListening, loading, isSpeaking, voiceMode])
-
   useEffect(() => {
     return () => {
       cancelSpeech()
-      speech.stop()
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+      recorder.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -199,10 +198,9 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   async function sendMessage(spoken: string) {
     const content = spoken.trim()
     if (!content || loading) return
-    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     setError(null)
     setLoading(true)
-    if (speech.isListening) speech.stop()
+    if (recorder.isRecording) recorder.stop()
 
     setMessages((prev) => [...prev, { role: 'candidate', content } as MockInterviewMessage])
 
@@ -316,26 +314,29 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     ? { text: t.interview.statusThinking, dot: '#fbbf24' }
     : isSpeaking
       ? { text: t.interview.statusSpeaking, dot: '#a855f7' }
-      : speech.isListening
-        ? { text: t.interview.statusListening, dot: '#39d98a' }
-        : { text: t.interview.statusYourTurn, dot: '#39d98a' }
+      : transcribing
+        ? { text: t.interview.statusTranscribing, dot: '#fbbf24' }
+        : recorder.isRecording
+          ? { text: t.interview.statusListening, dot: '#39d98a' }
+          : { text: t.interview.statusYourTurn, dot: '#39d98a' }
 
   const pill =
     'flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium'
 
-  // STT hata kodunu kullanıcının anlayacağı bir açıklamaya çevir (cihaz mı, bağlantı mı?).
+  // Kayıt/cihaz hatasını kullanıcının anlayacağı bir açıklamaya çevir.
   const speechErrorMsg =
-    speech.error === 'audio-capture'
-      ? t.interview.errAudioCapture
-      : speech.error === 'network'
-        ? t.interview.errNetwork
-        : null
+    recorder.error === 'audio-capture' ? t.interview.errAudioCapture : null
 
   function sendTyped() {
     const text = typed.trim()
     if (!text || loading) return
     setTyped('')
     sendMessage(text)
+  }
+
+  // Kaydı elle durdur → onComplete transcribe tetikler.
+  function stopAndSend() {
+    if (recorder.isRecording) recorder.stop()
   }
 
   return (
@@ -594,14 +595,14 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
           </div>
         )}
 
-        {/* canlı cevap paneli — SADECE SES. Konuşulan metin anlık görünür,
-            yazı yazma/gönderme yok; sessizlikte cevap otomatik gider. */}
+        {/* cevap paneli — kayıt/çeviri durumu. Kayıt sessizlikte otomatik durur,
+            "Gönder" ile elle de durdurulabilir; ses sunucuda yazıya çevrilir. */}
         <div
           className="w-full max-w-2xl rounded-2xl border border-purple-400/20 p-4"
           style={{ background: 'rgba(124,58,237,0.07)', backdropFilter: 'blur(6px)' }}
         >
           <div className="flex items-center gap-3">
-            {speech.isListening && (
+            {recorder.isRecording && (
               <div className="flex h-8 shrink-0 items-center gap-[3px]">
                 {USER_BARS.map((b, i) => (
                   <span
@@ -618,17 +619,23 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
                 ))}
               </div>
             )}
-            <p className="min-h-[26px] flex-1 text-left text-[15px] leading-relaxed text-purple-50">
-              {speech.transcript || (
-                <span className="text-purple-300/50">
-                  {isSpeaking
-                    ? t.interview.statusSpeaking
-                    : speech.isListening
-                      ? t.interview.listening
-                      : t.interview.answerPlaceholder}
-                </span>
-              )}
+            <p className="min-h-[26px] flex-1 text-left text-[15px] leading-relaxed text-purple-300/70">
+              {transcribing
+                ? t.interview.statusTranscribing
+                : isSpeaking
+                  ? t.interview.statusSpeaking
+                  : recorder.isRecording
+                    ? t.interview.listening
+                    : t.interview.answerPlaceholder}
             </p>
+            {recorder.isRecording && (
+              <button
+                onClick={stopAndSend}
+                className="shrink-0 rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-purple-500"
+              >
+                {t.interview.send}
+              </button>
+            )}
           </div>
         </div>
 
@@ -658,26 +665,20 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
           </form>
         )}
 
-        {/* durum bilgisi / güvenlik ağı — GÖNDER butonu YOK.
-            Dinleme kendiliğinden başlamazsa kullanıcı yeniden dinlemeyi tetikleyebilir. */}
+        {/* durum bilgisi / güvenlik ağı — kayıt kendiliğinden başlamazsa
+            kullanıcı yeniden kaydı elle tetikleyebilir. */}
         <div className="flex min-h-[36px] flex-col items-center gap-2">
-          {loading ? (
+          {loading || transcribing ? (
             <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-amber-300/80">
-              <Spinner /> {t.interview.statusThinking}
+              <Spinner /> {loading ? t.interview.statusThinking : t.interview.statusTranscribing}
             </span>
-          ) : speech.isListening && !isSpeaking ? (
+          ) : recorder.isRecording && !isSpeaking ? (
             <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-300/80">
               {t.interview.statusListening} · {t.interview.autoSendHint}
             </span>
           ) : voiceMode && !isSpeaking ? (
             <button
-              onClick={() => {
-                try {
-                  speech.start()
-                } catch {
-                  /* yoksay */
-                }
-              }}
+              onClick={startAnswerCapture}
               className="flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-xs font-medium text-purple-100 transition-colors hover:bg-white/10"
             >
               <Mic className="h-3.5 w-3.5" />
