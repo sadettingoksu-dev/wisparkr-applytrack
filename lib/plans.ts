@@ -52,7 +52,10 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     lemonSqueezyVariantId: null,
     lemonSqueezyVariantIdYearly: null,
     // Kalıcı ücretsiz tier: deneme bittikten sonra düşülen kısıtlı seviye.
-    limits: { maxApplications: 10, aiQuestionsPerMonth: 15 },
+    // Başvuru takibi kanca (retention) → SINIRSIZ. Paywall AI değerinde.
+    // Hafif AI (fit score, skills gap, sohbet) küçük aylık havuzdan yer;
+    // CV AI-uyarlama bu havuzdan DEĞİL, ömür boyu `free_cv_credits`ten yer (bkz. lib/usage.ts).
+    limits: { maxApplications: null, aiQuestionsPerMonth: 10 },
     features: {
       kanban: true,
       cvFitScore: true, // tadımlık: aylık AI kotasıyla sınırlı

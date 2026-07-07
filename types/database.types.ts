@@ -37,6 +37,7 @@ export interface Database {
           referral_code: string | null
           referred_by: string | null
           referral_count: number
+          free_cv_credits: number
           created_at: string
           updated_at: string
         }

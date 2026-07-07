@@ -4,11 +4,13 @@ import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 const schema = z.object({ code: z.string().min(4).max(16) })
-const REWARD_DAYS = 5
+const REWARD_CV_CREDITS = 1
 
 /**
  * Yeni kullanıcı bir referans kodu ile geldiyse işler: davet edeni bağlar ve
- * davet edene +5 gün Pro (trial uzatımı) verir. Her kullanıcı yalnızca bir kez.
+ * davet edene +1 ücretsiz CV uyarlama kredisi (free_cv_credits) verir. Gün ödülü
+ * yerine somut AI değeri — trial'ı bitmiş ücretsiz kullanıcıya da yarar. Her kullanıcı
+ * yalnızca bir kez ödül tetikler.
  */
 export async function POST(request: Request) {
   const ctx = await requireAuth()
@@ -30,7 +32,7 @@ export async function POST(request: Request) {
   const admin = createAdminClient()
   const { data: referrer } = await admin
     .from('profiles')
-    .select('id, trial_ends_at, referral_count')
+    .select('id, free_cv_credits, referral_count')
     .eq('referral_code', code)
     .single()
 
@@ -42,15 +44,11 @@ export async function POST(request: Request) {
   // Yeni kullanıcının kendi satırına davetçiyi yaz (RLS update-own yeterli).
   await ctx.supabase.from('profiles').update({ referred_by: referrer.id } as never).eq('id', userId)
 
-  // Davet edene +5 gün Pro: mevcut deneme sürüyorsa üstüne ekle, değilse şimdiden.
-  const current = referrer.trial_ends_at ? new Date(referrer.trial_ends_at) : null
-  const base = current && current.getTime() > Date.now() ? current : new Date()
-  base.setDate(base.getDate() + REWARD_DAYS)
-
+  // Davet edene +1 ücretsiz CV uyarlama kredisi.
   await admin
     .from('profiles')
     .update({
-      trial_ends_at: base.toISOString(),
+      free_cv_credits: (referrer.free_cv_credits ?? 0) + REWARD_CV_CREDITS,
       referral_count: (referrer.referral_count ?? 0) + 1,
     } as never)
     .eq('id', referrer.id)

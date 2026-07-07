@@ -49,6 +49,20 @@ export async function POST(request: Request) {
   // Link *permanence* follows the REAL paid plan only — trial links die when the trial ends.
   const isReallyPaid = realPlanId === 'pro' || realPlanId === 'career_coach'
 
+  // Paylaşılabilir link Pro'ya özel (deneme = Pro seviyesi dahil). Ücretsiz plan
+  // yalnızca CV'sini PDF olarak indirebilir; herkese açık link oluşturamaz.
+  if (!hasFullAccess) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 'FEATURE_NOT_AVAILABLE',
+          message: 'Paylaşılabilir link Pro planında mevcut. Ücretsiz planda CV\'ni PDF olarak indirebilirsin.',
+        },
+      },
+      { status: 403 }
+    )
+  }
+
   // Custom slug is a Pro perk; otherwise an unguessable random token.
   let token = randomBytes(9).toString('base64url')
   if (slug) {

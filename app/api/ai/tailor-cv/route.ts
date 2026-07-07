@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { rateLimit, rateLimitResponse, AI_RATE_LIMIT } from '@/lib/rateLimit'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { checkAndIncrementUsage } from '@/lib/usage'
+import { checkAndIncrementUsage, consumeFreeCvCredit, refundFreeCvCredit } from '@/lib/usage'
 import { getAnthropicClient, tailorCv } from '@/lib/anthropic'
 import { getPlan } from '@/lib/plans'
 import type { Application, RequiredDocument } from '@/lib/types'
@@ -42,18 +42,10 @@ export async function POST(request: Request) {
   if (!rl.allowed) return rateLimitResponse(rl)
   const { supabase, userId, profile } = ctx
 
+  // Pro/deneme (efektif plan) → sınırsız uyarlama. Ücretsiz tier → ömür boyu
+  // 1 kredi (free_cv_credits) üzerinden; kredi bitince kilitlenir.
   const plan = getPlan(profile.plan)
-  if (!plan.features.cvAutoTailoring) {
-    return NextResponse.json(
-      {
-        error: {
-          code: 'FEATURE_NOT_AVAILABLE',
-          message: 'CV optimizasyonu bu planda mevcut değil. Pro veya Career Coach plana geçin.',
-        },
-      },
-      { status: 403 }
-    )
-  }
+  const isFreeTier = !plan.features.cvAutoTailoring
 
   const json = await request.json().catch(() => null)
   const parsed = bodySchema.safeParse(json)
@@ -87,18 +79,37 @@ export async function POST(request: Request) {
     )
   }
 
+  // Kredi/kota tüketimi başvuru doğrulandıktan SONRA — geçersiz istekte hak yanmaz.
   const admin = createAdminClient()
-  const usage = await checkAndIncrementUsage(admin, userId, profile.plan, 'cv_tailor')
-  if (!usage.allowed) {
-    return NextResponse.json(
-      {
-        error: {
-          code: 'USAGE_LIMIT_REACHED',
-          message: `Bu ay için AI kullanım limitine (${usage.limit}) ulaştınız. Plan yükseltin.`,
+  let freeCreditConsumed = false
+  if (isFreeTier) {
+    const credit = await consumeFreeCvCredit(admin, userId)
+    if (!credit.allowed) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'FREE_CV_CREDIT_EXHAUSTED',
+            message:
+              'Ücretsiz CV uyarlama hakkını kullandın. Sınırsız uyarlama ve paylaşılabilir link için Pro\'ya geç.',
+          },
         },
-      },
-      { status: 403 }
-    )
+        { status: 403 }
+      )
+    }
+    freeCreditConsumed = true
+  } else {
+    const usage = await checkAndIncrementUsage(admin, userId, profile.plan, 'cv_tailor')
+    if (!usage.allowed) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'USAGE_LIMIT_REACHED',
+            message: `Bu ay için AI kullanım limitine (${usage.limit}) ulaştınız. Plan yükseltin.`,
+          },
+        },
+        { status: 403 }
+      )
+    }
   }
 
   const existingDocuments = Array.isArray(application.required_documents)
@@ -119,6 +130,8 @@ export async function POST(request: Request) {
       effectiveDocuments
     )
   } catch {
+    // AI hatasında ücretsiz krediyi iade et — tek hak bir hatadan yanmasın.
+    if (freeCreditConsumed) await refundFreeCvCredit(admin, userId)
     return NextResponse.json(
       { error: { code: 'AI_REQUEST_FAILED', message: 'CV optimize edilemedi.' } },
       { status: 502 }
