@@ -66,15 +66,20 @@ function pickVoice(
   if (langVoices.length === 0) return undefined
 
   const isNatural = (v: SpeechSynthesisVoice) => NATURAL_RE.test(v.name)
+  // Google/Microsoft/Apple sesleri, sistemin eSpeak gibi düşük kaliteli
+  // varsayılanlarından belirgin biçimde daha akıcı ve nettir → bunları öne al.
+  const isQuality = (v: SpeechSynthesisVoice) => /google|microsoft|apple|siri/i.test(v.name)
   const wanted = gender === 'female' ? FEMALE_NAME_RE : MALE_NAME_RE
   const opposite = gender === 'female' ? MALE_NAME_RE : FEMALE_NAME_RE
 
-  // Öncelik sırası: doğal + istenen cinsiyet → istenen cinsiyet → doğal ama karşı
-  // cinsiyet DEĞİL → karşı cinsiyet olmayan herhangi biri → en kötü ihtimalle ilki.
+  // Öncelik: doğal+istenen cinsiyet → kaliteli+istenen → istenen → doğal(karşı değil)
+  // → kaliteli(karşı değil) → karşı cinsiyet olmayan herhangi biri → son çare ilki.
   return (
     langVoices.find((v) => isNatural(v) && wanted.test(v.name)) ??
+    langVoices.find((v) => isQuality(v) && wanted.test(v.name)) ??
     langVoices.find((v) => wanted.test(v.name)) ??
     langVoices.find((v) => isNatural(v) && !opposite.test(v.name)) ??
+    langVoices.find((v) => isQuality(v) && !opposite.test(v.name)) ??
     langVoices.find((v) => !opposite.test(v.name)) ??
     langVoices[0]
   )
@@ -110,17 +115,19 @@ export async function speakText(text: string, opts: SpeakOptions = {}): Promise<
 
   // Sistemde çoğu zaman tek bir Türkçe ses bulunur (ör. Chrome'da "Google
   // Türkçe"). Bu durumda kadın/erkek AYNI sesi kullanır; ayrımı pitch ile
-  // belirginleştiririz. Ses zaten istenen cinsiyetteyse doğal pitch bırakılır,
-  // karşı cinsiyetteyse güçlü, nötrse orta bir kaydırma uygulanır.
+  // belirginleştiririz. AMA: aşırı pitch kaydırma sesi robotlaştırır. Bu yüzden
+  // ayar HAFİF tutulur — doğru cinsiyette doğal bir ses bulunduysa hiç dokunma;
+  // yalnızca tek/nötr veya karşı cinsiyet ses varsa yumuşak bir kaydırma uygula.
+  // Böylece ses akıcı ve profesyonel kalır, cinsiyet farkı yine sezilir.
   const voiceName = selectedVoice?.name ?? ''
   const isWantedVoice = (gender === 'female' ? FEMALE_NAME_RE : MALE_NAME_RE).test(voiceName)
   const isOppositeVoice = (gender === 'female' ? MALE_NAME_RE : FEMALE_NAME_RE).test(voiceName)
   if (gender === 'female') {
-    utterance.pitch = isWantedVoice ? 1.05 : isOppositeVoice ? 1.5 : 1.25
-    utterance.rate = 1.02
+    utterance.pitch = isWantedVoice ? 1.0 : isOppositeVoice ? 1.35 : 1.15
+    utterance.rate = 1.0
   } else {
-    utterance.pitch = isWantedVoice ? 0.9 : isOppositeVoice ? 0.65 : 0.8
-    utterance.rate = 0.96
+    utterance.pitch = isWantedVoice ? 1.0 : isOppositeVoice ? 0.78 : 0.88
+    utterance.rate = 0.97
   }
 
   // Chrome hatası: uzun metinlerde konuşma ~15 sn sonra sessizce durur ve

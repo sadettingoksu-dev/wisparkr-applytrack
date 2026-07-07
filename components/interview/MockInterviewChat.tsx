@@ -62,7 +62,11 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
 
   const [voiceMode, setVoiceMode] = useState(false)
   const [voiceGender, setVoiceGender] = useState<VoiceGender>('female')
+  // canSTT: eller-serbest sesle cevap (Chrome/Edge). canTTS: soruları sesli
+  // okuma (çoğu tarayıcıda var). Ayrı tutulur ki STT olmayan tarayıcıda
+  // (Firefox) sorular yine sesli okunsun, cevap yazılsın.
   const [speechSupported, setSpeechSupported] = useState(false)
+  const [canTTS, setCanTTS] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [started, setStarted] = useState(false)
   const [micBlocked, setMicBlocked] = useState(false)
@@ -129,7 +133,10 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   }
 
   useEffect(() => {
-    setSpeechSupported(isSpeechSynthesisSupported() && speech.isSupported)
+    // Eller-serbest voice mode STT gerektirir (Chrome/Edge). TTS (sesli okuma)
+    // ayrı algılanır — böylece Firefox gibi STT'siz tarayıcıda da sorular okunur.
+    setSpeechSupported(speech.isSupported)
+    setCanTTS(isSpeechSynthesisSupported())
     // Tarayıcı seslerini önceden yükle: ilk soru okunurken doğru (kadın) ses hazır olsun.
     warmUpVoices()
   }, [speech.isSupported])
@@ -149,11 +156,15 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     return () => clearInterval(id)
   }, [status])
 
-  // Yeni mülakatçı sorusu geldiğinde sesli modda oku ve ardından dinlemeye geç.
+  // Yeni mülakatçı sorusu geldiğinde: sesli modda oku + dinlemeye geç;
+  // metin modunda (STT yok ama TTS var) yalnızca sesli oku (cevap yazılır).
   useEffect(() => {
     if (messages.length > prevMessageCountRef.current) {
       const last = messages[messages.length - 1]
-      if (voiceMode && last.role === 'interviewer') speakThenListen(last.content)
+      if (last.role === 'interviewer') {
+        if (voiceMode) speakThenListen(last.content)
+        else if (canTTS && started) speak(last.content)
+      }
     }
     prevMessageCountRef.current = messages.length
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,7 +180,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     silenceTimerRef.current = setTimeout(() => {
       sendMessage(text)
-    }, 2600)
+    }, 3200)
     return () => {
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     }
@@ -418,6 +429,9 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
             onClick={() => {
               setStarted(true)
               setVoiceMode(false)
+              // TTS varsa ilk soruyu sesli oku (STT olmasa da mülakat sesli akar).
+              const fq = [...messages].reverse().find((m) => m.role === 'interviewer')?.content
+              if (fq && isSpeechSynthesisSupported()) speak(fq)
             }}
             className="flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             style={{
@@ -463,22 +477,8 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
             </span>
           </div>
 
-          {speechSupported && voiceMode && (
-            <div className="flex overflow-hidden rounded-full border border-white/12 text-xs">
-              <button
-                onClick={() => setVoiceGender('female')}
-                className={`px-3 py-1.5 ${voiceGender === 'female' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:bg-white/10'}`}
-              >
-                {t.interview.voiceFemale}
-              </button>
-              <button
-                onClick={() => setVoiceGender('male')}
-                className={`px-3 py-1.5 ${voiceGender === 'male' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:bg-white/10'}`}
-              >
-                {t.interview.voiceMale}
-              </button>
-            </div>
-          )}
+          {/* Cinsiyet yalnızca başlangıçta seçilir; mülakat sırasında değiştirme
+              KALDIRILDI (gereksizdi + koçun kimliğini bozuyordu). */}
           <button
             onClick={finishInterview}
             disabled={loading}
@@ -570,7 +570,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
                   <span className={m.role === 'candidate' ? 'ml-auto' : ''}>
                     {m.role === 'interviewer' ? t.interview.interviewer : t.interview.you}
                   </span>
-                  {m.role === 'interviewer' && speechSupported && (
+                  {m.role === 'interviewer' && canTTS && (
                     <button
                       onClick={() => speak(m.content)}
                       title={t.interview.readAloud}
