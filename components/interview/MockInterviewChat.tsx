@@ -66,6 +66,8 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [started, setStarted] = useState(false)
   const [micBlocked, setMicBlocked] = useState(false)
+  // Sesle cevap alınmıyorsa (mikrofon/tarayıcı/internet) yazarak gönderme yedeği.
+  const [typed, setTyped] = useState('')
   const speech = useSpeechRecognition(speechLang)
   const prevMessageCountRef = useRef(initialMessages.length)
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -310,6 +312,21 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
   const pill =
     'flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium'
 
+  // STT hata kodunu kullanıcının anlayacağı bir açıklamaya çevir (cihaz mı, bağlantı mı?).
+  const speechErrorMsg =
+    speech.error === 'audio-capture'
+      ? t.interview.errAudioCapture
+      : speech.error === 'network'
+        ? t.interview.errNetwork
+        : null
+
+  function sendTyped() {
+    const text = typed.trim()
+    if (!text || loading) return
+    setTyped('')
+    sendMessage(text)
+  }
+
   return (
     <div
       className="relative flex h-full min-h-[460px] flex-col overflow-hidden rounded-2xl text-purple-50"
@@ -385,16 +402,31 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
         </div>
       )}
 
-      {/* Tarayıcı sesli mülakatı desteklemiyorsa bilgilendir (yazılı mod yok). */}
+      {/* Tarayıcı sesli mülakatı desteklemiyorsa: bilgilendir AMA yazılı modda
+          başlatmaya izin ver (kullanıcı tıkanmasın). */}
       {!speechSupported && !started && (
         <div
           className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 px-6 text-center"
           style={{ background: 'rgba(7,4,17,0.85)', backdropFilter: 'blur(4px)' }}
         >
           <div className="text-lg font-semibold text-purple-50">{jobTitle}</div>
+          <div className="text-sm text-purple-300">{company}</div>
           <p className="max-w-sm text-sm leading-relaxed text-amber-200/90">
             {t.interview.voiceUnsupported}
           </p>
+          <button
+            onClick={() => {
+              setStarted(true)
+              setVoiceMode(false)
+            }}
+            className="flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            style={{
+              background: 'linear-gradient(135deg,#a855f7,#6d28d9)',
+              boxShadow: '0 8px 26px rgba(124,58,237,0.5)',
+            }}
+          >
+            {t.interview.begin}
+          </button>
         </div>
       )}
 
@@ -516,6 +548,7 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
       <footer className="relative z-10 flex flex-col items-center gap-3 px-5 pb-6 pt-2">
         {error && <p className="text-xs text-rose-300">{error}</p>}
         {micBlocked && <p className="text-xs text-amber-300">{t.interview.micBlocked}</p>}
+        {speechErrorMsg && <p className="max-w-md text-center text-xs text-amber-300">{speechErrorMsg}</p>}
 
         {/* döküm (toggle) */}
         {messages.length > 1 && (
@@ -598,6 +631,32 @@ export function MockInterviewChat({ interview, initialMessages, jobTitle, compan
             </p>
           </div>
         </div>
+
+        {/* YAZILI YEDEK — ses alınmıyorsa (mikrofon/tarayıcı/internet) kullanıcı
+            asla tıkanmasın; her zaman yazarak cevaplayıp gönderebilir. */}
+        {started && !loading && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              sendTyped()
+            }}
+            className="flex w-full max-w-2xl items-center gap-2"
+          >
+            <input
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              placeholder={t.interview.typePlaceholder}
+              className="min-w-0 flex-1 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-purple-50 placeholder:text-purple-300/50 focus:border-purple-400/50 focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={!typed.trim()}
+              className="shrink-0 rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-purple-500 disabled:opacity-40"
+            >
+              {t.interview.send}
+            </button>
+          </form>
+        )}
 
         {/* durum bilgisi / güvenlik ağı — GÖNDER butonu YOK.
             Dinleme kendiliğinden başlamazsa kullanıcı yeniden dinlemeyi tetikleyebilir. */}
