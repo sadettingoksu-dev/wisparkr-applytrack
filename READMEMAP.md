@@ -13,7 +13,7 @@
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
 ### 2026-07-07 — Faz 2 monetizasyon: free plan yeniden dengeleme
-> ⚠️ **BEKLEYEN MANUEL ADIM:** `0017_free_cv_credits.sql` Supabase SQL editöründe çalıştırılmalı (`profiles.free_cv_credits` kolonu — REST probe ile YOK olduğu doğrulandı 2026-07-07). Kolon gelene kadar CV uyarlama kredisi ve referral ödülü çalışmaz.
+> ✅ **`0017_free_cv_credits.sql` UYGULANDI (2026-07-07):** `profiles.free_cv_credits` kolonu REST probe ile doğrulandı (HTTP 200); mevcut tüm kullanıcılar default=1 backfill aldı. CV kredisi + referral ödülü canlı-hazır.
 
 - [x] **Free başvuru limiti → SINIRSIZ** (`plans.ts` maxApplications null). Takip = retention kancası; paywall %100 AI değerinde. Aylık AI havuzu 15→10.
 - [x] **CV AI-uyarlama free'de ömür boyu 1 hak:** `profiles.free_cv_credits` (default 1, migration 0017). `lib/usage.ts` `consumeFreeCvCredit` (koşullu `.gt(0)` update → çift-harcama yok) + `refundFreeCvCredit` (AI hatasında iade). `tailor-cv` route: Pro/deneme sınırsız, free krediden düşer, 0 ise `FREE_CV_CREDIT_EXHAUSTED`. Başvuru detay sayfası free+kredi>0 ise kartı gösterir (eskiden komple kilitliydi).
