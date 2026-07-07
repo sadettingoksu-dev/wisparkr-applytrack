@@ -99,6 +99,7 @@ export interface Database {
           tailored_cv_text: string | null
           tailored_fit_score: number | null
           required_documents: Json | null
+          cv_diagnosis: Json | null
           cover_letter_text: string | null
           skills_gap: Json | null
           notes: string | null

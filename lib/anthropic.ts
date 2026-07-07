@@ -180,6 +180,114 @@ export async function tailorCv(
   return validated.data
 }
 
+const cvDiagnosisItemSchema = z.object({
+  id: z.string().min(1),
+  category: z.enum(['document', 'skill', 'experience', 'keyword', 'format']),
+  title: z.string().min(1),
+  severity: z.enum(['critical', 'important', 'minor']),
+  impact: z.number().min(0).max(40),
+  diagnosis: z.string().min(1),
+  fix: z.string().min(1),
+  kind: z.enum(['have_or_not', 'improve']),
+})
+
+const cvDiagnosisSchema = z.object({
+  overall_score: z.number().min(0).max(100),
+  summary: z.string().min(1),
+  items: z.array(cvDiagnosisItemSchema).max(8),
+})
+
+export type CvDiagnosisCategory = z.infer<typeof cvDiagnosisItemSchema>['category']
+export type CvDiagnosisSeverity = z.infer<typeof cvDiagnosisItemSchema>['severity']
+export type CvDiagnosisKind = z.infer<typeof cvDiagnosisItemSchema>['kind']
+
+export interface CvDiagnosisItem {
+  id: string
+  category: CvDiagnosisCategory
+  title: string
+  severity: CvDiagnosisSeverity
+  /** Bu arıza giderilirse başvuru hazırlık skoruna eklenmesi beklenen kabaca puan. */
+  impact: number
+  /** "Arıza": CV'nin bu ilana karşı zayıf/eksik yönü. */
+  diagnosis: string
+  /** "Onarım": ne yapılması gerektiği (aksiyon). */
+  fix: string
+  /** have_or_not: aday ya sahiptir ya değildir (belge/sertifika). improve: sihirbaz CV içeriğinde düzeltir. */
+  kind: CvDiagnosisKind
+}
+
+export interface CvDiagnosisResult {
+  /** Onarımdan ÖNCE mevcut başvuru hazırlık skoru (0-100). */
+  overall_score: number
+  summary: string
+  items: CvDiagnosisItem[]
+}
+
+/**
+ * "CV araba tamiri" teşhisi: adayın CV'sini belirli bir ilana karşı bir usta
+ * gibi muayene eder ve giderilebilir "arıza" listesi çıkarır. Her arıza için
+ * önem, tahmini puan etkisi, arıza açıklaması ve onarım aksiyonu döner; ayrıca
+ * onarımdan önceki genel hazırlık skorunu verir. Adayın sahip olmadığı bir şeyi
+ * uydurmaz — yalnızca CV ile ilan arasındaki gerçek boşlukları teşhis eder.
+ */
+export async function diagnoseCv(
+  anthropic: Anthropic,
+  cvText: string,
+  job: { company_name: string; position_title: string; job_description: string | null }
+): Promise<CvDiagnosisResult> {
+  const prompt = [
+    'Sen bir kariyer koçu ve CV ustasısın. Aşağıda bir adayın CV metni ve başvurduğu',
+    'iş ilanı var. CV\'yi bu ilana karşı bir arabanın servise alınması gibi MUAYENE et',
+    've giderilebilir "arıza" listesi çıkar.',
+    '',
+    'Önce onarımdan ÖNCEKİ mevcut durumu 0-100 arası bir "başvuru hazırlık skoru" ile',
+    'değerlendir ("overall_score"). Ardından en fazla 8 arıza (item) listele.',
+    'En yüksek etkili arızayı BAŞA koy (impact\'e göre azalan sırala).',
+    '',
+    'Her arıza için:',
+    '- "category": arıza türü → "document" (ilana özel belge/sertifika eksik),',
+    '  "skill" (ilanın istediği beceri CV\'de zayıf/yok), "experience" (deneyim',
+    '  vurgusu/kanıtı yetersiz), "keyword" (ilandaki anahtar kelimeler CV\'de geçmiyor),',
+    '  "format" (yapı/uzunluk/okunabilirlik sorunu).',
+    '- "severity": "critical" (bu olmadan büyük ihtimalle elenirsin), "important"',
+    '  (ciddi avantaj/dezavantaj), "minor" (küçük iyileştirme).',
+    '- "impact": bu arıza giderilirse hazırlık skoruna eklenmesi beklenen kabaca puan',
+    '  (critical için ~15-25, important için ~5-12, minor için ~1-4).',
+    '- "diagnosis": arızanın ne olduğu, tek cümle, adaya doğrudan hitap et ("...eksik",',
+    '  "...zayıf kalıyor" gibi).',
+    '- "fix": ne yapılması gerektiği, tek cümle somut aksiyon.',
+    '- "kind": adayın ya sahip olduğu ya olmadığı bir belge/sertifika ise "have_or_not";',
+    '  sihirbazın CV içeriğini yeniden yazarak düzeltebileceği bir şeyse "improve".',
+    '  (category "document" olanlar genelde "have_or_not", diğerleri genelde "improve".)',
+    '- "id": kısa, benzersiz, harf-rakam-tire slug (örn. "is-guvenligi-belgesi").',
+    '',
+    'CV zaten güçlüyse az sayıda (hatta 0) arıza döndür; sorun uydurma.',
+    'Tüm metinlerde ' + TURKISH_WRITING_RULE,
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    '{"overall_score": <0-100>, "summary": "<1-2 cümle genel teşhis>", "items": [',
+    '{"id":"...","category":"...","title":"...","severity":"...","impact":<sayı>,"diagnosis":"...","fix":"...","kind":"..."}]}',
+    '',
+    `İş ilanı (${job.company_name} - ${job.position_title}):`,
+    (job.job_description || 'Açıklama yok').slice(0, 4000),
+    '',
+    'CV:',
+    cvText.slice(0, 8000),
+  ].join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 2048,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = cvDiagnosisSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data
+}
+
 const coverLetterSchema = z.object({
   cover_letter: z.string().min(1),
 })
