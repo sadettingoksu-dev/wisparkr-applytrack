@@ -100,6 +100,8 @@ export interface Database {
           tailored_fit_score: number | null
           required_documents: Json | null
           cv_diagnosis: Json | null
+          salary_coach: Json | null
+          competitor_analysis: Json | null
           cover_letter_text: string | null
           skills_gap: Json | null
           notes: string | null

@@ -43,6 +43,11 @@ export type {
   CvDiagnosisSeverity,
   CvDiagnosisKind,
 } from '@/lib/anthropic'
+export type {
+  SalaryCoachResult,
+  SalaryNegotiationScript,
+  CompetitorAnalysisResult,
+} from '@/lib/anthropic'
 
 export interface FitScoreResult {
   score: number

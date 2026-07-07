@@ -4,6 +4,8 @@ import { ArrowRight, Wrench } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { CoverLetterCard } from '@/components/cv/CoverLetterCard'
+import { CompetitorAnalysisCard } from '@/components/cv/CompetitorAnalysisCard'
+import { SalaryCoachCard } from '@/components/cv/SalaryCoachCard'
 import { LockedFeatureCard } from '@/components/billing/LockedFeatureCard'
 import { DeleteApplicationButton } from '@/components/applications/DeleteApplicationButton'
 import { InterviewDateField } from '@/components/applications/InterviewDateField'
@@ -12,7 +14,13 @@ import { StatusSelector } from '@/components/applications/StatusSelector'
 import { getServerDict } from '@/lib/i18n-server'
 import { format } from '@/lib/i18n'
 import { getEffectivePlan, requiredPlanForFeature, PLANS, type FeatureKey } from '@/lib/plans'
-import type { Application, Profile, CvDiagnosisResult } from '@/lib/types'
+import type {
+  Application,
+  Profile,
+  CvDiagnosisResult,
+  CompetitorAnalysisResult,
+  SalaryCoachResult,
+} from '@/lib/types'
 
 export default async function ApplicationDetailPage({ params }: { params: { id: string } }) {
   const t = getServerDict()
@@ -84,6 +92,27 @@ export default async function ApplicationDetailPage({ params }: { params: { id: 
           <ArrowRight className="h-5 w-5 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-purple-500" />
         </Card>
       </Link>
+
+      {/* Rakip analizi — her başvuruda kullanılabilir (Pro). */}
+      {planFeatures.competitorAnalysis ? (
+        <CompetitorAnalysisCard
+          applicationId={app.id}
+          initialResult={(app.competitor_analysis as CompetitorAnalysisResult | null) ?? null}
+        />
+      ) : (
+        lockedTitle('competitorAnalysis', t.competitor.title)
+      )}
+
+      {/* Maaş müzakere koçu — teklif aşamasında en değerlisi; yalnızca 'offer' statüsünde gösterilir. */}
+      {app.status === 'offer' &&
+        (planFeatures.salaryNegotiationCoach ? (
+          <SalaryCoachCard
+            applicationId={app.id}
+            initialResult={(app.salary_coach as SalaryCoachResult | null) ?? null}
+          />
+        ) : (
+          lockedTitle('salaryNegotiationCoach', t.salaryCoach.title)
+        ))}
 
       {planFeatures.coverLetter ? (
         <CoverLetterCard applicationId={app.id} initialText={app.cover_letter_text} />
