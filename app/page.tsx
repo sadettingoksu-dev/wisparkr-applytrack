@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { FileText, Sparkles, ShieldCheck } from 'lucide-react'
+import { FileText, Sparkles, ShieldCheck, Wrench, Bot, Mic, Banknote, Users, Kanban } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { IntegrationsBand } from '@/components/landing/IntegrationsBand'
@@ -89,8 +89,52 @@ export default async function LandingPage({
           shots={t.howItWorks.steps.map((s, i) => ({ ...s, mock: <ShowcaseMock index={i} t={t} /> }))}
         />
 
+        {/* Özellikler — yeni yapay zeka yeteneklerinin vitrini */}
+        <section className="border-t border-slate-200 bg-white py-20">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold text-slate-900">{t.landingFeatures.heading}</h2>
+              <p className="mt-3 text-slate-500">{t.landingFeatures.subtitle}</p>
+            </div>
+            <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {t.landingFeatures.items.map((item, i) => {
+                const Icon = [Wrench, Bot, Mic, Banknote, Users, Kanban][i] ?? Sparkles
+                return (
+                  <div
+                    key={item.title}
+                    className="rounded-2xl border border-slate-200 bg-slate-50/60 p-6 transition hover:border-purple-200 hover:bg-white hover:shadow-sm"
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <h3 className="mt-4 text-base font-semibold text-slate-900">{item.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{item.desc}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
         {/* İş akışına sorunsuz bağlanır — entegrasyon bölümü */}
         <IntegrationsBand />
+
+        {/* Kapanış CTA — ücretsiz başla */}
+        <section className="relative overflow-hidden border-t border-slate-200">
+          <div aria-hidden className="pointer-events-none absolute inset-0" style={HERO_BG} />
+          <div className="relative mx-auto max-w-2xl px-6 py-20 text-center">
+            <h2 className="text-3xl font-bold text-slate-900">{t.landingCta.heading}</h2>
+            <p className="mt-3 text-slate-500">{t.landingCta.subtitle}</p>
+            <div className="mt-8 flex justify-center">
+              <Link href="/signup?next=/cv-builder">
+                <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-500 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 transition-opacity hover:opacity-90">
+                  <FileText className="h-4 w-4" />
+                  {t.landingCta.button}
+                </button>
+              </Link>
+            </div>
+          </div>
+        </section>
       </main>
 
       <Footer />

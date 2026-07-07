@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Briefcase, MessageSquare, Trophy, TrendingUp, Send, ListChecks, ArrowRight, BarChart2 } from 'lucide-react'
+import { Briefcase, MessageSquare, Trophy, TrendingUp, Send, ListChecks, ArrowRight, BarChart2, FilePlus, FileText, Bot, Mic } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { MetricCard } from '@/components/dashboard/MetricCard'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -25,6 +25,12 @@ export default async function DashboardPage() {
   const t = getServerDict()
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const meta = (user?.user_metadata ?? {}) as Record<string, string | undefined>
+  const fullName = meta.full_name ?? meta.name ?? ''
+  const firstName = fullName.trim().split(' ')[0] ?? ''
+  const greeting = firstName
+    ? format(t.dashboard.greeting, { name: firstName })
+    : t.dashboard.greetingNoName
   const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user!.id).single()
   const { data: applications } = await supabase
     .from('applications')
@@ -47,13 +53,32 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.dashboard.title}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{greeting}</h1>
           <p className="text-sm text-slate-500">{t.dashboard.subtitle}</p>
         </div>
         <PageInfo page="dashboard" />
       </div>
 
       <OnboardingBanner hasApplications={apps.length > 0} hasCv={!!(profileData as { cv_text?: string } | null)?.cv_text} />
+
+      {/* Hızlı işlemler — en sık kullanılan aksiyonlara tek tık */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          { href: '/applications/new', label: t.dashboard.qaNewApp, icon: FilePlus },
+          { href: '/cv-builder', label: t.dashboard.qaCv, icon: FileText },
+          { href: '/assistant', label: t.dashboard.qaAssistant, icon: Bot },
+          { href: '/interview', label: t.dashboard.qaInterview, icon: Mic },
+        ].map(({ href, label, icon: Icon }) => (
+          <Link key={href} href={href}>
+            <Card className="flex items-center gap-3 transition-shadow hover:shadow-lg">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+                <Icon className="h-4 w-4" />
+              </span>
+              <span className="text-sm font-medium text-slate-800">{label}</span>
+            </Card>
+          </Link>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label={t.dashboard.metricTotal} value={total} icon={Briefcase} />
