@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 import { FileText, Sparkles, ShieldCheck, Wrench, Bot, Mic, Banknote, Users, Kanban } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
@@ -22,16 +21,20 @@ const HERO_BG: React.CSSProperties = {
     'radial-gradient(60% 55% at 50% 0%, rgba(168,85,247,0.10), transparent 70%)',
 }
 
-export default async function LandingPage({
-  searchParams,
-}: {
-  searchParams: { home?: string }
-}) {
-  // Giriş yapmış kullanıcı pazarlama sayfasında oyalanmasın; doğrudan panele.
-  // İstisna: `?home=1` ile bilinçli gelinmişse (panelden "Web sitesi" butonu)
-  // pazarlama sayfası gösterilir, yönlendirme atlanır.
+export default async function LandingPage() {
+  // Giriş yapmış kullanıcı da pazarlama sayfasını görebilir — YÖNLENDİRME YOK.
+  //
+  // Eskiden burada `if (user) redirect('/dashboard')` vardı ve tek kaçışı
+  // `?home=1` parametresiydi; onu da yalnızca sidebar'daki "Web sitesi" linki
+  // veriyordu. O link kaldırılınca, giriş yapmış bir kullanıcının adres
+  // çubuğuna "wisparkr.com" yazması hiçbir işe yaramıyordu: sayfa onu inatla
+  // panele geri atıyordu. Kullanıcı URL'yi bilerek yazdıysa siteyi görmek
+  // istiyordur.
+  //
+  // Panele dönüş: navbar'da oturum açıkken "Panele git" butonu (NavbarAuth) —
+  // Notion/Linear/Vercel'in yaptığı gibi. Giriş akışı zaten doğrudan
+  // /dashboard'a gidiyor, yani bu yönlendirmenin başka bir görevi yoktu.
   const { data: { user } } = await createClient().auth.getUser()
-  if (user && searchParams.home !== '1') redirect('/dashboard')
 
   const locale = normalizeLocale(cookies().get(LOCALE_COOKIE)?.value)
   const t = getDictionary(locale)
@@ -142,8 +145,10 @@ export default async function LandingPage({
 
       <Footer />
 
-      {/* parkrcan — yalnızca panelden gelen (?home=1) görünümde, sayfada aşağıda */}
-      {searchParams.home === '1' && <ParkrcanWidget lower />}
+      {/* parkrcan — yalnızca giriş yapmış kullanıcıya (uygulama içi rehber);
+          anonim ziyaretçi için pazarlama sayfasında anlamı yok. Eskiden
+          `?home=1` ile gösteriliyordu, o parametre artık kullanılmıyor. */}
+      {user && <ParkrcanWidget lower />}
     </div>
   )
 }
