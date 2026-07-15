@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { BarChart2, TrendingUp, Target, Award, X, Filter } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { STATUS_BADGE_CLASSES } from '@/utils/constants'
@@ -201,7 +201,6 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
           {/* Durum dağılımı */}
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
-              <BarChart2 className="h-4 w-4 text-purple-600" />
               <h2 className="text-sm font-semibold text-slate-900">{t.analytics.statusDist}</h2>
               <span className="text-xs text-slate-400">{t.analytics.clickHint}</span>
             </div>
@@ -227,7 +226,6 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
           {/* Dönüşüm hunisi + yanıt oranı */}
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-purple-600" />
               <h2 className="text-sm font-semibold text-slate-900">{t.analytics.funnelTitle}</h2>
               <span className="ml-auto rounded-full bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700">
                 {t.analytics.responseRate}: %{responseRate}
@@ -272,7 +270,6 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
           {/* Aylık trend */}
           <Card className="space-y-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-purple-600" />
               <h2 className="text-sm font-semibold text-slate-900">{t.analytics.monthlyTrend}</h2>
             </div>
             {total === 0 ? (
@@ -299,7 +296,6 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
           {/* Skor dağılımı */}
           <Card className="space-y-3">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-purple-600" />
               <h2 className="text-sm font-semibold text-slate-900">{t.analytics.scoreDist}</h2>
               <span className="text-xs text-slate-400">{t.analytics.clickHint}</span>
             </div>
@@ -329,7 +325,6 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
             <Card className="sticky top-16 z-20 space-y-3 lg:top-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-purple-600" />
                   <h2 className="text-sm font-semibold text-slate-900">{panelTitle}</h2>
                   <span className="rounded-full bg-purple-100 px-1.5 py-0.5 text-xs font-medium text-purple-600">
                     {panelApps.length}
