@@ -1,42 +1,14 @@
-import { Kanban } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
-import { KanbanBoard } from '@/components/kanban/KanbanBoard'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { PageInfo } from '@/components/ui/PageInfo'
-import { getServerDict } from '@/lib/i18n-server'
-import type { Application } from '@/lib/types'
+import { redirect } from 'next/navigation'
 
-export default async function BoardPage() {
-  const t = getServerDict()
-  const supabase = createClient()
-  const { data: applications } = await supabase
-    .from('applications')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  const apps = (applications ?? []) as Application[]
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.board.title}</h1>
-          <p className="text-sm text-slate-500">{t.board.subtitle}</p>
-        </div>
-        <PageInfo page="board" />
-      </div>
-
-      {apps.length === 0 ? (
-        <EmptyState
-          icon={Kanban}
-          title={t.board.empty}
-          description={t.board.emptyDesc}
-          ctaLabel={t.board.newApplication}
-          ctaHref="/applications/new"
-        />
-      ) : (
-        <KanbanBoard initialApplications={apps} />
-      )}
-    </div>
-  )
+/**
+ * Kanban panosu Başvurular sayfasına bir görünüm olarak taşındı.
+ *
+ * İki sayfa da birebir aynı sorguyu atıyor, aynı Application tipini ve aynı
+ * PATCH /api/applications/[id] ucunu kullanıyordu; ayrı duran pano ise
+ * arama/filtre/sıralama/plan-limiti uyarısından yoksundu. Artık tek yerde.
+ *
+ * Bu yönlendirme eski yer imleri ve dış linkler için duruyor.
+ */
+export default function BoardPage() {
+  redirect('/applications?view=board')
 }

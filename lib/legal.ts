@@ -44,7 +44,9 @@ export const PRIVACY: Partial<Record<Locale, LegalDoc>> = {
         body: [
           'Supabase — veritabanı ve kimlik doğrulama (barındırma).',
           'Anthropic (Claude) — AI özelliklerini kullandığında CV ve ilan metnin AI ile işlenmek üzere gönderilir.',
-          'Lemon Squeezy — ödeme altyapısı ve resmi satıcı (merchant of record); kart bilgilerini biz görmeyiz/saklamayız.',
+          // Ödeme sağlayıcısı satırı bilinçli olarak YOK: LemonSqueezy kaldırıldı,
+          // yenisi (iyzico/PayTR) henüz eklenmedi. Sağlayıcı seçilince buraya
+          // gerçek satıcı/veri işleyen bilgisiyle geri eklenmeli.
           'Resend — e-posta gönderimi. Vercel — uygulama barındırma.',
           'Verilerini üçüncü taraflara satmıyoruz.',
         ],
@@ -116,7 +118,6 @@ export const PRIVACY: Partial<Record<Locale, LegalDoc>> = {
         body: [
           'Supabase — database and authentication (hosting).',
           'Anthropic (Claude) — when you use AI features, your CV and the relevant job text are sent for processing.',
-          'Lemon Squeezy — payment processing and merchant of record; we never see or store your card details.',
           'Resend — email delivery. Vercel — application hosting.',
           'We do not sell your data to third parties.',
         ],
@@ -179,11 +180,10 @@ export const TERMS: Partial<Record<Locale, LegalDoc>> = {
       {
         heading: '3. Abonelik ve Ödeme',
         body: [
-          'Ücretli planlar (Pro, Career Coach) aylık aboneliktir.',
-          'Ödemeler Lemon Squeezy üzerinden alınır; Lemon Squeezy resmi satıcıdır (merchant of record).',
+          'Ücretli plan (Pro) aylık ya da yıllık aboneliktir.',
+          'Ödeme sistemi şu anda kapalıdır; ücretli plana geçiş geçici olarak durdurulmuştur. Açıldığında ödeme sağlayıcısı, resmi satıcı ve iade koşulları burada duyurulacaktır.',
           'Yeni kayıtlarda 3 günlük ücretsiz tam erişimli deneme sunulur.',
-          'Aboneliğini istediğin zaman iptal edebilirsin; mevcut dönem sonuna kadar erişimin devam eder.',
-          'İade talepleri Lemon Squeezy’nin iade politikasına tabidir.',
+          'Aboneliğini istediğin zaman iptal edebilirsin; iptal ettiğin anda ücretsiz plana geçersin.',
         ],
       },
       {
@@ -254,11 +254,10 @@ export const TERMS: Partial<Record<Locale, LegalDoc>> = {
       {
         heading: '3. Subscription and Payment',
         body: [
-          'Paid plans (Pro, Career Coach) are monthly subscriptions.',
-          'Payments are processed by Lemon Squeezy, which acts as the merchant of record.',
-          'New sign-ups get a 5-day free full-access trial.',
-          'You can cancel any time; access continues until the end of the current period.',
-          'Refund requests are subject to Lemon Squeezy’s refund policy.',
+          'The paid plan (Pro) is billed monthly or yearly.',
+          'Payments are currently disabled; upgrading to a paid plan is temporarily unavailable. When it reopens, the payment provider, merchant of record and refund terms will be published here.',
+          'New sign-ups get a 3-day free full-access trial.',
+          'You can cancel any time; cancelling moves you to the free plan immediately.',
         ],
       },
       {

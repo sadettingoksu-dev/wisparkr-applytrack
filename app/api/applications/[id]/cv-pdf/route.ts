@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import PDFDocument from 'pdfkit'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
+import { trSlug } from '@/lib/cv'
 import type { Application } from '@/lib/types'
 
 export const runtime = 'nodejs'
@@ -106,11 +107,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
   doc.end()
   const pdfBuffer = await done
 
-  const prefix = type === 'cover_letter' ? 'on-yazi' : 'cv'
-  const filename = `${prefix}-${application.company_name}-${application.position_title}`
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
+  // trSlug: şirket/pozisyon adındaki Türkçe harfler doğrudan silinince dosya
+  // adı bozuluyordu ("Şişecam" → "i-ecam"). Marka öne alınır — indirilen
+  // belgenin nereden geldiği belli olsun.
+  const prefix = type === 'cover_letter' ? 'On-Yazi' : 'CV'
+  const filename = `Wisparkr-${prefix}-${trSlug(`${application.company_name}-${application.position_title}`)}`
 
   return new NextResponse(new Uint8Array(pdfBuffer), {
     status: 200,

@@ -10,7 +10,7 @@ import {
   Font,
   renderToBuffer,
 } from '@react-pdf/renderer'
-import type { CvData } from './cv'
+import { trSlug, type CvData } from './cv'
 import {
   normalizeTemplate,
   getTemplate,
@@ -18,6 +18,8 @@ import {
   DENSITY_SCALE,
   langLevelToScore,
   pseudoSkillScore,
+  buildSurfaces,
+  type Surf,
   type CvTemplate,
   type CvTemplateDef,
   type CvSectionKey,
@@ -27,9 +29,16 @@ import {
 export { normalizeTemplate, CV_TEMPLATE_IDS }
 export type CvPdfTemplate = CvTemplate
 
-/** PDF indirme için güvenli dosya adı. */
+/**
+ * PDF indirme için dosya adı: `Wisparkr-CV-Ayse-Yilmaz.pdf`.
+ * Marka öne alınır (dosya nereden geldiği belli olsun) + adayın adı.
+ */
 export function cvPdfFilename(name: string): string {
-  return `cv-${name}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'cv'
+  const slug = trSlug(name)
+  if (!slug) return 'Wisparkr-CV'
+  // Baş harfleri büyüt: "ayse-yilmaz" → "Ayse-Yilmaz"
+  const pretty = slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join('-')
+  return `Wisparkr-CV-${pretty}`
 }
 
 // --- Gömülü Türkçe destekli font (Roboto) -----------------------------------
@@ -65,8 +74,21 @@ function period(start: string, end: string, current?: boolean): string {
   return [start, right].filter(Boolean).join(' – ')
 }
 
+// webp dahil: builder yüklemeyi JPEG'e çeviriyor ama /api/cv/import üzerinden
+// gelen webp sessizce düşüyordu.
 const photoSrc = (photo: string): string | null =>
-  /^data:image\/(png|jpe?g);base64,/i.test(photo) ? photo : null
+  /^data:image\/(png|jpe?g|webp);base64,/i.test(photo) ? photo : null
+
+/** Fotoğraf yokken yer tutucuda gösterilecek baş harfler (en fazla 2). */
+function initialsOf(fullName: string): string {
+  return fullName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toLocaleUpperCase('tr-TR'))
+    .join('')
+}
 
 // ---------------------------------------------------------------------------
 // Token → StyleSheet. Tüm layout'lar bunu paylaşır; accent + yoğunluk parametrik.
@@ -451,56 +473,6 @@ function BandCv({ data, t, s }: { data: CvData; t: CvTemplateDef; s: Styles }) {
 // (Roboto'da ★ glyph'i garanti değil; View tabanlı çizim her zaman render olur).
 // ===========================================================================
 
-/** Hex rengin koyu olup olmadığı (metin/başlık kontrastı için). */
-function isDarkColor(hex: string): boolean {
-  const h = (hex || '').replace('#', '')
-  if (h.length < 6) return false
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
-}
-
-interface Surf {
-  bg: string
-  text: string
-  title: string
-  meta: string
-  heading: string
-  divider: string
-  accent: string
-  dark: boolean
-}
-
-function buildSurfaces(t: CvTemplateDef): { side: Surf; main: Surf } {
-  const accent = t.accent
-  const sideBg = t.sidebarBg ?? (t.sidebarFilled ? accent : `${accent}12`)
-  const sideDark = isDarkColor(sideBg)
-  const side: Surf = {
-    bg: sideBg,
-    text: t.sidebarText ?? (sideDark ? '#e8edf3' : '#334155'),
-    title: sideDark ? '#ffffff' : '#1f2937',
-    meta: sideDark ? 'rgba(255,255,255,0.72)' : '#64748b',
-    heading: t.sidebarHeadColor ?? (sideDark ? '#ffffff' : accent),
-    divider: sideDark ? 'rgba(255,255,255,0.32)' : `${accent}55`,
-    accent,
-    dark: sideDark,
-  }
-  const mainBg = t.mainBg ?? '#ffffff'
-  const mainDark = isDarkColor(mainBg)
-  const main: Surf = {
-    bg: mainBg,
-    text: t.mainText ?? (mainDark ? '#e6eaf1' : '#374151'),
-    title: mainDark ? '#ffffff' : '#111827',
-    meta: mainDark ? 'rgba(255,255,255,0.7)' : '#64748b',
-    heading: accent,
-    divider: mainDark ? 'rgba(255,255,255,0.28)' : '#d1d5db',
-    accent,
-    dark: mainDark,
-  }
-  return { side, main }
-}
-
 function PhotoHeading({ t, surf, children }: { t: CvTemplateDef; surf: Surf; children: string }) {
   const base = { fontSize: 10.5, fontWeight: 'bold' as const, color: surf.heading, marginBottom: 6 }
   switch (t.headingStyle) {
@@ -539,11 +511,15 @@ function PhotoHeading({ t, surf, children }: { t: CvTemplateDef; surf: Surf; chi
   }
 }
 
-/** Yıldız yerine 5 nokta (dolu/boş) — react-pdf'te güvenilir render. */
+/**
+ * Yıldız yerine 5 nokta (dolu/boş) — react-pdf'te güvenilir render.
+ * flexShrink: 0 ŞART — yoksa uzun bir beceri/dil adı satırı taşırınca Yoga
+ * bu bileşeni ezer ve etiket noktaların üstüne biner.
+ */
 function RatingDots({ score, surf }: { score: number; surf: Surf }) {
   const off = surf.dark ? 'rgba(255,255,255,0.28)' : `${surf.accent}33`
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 0 }}>
       {[0, 1, 2, 3, 4].map((i) => (
         <View key={i} style={{ width: 7, height: 7, borderRadius: 3.5, marginRight: 3, backgroundColor: i < score ? surf.accent : off }} />
       ))}
@@ -551,11 +527,11 @@ function RatingDots({ score, surf }: { score: number; surf: Surf }) {
   )
 }
 
-/** Seviye çubuğu (track + dolu kısım). */
+/** Seviye çubuğu (track + dolu kısım). flexShrink: 0 — bkz. RatingDots. */
 function RatingBar({ score, surf }: { score: number; surf: Surf }) {
   const track = surf.dark ? 'rgba(255,255,255,0.2)' : `${surf.accent}22`
   return (
-    <View style={{ width: 78, height: 5, borderRadius: 3, backgroundColor: track, overflow: 'hidden' }}>
+    <View style={{ width: 78, height: 5, borderRadius: 3, backgroundColor: track, overflow: 'hidden', flexShrink: 0 }}>
       <View style={{ width: `${(score / 5) * 100}%`, height: '100%', backgroundColor: surf.accent, borderRadius: 3 }} />
     </View>
   )
@@ -579,7 +555,11 @@ function PhotoSection({
   sectionKey, data, t, surf,
 }: { sectionKey: CvSectionKey; data: CvData; t: CvTemplateDef; surf: Surf }) {
   const p = data.personal
-  const wrap = { marginBottom: 13 }
+  // density token'ı bağlı: eskiden sabit 13'tü ve t.density tamamen yok
+  // sayılıyordu (zarifyesil'in 'relaxed'ı hiçbir işe yaramıyordu).
+  const d = DENSITY_SCALE[t.density] ?? 1
+  const gap = (n: number) => Math.round(n * d * 10) / 10
+  const wrap = { marginBottom: gap(13) }
   const label = {
     summary: H.summary, experience: H.experience, education: H.education,
     skills: H.skills, languages: H.languages, certifications: H.certifications,
@@ -590,6 +570,16 @@ function PhotoSection({
   const title = { fontSize: 10.5, fontWeight: 'bold' as const, color: surf.title }
   const body = { fontSize: 9.5, color: surf.text, lineHeight: 1.4 }
   const periodStyle = { fontSize: 8.5, color: surf.accent, fontWeight: 'bold' as const, flexShrink: 0, marginLeft: 8 }
+  /**
+   * Puanlı satırlarda (beceri/dil) sol etiket.
+   * flexBasis: 0 KRİTİK: yalnızca flexShrink:1 varken uzun bir ad satırı
+   * taşırıyor ve yanındaki puan bileşeninin üstüne biniyordu. Deneyim/eğitim
+   * satırları (aşağıda) bunu zaten doğru yapıyor — aynı desen.
+   * Sidebar dar (A4'ün ~%36'sı eksi padding ≈ 190pt); puanlar ~50pt aldığı için
+   * ada ~130pt kalıyor. Font hyphenation kapalı (Font.registerHyphenationCallback)
+   * → uzun kelime bölünmez, o yüzden taşmayı flex ile durdurmak zorundayız.
+   */
+  const ratingLabel = { fontSize: 9.5, color: surf.text, flexGrow: 1, flexShrink: 1, flexBasis: 0, paddingRight: 8 }
 
   if (sectionKey === 'contact') {
     const lines = [p.email, p.phone, p.location, ...p.links.map((l) => l.url || l.label).filter(Boolean)].filter(Boolean)
@@ -614,7 +604,7 @@ function PhotoSection({
       <View style={wrap}>
         <Head />
         {items.map((e, i) => (
-          <View key={i} style={{ marginBottom: 8 }} wrap={false}>
+          <View key={i} style={{ marginBottom: gap(8) }} wrap={false}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <Text style={{ ...title, flexGrow: 1, flexShrink: 1, flexBasis: 0 }}>{[e.role, e.company].filter(Boolean).join(' · ')}</Text>
               <Text style={periodStyle}>{period(e.start, e.end, e.current)}</Text>
@@ -634,7 +624,7 @@ function PhotoSection({
       <View style={wrap}>
         <Head />
         {items.map((ed, i) => (
-          <View key={i} style={{ marginBottom: 7 }} wrap={false}>
+          <View key={i} style={{ marginBottom: gap(7) }} wrap={false}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <Text style={{ ...title, flexGrow: 1, flexShrink: 1, flexBasis: 0 }}>{[ed.degree, ed.field].filter(Boolean).join(' - ') || ed.school}</Text>
               <Text style={periodStyle}>{period(ed.start, ed.end)}</Text>
@@ -653,7 +643,7 @@ function PhotoSection({
     return (
       <View style={wrap}>
         <Head />
-        {items.map((c, i) => <Text key={i} style={{ ...body, marginBottom: 2.5 }}>{[c.name, c.issuer, c.date].filter(Boolean).join(' · ')}</Text>)}
+        {items.map((c, i) => <Text key={i} style={{ ...body, marginBottom: gap(2.5) }}>{[c.name, c.issuer, c.date].filter(Boolean).join(' · ')}</Text>)}
       </View>
     )
   }
@@ -665,7 +655,7 @@ function PhotoSection({
       <View style={wrap}>
         <Head />
         {items.map((pr, i) => (
-          <View key={i} style={{ marginBottom: 7 }} wrap={false}>
+          <View key={i} style={{ marginBottom: gap(7) }} wrap={false}>
             <Text style={title}>{pr.name}</Text>
             {!!pr.link && <Text style={meta}>{pr.link}</Text>}
             {!!pr.description.trim() && <Text style={{ ...body, marginTop: 2 }}>{pr.description.trim()}</Text>}
@@ -684,11 +674,11 @@ function PhotoSection({
       <View style={wrap}>
         <Head />
         {style === 'text' ? (
-          items.map((l, i) => <Text key={i} style={{ ...body, marginBottom: 2 }}>{l.level ? `${l.name} (${l.level})` : l.name}</Text>)
+          items.map((l, i) => <Text key={i} style={{ ...body, marginBottom: gap(2) }}>{l.level ? `${l.name} (${l.level})` : l.name}</Text>)
         ) : (
           items.map((l, i) => (
-            <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <Text style={{ fontSize: 9.5, color: surf.text, flexShrink: 1, paddingRight: 8 }}>{l.name}</Text>
+            <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: gap(4) }}>
+              <Text style={ratingLabel}>{l.name}</Text>
               {style === 'stars' ? <RatingDots score={langLevelToScore(l.level)} surf={surf} /> : <RatingBar score={langLevelToScore(l.level)} surf={surf} />}
             </View>
           ))
@@ -712,15 +702,15 @@ function PhotoSection({
         <Text style={body}>{items.join('   ·   ')}</Text>
       ) : style === 'stars' ? (
         items.map((sk, i) => (
-          <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={{ fontSize: 9.5, color: surf.text, flexShrink: 1, paddingRight: 8 }}>{sk}</Text>
+          <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: gap(4) }}>
+            <Text style={ratingLabel}>{sk}</Text>
             <RatingDots score={pseudoSkillScore(i)} surf={surf} />
           </View>
         ))
       ) : style === 'bars' ? (
         items.map((sk, i) => (
-          <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={{ fontSize: 9.5, color: surf.text, flexShrink: 1, paddingRight: 8 }}>{sk}</Text>
+          <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: gap(4) }}>
+            <Text style={ratingLabel}>{sk}</Text>
             <RatingBar score={pseudoSkillScore(i)} surf={surf} />
           </View>
         ))
@@ -731,32 +721,54 @@ function PhotoSection({
   )
 }
 
-function PhotoFrame({ src, t }: { src: string; t: CvTemplateDef }) {
+/**
+ * Fotoğraf çerçevesi — fotoğraf YOKKEN de aynı yeri kaplar.
+ *
+ * Eskiden `{photo && <PhotoFrame/>}` idi: fotoğrafsız kullanıcıda çerçeve
+ * tamamen yok oluyor, sidebar'daki her bölüm ~130-146pt yukarı kayıyor, ana
+ * kolon yerinde kaldığı için iki kolonun hizası bozuluyordu (nameIn:'sidebar'
+ * şablonlarda isim sayfanın tepesine zıplıyordu). Artık her zaman render
+ * edilir; fotoğraf yoksa baş harf rozeti gösterilir — boş boşluk hata gibi
+ * görünürdü, rozet kasıtlı durur ve her bilginin kağıttaki yeri sabit kalır.
+ */
+function PhotoFrame({ src, t, surf, initials }: { src: string | null; t: CvTemplateDef; surf: Surf; initials: string }) {
   const shape = t.photoShape ?? 'circle'
+  const border = t.photoBorder ? { borderWidth: 3, borderColor: t.photoBorder } : {}
+  const placeholder = {
+    backgroundColor: surf.dark ? 'rgba(255,255,255,0.10)' : `${surf.accent}1e`,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  }
+  const fill = { width: '100%' as const, height: '100%' as const, objectFit: 'cover' as const }
+
   if (shape === 'circle') {
-    const inner = t.photoBorder
-      ? { borderWidth: 3, borderColor: t.photoBorder }
-      : {}
     return (
       <View style={{ alignItems: 'center', marginBottom: 14 }}>
-        <View style={{ width: 92, height: 92, borderRadius: 46, overflow: 'hidden', ...inner }}>
-          <Image src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <View style={{ width: 92, height: 92, borderRadius: 46, overflow: 'hidden', ...border, ...(src ? {} : placeholder) }}>
+          {src ? (
+            <Image src={src} style={fill} />
+          ) : (
+            <Text style={{ fontSize: 28, fontWeight: 'bold', color: surf.accent }}>{initials}</Text>
+          )}
         </View>
       </View>
     )
   }
   const radius = shape === 'rounded' ? 10 : 3
-  const border = t.photoBorder ? { borderWidth: 3, borderColor: t.photoBorder } : {}
   return (
-    <View style={{ width: '100%', height: 132, borderRadius: radius, overflow: 'hidden', marginBottom: 14, ...border }}>
-      <Image src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    <View style={{ width: '100%', height: 132, borderRadius: radius, overflow: 'hidden', marginBottom: 14, ...border, ...(src ? {} : placeholder) }}>
+      {src ? (
+        <Image src={src} style={fill} />
+      ) : (
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: surf.accent }}>{initials}</Text>
+      )}
     </View>
   )
 }
 
 function NameBlock({ data, t, surf, onBand }: { data: CvData; t: CvTemplateDef; surf: Surf; onBand?: boolean }) {
   const p = data.personal
-  const nameColor = onBand ? '#ffffff' : surf.dark ? '#ffffff' : t.accent
+  const nameColor = onBand ? '#ffffff' : (t.nameColor ?? (surf.dark ? '#ffffff' : t.accent))
   const headlineColor = onBand ? (t.headlineColor ?? 'rgba(255,255,255,0.9)') : (t.headlineColor ?? surf.accent)
   return (
     <View style={{ marginBottom: 10 }}>
@@ -780,7 +792,8 @@ function PhotoCv({ data, t }: { data: CvData; t: CvTemplateDef }) {
 
   const SideCol = (
     <View style={{ width: sidePct, paddingVertical: 30, paddingHorizontal: 18 }}>
-      {photo && <PhotoFrame src={photo} t={t} />}
+      {/* Koşulsuz: fotoğraf yoksa da aynı yeri kaplar → kolonların hizası sabit. */}
+      <PhotoFrame src={photo} t={t} surf={side} initials={initialsOf(p.fullName)} />
       {nameIn === 'sidebar' && <NameBlock data={data} t={t} surf={side} />}
       {sideSecs.map((k) => <PhotoSection key={k} sectionKey={k} data={data} t={t} surf={side} />)}
     </View>

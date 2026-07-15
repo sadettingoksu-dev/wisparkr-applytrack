@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { STATUS_BADGE_CLASSES } from '@/utils/constants'
 import { getServerDict } from '@/lib/i18n-server'
 import { format } from '@/lib/i18n'
@@ -71,10 +72,7 @@ export default async function ComparePage({ searchParams }: { searchParams: { id
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{t.compare.title}</h1>
-        <p className="text-sm text-slate-500">{format(t.compare.subtitle, { n: ordered.length })}</p>
-      </div>
+      <PageHeader title={t.compare.title} subtitle={format(t.compare.subtitle, { n: ordered.length })} />
 
       <Card className="overflow-x-auto">
         <table className="w-full text-sm">

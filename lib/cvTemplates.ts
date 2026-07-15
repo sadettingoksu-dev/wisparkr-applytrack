@@ -79,6 +79,8 @@ export interface CvTemplateDef {
   nameIn?: 'main' | 'sidebar' | 'band'
   /** Başlık (headline) metin rengi. */
   headlineColor?: string
+  /** İsim (h1) rengi. Tanımsızsa: koyu yüzeyde beyaz, açık yüzeyde accent. */
+  nameColor?: string
   /** Yan panel arka planı (accent'ten türetmek yerine). */
   sidebarBg?: string
   /** Yan panel metin rengi. */
@@ -89,6 +91,9 @@ export interface CvTemplateDef {
   mainBg?: string
   /** Ana kolon metin rengi. */
   mainText?: string
+  /** Ana kolon bölüm başlığı rengi (sidebarHeadColor'ın karşılığı).
+      Tanımsızsa accent kullanılır — accent açık zeminde okunmuyorsa şart. */
+  mainHeadColor?: string
   /** Yan panele düşen bölümler (sıralı). */
   sidebarSections?: CvSectionKey[]
   /** Ana kolona düşen bölümler (sıralı). */
@@ -165,13 +170,20 @@ export const TEMPLATES: Record<CvTemplate, CvTemplateDef> = {
     mainSections: ['experience', 'certifications', 'languages'],
     sideWidth: 0.36,
   },
-  // Tam lacivert (her iki kolon); sol fotoğraf + yıldızlı dil/beceri; sağ hap-şekilli başlıklar.
+  // Lacivert fotoğraf sütunu + BEYAZ ana kolon (vitrin'in tersi).
+  // Eskiden iki kolon da laciverttti (#16243a / #1b2c46) ve neredeyse aynı
+  // göründükleri için tasarım "tek blok" gibi çıkıyordu. Ana kolon vitrin'in
+  // fotoğraf sütunu rengine (#ffffff) alındı.
+  // Beyaz zeminde altın accent (#cf9f6b) 9.5pt metinde ~2.3:1 kontrast veriyor
+  // (okunmaz) → başlık/isim için ayrı koyu renkler; altın yalnızca lacivert
+  // sütundaki puan noktalarında ve tarihlerde kalıyor.
   yildiz: {
     id: 'yildiz', category: 'photo', layout: 'sidebar', accent: '#cf9f6b', headerAlign: 'left',
     headingStyle: 'pill', skillStyle: 'stars', langStyle: 'stars', sidebarSide: 'left', sidebarFilled: true,
-    density: 'normal', nameSize: 29, photoShape: 'square', nameIn: 'main', headlineColor: '#cf9f6b',
+    density: 'normal', nameSize: 29, photoShape: 'square', nameIn: 'main',
+    nameColor: '#16243a', headlineColor: '#a97440',
     sidebarBg: '#16243a', sidebarText: '#dbe2ec', sidebarHeadColor: '#ffffff',
-    mainBg: '#1b2c46', mainText: '#dbe2ec',
+    mainBg: '#ffffff', mainText: '#334155', mainHeadColor: '#16243a',
     sidebarSections: ['contact', 'languages', 'skills'], mainSections: ['education', 'experience'],
     sideWidth: 0.38,
   },
@@ -220,4 +232,61 @@ export function langLevelToScore(level: string): number {
  */
 export function pseudoSkillScore(index: number): number {
   return [5, 4, 5, 4, 3][index % 5]
+}
+
+// ---------------------------------------------------------------------------
+// YÜZEY (Surf) TÜRETİMİ — tek doğruluk kaynağı.
+// Hem PDF motoru (lib/cvDocument.tsx) hem de şablon seçicideki HTML replika
+// kartları (components/cv/TemplateThumb.tsx) BUNU kullanır; böylece kartın
+// gösterdiği renk/düzen ile indirilen PDF arasında drift olmaz.
+// Bu dosya istemci-güvenlidir (ağır PDF bağımlılığı yok).
+// ---------------------------------------------------------------------------
+/** Hex rengin koyu olup olmadığı (metin/başlık kontrastı için). */
+function isDarkColor(hex: string): boolean {
+  const h = (hex || '').replace('#', '')
+  if (h.length < 6) return false
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
+}
+
+export interface Surf {
+  bg: string
+  text: string
+  title: string
+  meta: string
+  heading: string
+  divider: string
+  accent: string
+  dark: boolean
+}
+
+export function buildSurfaces(t: CvTemplateDef): { side: Surf; main: Surf } {
+  const accent = t.accent
+  const sideBg = t.sidebarBg ?? (t.sidebarFilled ? accent : `${accent}12`)
+  const sideDark = isDarkColor(sideBg)
+  const side: Surf = {
+    bg: sideBg,
+    text: t.sidebarText ?? (sideDark ? '#e8edf3' : '#334155'),
+    title: sideDark ? '#ffffff' : '#1f2937',
+    meta: sideDark ? 'rgba(255,255,255,0.72)' : '#64748b',
+    heading: t.sidebarHeadColor ?? (sideDark ? '#ffffff' : accent),
+    divider: sideDark ? 'rgba(255,255,255,0.32)' : `${accent}55`,
+    accent,
+    dark: sideDark,
+  }
+  const mainBg = t.mainBg ?? '#ffffff'
+  const mainDark = isDarkColor(mainBg)
+  const main: Surf = {
+    bg: mainBg,
+    text: t.mainText ?? (mainDark ? '#e6eaf1' : '#374151'),
+    title: mainDark ? '#ffffff' : '#111827',
+    meta: mainDark ? 'rgba(255,255,255,0.7)' : '#64748b',
+    heading: t.mainHeadColor ?? accent,
+    divider: mainDark ? 'rgba(255,255,255,0.28)' : '#d1d5db',
+    accent,
+    dark: mainDark,
+  }
+  return { side, main }
 }

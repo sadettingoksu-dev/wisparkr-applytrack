@@ -414,6 +414,67 @@ export async function polishCv(
   return validated.data
 }
 
+const summaryOptionsSchema = z.object({
+  options: z
+    .array(
+      z.object({
+        tone: z.enum(['professional', 'natural']),
+        text: z.string().min(1),
+      })
+    )
+    .length(2),
+})
+
+export type SummaryTone = 'professional' | 'natural'
+export interface SummaryOption {
+  tone: SummaryTone
+  text: string
+}
+
+/**
+ * Adayın girdiği CV verisinden profesyonel özet için İKİ seçenek üretir:
+ * aynı bilgiler, farklı ton (kurumsal / doğal). Kullanıcı birini seçer.
+ *
+ * Eskiden burada 16 hazır cümlelik bir liste vardı; herkes aynı cümleleri
+ * kullanıyordu ve içerik adayın gerçek deneyimiyle ilgisizdi.
+ */
+export async function generateSummaryOptions(
+  anthropic: Anthropic,
+  cvText: string
+): Promise<SummaryOption[]> {
+  const prompt = [
+    'Aşağıda bir adayın CV bilgileri var. Bu bilgilere dayanarak CV’nin en üstünde yer alacak',
+    '"profesyonel özet" paragrafı için İKİ FARKLI seçenek yaz.',
+    '- Seçenek 1 (professional): kurumsal, ölçülü, işveren diline yakın.',
+    '- Seçenek 2 (natural): daha doğal ve insani, birinci ağızdan, samimi ama profesyonel.',
+    '- İKİSİ DE AYNI gerçeklere dayansın; yalnızca ton farklı olsun.',
+    '- Adayın CV’sinde OLMAYAN deneyim, yıl, şirket, rakam veya beceri UYDURMA.',
+    '- Her biri 2-4 cümle, tek paragraf, madde işareti yok.',
+    '- CV boşsa veya çok az bilgi varsa genel geçer klişe yazma; eldeki bilgiyle yetin.',
+    TURKISH_WRITING_RULE,
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    '{"options": [{"tone": "professional", "text": "..."}, {"tone": "natural", "text": "..."}]}',
+    '',
+    'CV:',
+    cvText.slice(0, 8000),
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 1500,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = summaryOptionsSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data.options
+}
+
 const skillsGapSchema = z.object({
   matched: z.array(z.string()).max(20).default([]),
   missing: z.array(z.string()).max(20).default([]),
@@ -865,11 +926,33 @@ export async function extractJobPosting(
 const classificationSchema = z.object({
   classification: z.enum(['interview_invitation', 'rejection', 'info_request', 'other']),
   application_id: z.string().uuid().nullable(),
+  // OPSİYONEL olmalı: bu şema safeParse ile doğrulanıyor ve başarısızlıkta
+  // fonksiyon 'other' fallback'ine düşüyor. Zorunlu yapılırsa, AI alanı atladığı
+  // her seferde SINIFLANDIRMANIN TAMAMI çöker.
+  interview_date: z.string().nullable().optional().default(null),
 })
 
 export interface InboundEmailClassification {
   classification: EmailClassification
   application_id: string | null
+  /** Mülakat daveti ise e-postadan çıkarılan tarih (ISO 8601) — yoksa null. */
+  interview_date: string | null
+}
+
+/**
+ * AI'ın döndürdüğü tarihi güvene alır: geçerli bir tarih mi ve makul bir
+ * aralıkta mı (geçmiş 1 gün → gelecek 1 yıl). Aksi halde null.
+ * Model bazen "önümüzdeki Salı"yı yanlış yıla taşıyabiliyor; saçma tarihi
+ * kaydetmektense hiç kaydetmemek iyidir (kullanıcı elle girebilir).
+ */
+function sanitizeInterviewDate(value: string | null | undefined): string | null {
+  if (!value) return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return null
+  const now = Date.now()
+  if (d.getTime() < now - 864e5) return null // 1 günden eski
+  if (d.getTime() > now + 365 * 864e5) return null // 1 yıldan uzak
+  return d.toISOString()
 }
 
 export interface ClassifiableApplication {
@@ -881,19 +964,47 @@ export interface ClassifiableApplication {
 
 /**
  * Gelen bir e-postayı sınıflandırır (mülakat daveti / red / bilgi talebi /
- * diğer) ve kullanıcının açık başvurularından hangisiyle ilgili olduğunu
- * (varsa) belirler. AI çağrısı başarısız olursa 'other' + null döner.
+ * diğer), hangi başvuruyla ilgili olduğunu bulur ve mülakat davetiyse
+ * TARİHİ de çıkarır. AI çağrısı başarısız olursa 'other' + null döner.
+ *
+ * Tarih çıkarımı neden burada: e-posta gövdesi ve başvuru eşleşmesi zaten
+ * bu çağrıda mevcut — ayrı bir AI turu açmak gereksiz maliyet olurdu.
  */
 export async function classifyInboundEmail(
   anthropic: Anthropic,
   email: { subject: string; body: string },
   applications: ClassifiableApplication[]
 ): Promise<InboundEmailClassification> {
-  const fallback: InboundEmailClassification = { classification: 'other', application_id: null }
+  const fallback: InboundEmailClassification = {
+    classification: 'other',
+    application_id: null,
+    interview_date: null,
+  }
 
   const appList = applications
     .map((app) => `- id: ${app.id}, şirket: ${app.company_name}, pozisyon: ${app.position_title}, durum: ${app.status}`)
     .join('\n')
+
+  // Zaman çıpası ŞART: TR e-postaları tarihi göreli/konuşma dilinde yazıyor
+  // ("önümüzdeki Salı 14:00", "yarın sabah"). Model "şimdi"nin ne olduğunu
+  // bilmeden bunları mutlak tarihe çeviremez.
+  const now = new Date()
+  const nowStr = new Intl.DateTimeFormat('tr-TR', {
+    timeZone: 'Europe/Istanbul',
+    dateStyle: 'full',
+    timeStyle: 'short',
+  }).format(now)
+
+  // Takvim tablosu: yalnızca "şu an" verilince model gün aritmetiğinde
+  // yanılıyordu — 15 Temmuz Çarşamba'da "önümüzdeki Salı" için 21 Temmuz Salı
+  // yerine 22 Temmuz Çarşamba (= +7 gün, aynı gün) döndürdü. Önümüzdeki 21
+  // günün tarih↔gün eşlemesini vererek aritmetiği ARAMAYA çeviriyoruz.
+  const dayFmt = new Intl.DateTimeFormat('tr-TR', { timeZone: 'Europe/Istanbul', weekday: 'long' })
+  const calendar = Array.from({ length: 21 }, (_, i) => {
+    const d = new Date(now.getTime() + (i + 1) * 864e5)
+    const iso = d.toISOString().slice(0, 10)
+    return `  ${iso} = ${dayFmt.format(d)}${i === 0 ? ' (yarın)' : ''}`
+  }).join('\n')
 
   const prompt = [
     'Aşağıda bir kullanıcının iş başvuru sürecinde aldığı bir e-posta var.',
@@ -905,6 +1016,19 @@ export async function classifyInboundEmail(
     '',
     'Ayrıca, aşağıdaki başvuru listesinden bu e-postanın hangisiyle ilgili olduğunu bul (varsa id\'sini ver, yoksa null).',
     '',
+    'MÜLAKAT TARİHİ (interview_date):',
+    `- Şu an: ${nowStr} (Türkiye saati, Europe/Istanbul, UTC+03:00).`,
+    '- Önümüzdeki günlerin takvimi (gün adını BURADAN oku, kendin hesaplama):',
+    calendar,
+    '- E-postada mülakat için bir tarih/saat geçiyorsa ISO 8601 olarak ver:',
+    '  "2026-07-21T14:00:00+03:00" gibi (saat dilimi offset\'i DAHİL).',
+    '- Göreli ifadeler ("önümüzdeki Salı", "yarın 14:00", "3 gün sonra") için',
+    '  yukarıdaki takvimden EŞLEŞEN GÜN ADINI bul ve o tarihi kullan.',
+    '  Örnek: "önümüzdeki Salı" → takvimdeki İLK "Salı" satırının tarihi.',
+    '- Saat belirtilmemişse o günü 10:00 kabul et.',
+    '- Tarih yoksa, belirsizse ("uygun olduğunuz bir zaman") ya da e-posta',
+    '  mülakat daveti DEĞİLSE: null ver. UYDURMA.',
+    '',
     'Başvurular:',
     appList || '(başvuru yok)',
     '',
@@ -912,13 +1036,13 @@ export async function classifyInboundEmail(
     `E-posta içeriği: ${email.body.slice(0, 4000)}`,
     '',
     'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
-    '{"classification": "<kategori>", "application_id": "<uuid veya null>"}',
+    '{"classification": "<kategori>", "application_id": "<uuid veya null>", "interview_date": "<ISO 8601 veya null>"}',
   ].join('\n')
 
   try {
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL,
-      max_tokens: 256,
+      max_tokens: 320,
       messages: [{ role: 'user', content: prompt }],
     })
     const textBlock = response.content.find((block) => block.type === 'text')
@@ -927,7 +1051,17 @@ export async function classifyInboundEmail(
     const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
     const validated = classificationSchema.safeParse(candidate)
     if (!validated.success) return fallback
-    return validated.data
+    const { classification, application_id } = validated.data
+    return {
+      classification,
+      application_id,
+      // Tarih yalnızca gerçekten mülakat davetiyse anlamlı; model başka
+      // kategorilerde de tarih döndürebiliyor (ör. red mailindeki bir tarih).
+      interview_date:
+        classification === 'interview_invitation'
+          ? sanitizeInterviewDate(validated.data.interview_date)
+          : null,
+    }
   } catch {
     return fallback
   }

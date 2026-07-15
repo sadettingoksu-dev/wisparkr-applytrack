@@ -1,30 +1,31 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
-import { isLemonSqueezyConfigured, createCheckoutUrl } from '@/lib/lemonsqueezy'
-import { getPlan } from '@/lib/plans'
 
 const bodySchema = z.object({
   plan: z.enum(['pro', 'career_coach']),
   period: z.enum(['monthly', 'yearly']).optional().default('monthly'),
 })
 
+/**
+ * Ödeme oturumu başlatır.
+ *
+ * ŞU AN SAĞLAYICI YOK. LemonSqueezy kaldırıldı (merchant-of-record modeli
+ * bırakıldı); şirket kurulduktan sonra iyzico/PayTR gelecek.
+ *
+ * Rota SÖZLEŞMESİ bilinçli olarak korunuyor — `POST {plan, period}` →
+ * `{data:{checkout_url}}` — çünkü buna bağlı çağıranlar var:
+ *   - components/billing/UpgradeButton.tsx
+ *   - app/checkout/page.tsx
+ * ve derin linkler: login/signup `?plan=`, lib/supabase/middleware.ts.
+ * Yeni sağlayıcı geldiğinde yalnızca bu dosyanın gövdesi dolar; UI değişmez.
+ *
+ * Plan kilitlemesi bu rotadan BAĞIMSIZ: profiles.plan + trial_ends_at okunuyor
+ * (lib/plans.ts, lib/apiAuth.ts), sağlayıcı olmadan da çalışır.
+ */
 export async function POST(request: Request) {
-  if (!isLemonSqueezyConfigured()) {
-    return NextResponse.json(
-      {
-        error: {
-          code: 'BILLING_NOT_CONFIGURED',
-          message: 'Ödeme sistemi henüz yapılandırılmadı.',
-        },
-      },
-      { status: 503 }
-    )
-  }
-
   const ctx = await requireAuth()
   if (!isAuthedContext(ctx)) return ctx
-  const { userId, profile } = ctx
 
   const json = await request.json().catch(() => null)
   const parsed = bodySchema.safeParse(json)
@@ -35,32 +36,13 @@ export async function POST(request: Request) {
     )
   }
 
-  const plan = getPlan(parsed.data.plan)
-  const yearly = parsed.data.period === 'yearly'
-  const variantId = yearly ? plan.lemonSqueezyVariantIdYearly : plan.lemonSqueezyVariantId
-  if (!variantId) {
-    return NextResponse.json(
-      {
-        error: {
-          code: 'BILLING_NOT_CONFIGURED',
-          message: `${plan.name} planı (${yearly ? 'yıllık' : 'aylık'}) için Lemon Squeezy variant ID tanımlı değil.`,
-        },
+  return NextResponse.json(
+    {
+      error: {
+        code: 'BILLING_NOT_CONFIGURED',
+        message: 'Ödeme sistemi şu anda kapalı. Çok yakında açılacak.',
       },
-      { status: 503 }
-    )
-  }
-
-  try {
-    const checkoutUrl = await createCheckoutUrl({
-      variantId,
-      userId,
-      email: profile.email,
-    })
-    return NextResponse.json({ data: { checkout_url: checkoutUrl } })
-  } catch (err) {
-    return NextResponse.json(
-      { error: { code: 'CHECKOUT_FAILED', message: 'Ödeme oturumu oluşturulamadı.' } },
-      { status: 502 }
-    )
-  }
+    },
+    { status: 503 }
+  )
 }

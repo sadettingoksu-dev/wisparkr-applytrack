@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { AIChatPanel } from '@/components/chat/AIChatPanel'
 import { AssistantPicker } from '@/components/chat/AssistantPicker'
 import { FeatureLock } from '@/components/billing/FeatureLock'
@@ -27,10 +28,7 @@ export default async function AssistantPage({
   if (!getEffectivePlan(profileData as Profile | null).features.aiAssistant) {
     return (
       <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.assistant.title}</h1>
-          <p className="text-sm text-slate-500">{t.assistant.subtitle}</p>
-        </div>
+        <PageHeader title={t.assistant.title} subtitle={t.assistant.subtitle} />
         <FeatureLock
           title={t.billing.lockTitle}
           description={t.billing.lockDescAssistant}
@@ -66,10 +64,7 @@ export default async function AssistantPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{t.assistant.title}</h1>
-        <p className="text-sm text-slate-500">{t.assistant.subtitle}</p>
-      </div>
+      <PageHeader title={t.assistant.title} subtitle={t.assistant.subtitle} />
 
       {apps.length > 0 && (
         <Card className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

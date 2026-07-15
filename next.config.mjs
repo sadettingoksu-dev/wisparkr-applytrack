@@ -27,9 +27,12 @@ const nextConfig = {
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.lemonsqueezy.com",
-      "frame-src 'self' https://*.lemonsqueezy.com https://accounts.google.com",
-      "form-action 'self' https://*.lemonsqueezy.com",
+      // Ödeme sağlayıcısı YOK (LemonSqueezy kaldırıldı). iyzico/PayTR gelince
+      // ilgili domainler connect-src / frame-src / form-action'a eklenecek —
+      // aksi halde ödeme iframe'i/formu CSP tarafından bloklanır.
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+      "frame-src 'self' https://accounts.google.com",
+      "form-action 'self'",
     ].join('; ')
 
     return [

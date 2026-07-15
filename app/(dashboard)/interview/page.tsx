@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { AssistantPicker } from '@/components/chat/AssistantPicker'
 import { MockInterviewCard } from '@/components/interview/MockInterviewCard'
 import { FeatureLock } from '@/components/billing/FeatureLock'
@@ -27,10 +28,7 @@ export default async function InterviewPage({
   if (!getEffectivePlan(profileData as Profile | null).features.mockInterview) {
     return (
       <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.interview.pageTitle}</h1>
-          <p className="text-sm text-slate-500">{t.interview.pageSubtitle}</p>
-        </div>
+        <PageHeader title={t.interview.pageTitle} subtitle={t.interview.pageSubtitle} />
         <FeatureLock
           title={t.billing.lockTitle}
           description={t.billing.lockDescInterview}
@@ -66,10 +64,7 @@ export default async function InterviewPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{t.interview.pageTitle}</h1>
-        <p className="text-sm text-slate-500">{t.interview.pageSubtitle}</p>
-      </div>
+      <PageHeader title={t.interview.pageTitle} subtitle={t.interview.pageSubtitle} />
 
       {apps.length > 0 && (
         <Card className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

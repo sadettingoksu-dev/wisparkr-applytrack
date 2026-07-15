@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Info, X } from 'lucide-react'
 import { useI18n } from '@/components/i18n/I18nProvider'
 
-type PageKey = keyof ReturnType<typeof useI18n>['t']['pageInfo']
+export type PageKey = keyof ReturnType<typeof useI18n>['t']['pageInfo']
 
 /**
  * Small "i" button shown next to a page title. Clicking it reveals a short

@@ -39,7 +39,7 @@ const replySchema = z.object({
 const ROUTES: { href: string; desc: string }[] = [
   { href: '/dashboard', desc: 'Genel bakış: başvuru sayıların, dönüşüm oranların, son hareketler ve özet.' },
   { href: '/applications', desc: 'Başvurular: ilan linki yapıştırarak yeni başvuru ekleme, liste, detay ve notlar.' },
-  { href: '/board', desc: 'Kanban panosu: başvuruları Bekliyor / Mülakat / Teklif / Reddedildi sütunlarında sürükle-bırak ile yönetme.' },
+  { href: '/applications?view=board', desc: 'Kanban panosu (Başvurular sayfasının "Pano" görünümü): başvuruları Bekliyor / Mülakat / Teklif / Reddedildi sütunlarında sürükle-bırak ile yönetme.' },
   { href: '/calendar', desc: 'Takvim: mülakat ve takip tarihlerini görme/planlama.' },
   { href: '/analytics', desc: 'Analizler: başvuru istatistikleri ve grafikler.' },
   { href: '/compare', desc: 'Karşılaştırma: başvuruları/ilanları yan yana karşılaştırma.' },

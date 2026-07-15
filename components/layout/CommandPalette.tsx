@@ -39,7 +39,7 @@ export function CommandPalette() {
       { label: t.commandPalette.newApplication, href: '/applications/new', icon: Plus, group: 'actions' },
       { label: t.sidebar.dashboard, href: '/dashboard', icon: LayoutDashboard, group: 'pages' },
       { label: t.sidebar.applications, href: '/applications', icon: FileText, group: 'pages' },
-      { label: t.sidebar.board, href: '/board', icon: Kanban, group: 'pages' },
+      { label: t.sidebar.board, href: '/applications?view=board', icon: Kanban, group: 'pages' },
       { label: t.sidebar.calendar, href: '/calendar', icon: CalendarDays, group: 'pages' },
       { label: t.sidebar.cvBuilder, href: '/cv-builder', icon: FilePlus, group: 'pages' },
       { label: t.sidebar.documents, href: '/documents', icon: Files, group: 'pages' },

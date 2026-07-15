@@ -91,8 +91,14 @@ export function DashboardShell({ name, email, avatarUrl, plan, effectivePlan, ch
             <NotificationBell />
           </div>
         </header>
-        {/* Yalnızca bu alan kaydırılır (masaüstünde) */}
-        <main className="px-4 pb-8 pt-6 sm:px-8 lg:flex-1 lg:overflow-y-auto">{children}</main>
+        {/* Yalnızca bu alan kaydırılır (masaüstünde).
+            pb-24: sağ-alttaki geri bildirim widget'ı (bottom-5, ~4rem) sabit
+            konumlu olduğu için sayfanın SONU altında kalıyordu. parkrcan daha
+            yukarıda (bottom-24 + h-16 → ~10rem) ama yalnızca ana sayfada var;
+            oradaki ek boşluğu dashboard/page.tsx kendisi veriyor — aksi halde
+            tüm sayfalar gereksiz yere 8rem ölü alan taşıyordu (şablon seçici
+            bu yüzden tek ekrana sığmıyordu). Bkz. globals.css katman ölçeği. */}
+        <main className="px-4 pb-24 pt-6 sm:px-8 lg:flex-1 lg:overflow-y-auto">{children}</main>
       </div>
     </div>
   )

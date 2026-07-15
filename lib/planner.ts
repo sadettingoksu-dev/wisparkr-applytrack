@@ -11,12 +11,18 @@ export type PlannerVariant =
   | 'follow_up'
   | 'fit_score'
 
+/** Görevin neden üretildiğini açıklayan etiket — bkz. t.planner.reason_* */
+export type PlannerReason = 'reason_interview' | 'reason_follow_up' | 'reason_fit_score'
+
 export interface PlannerTask {
   id: string
   kind: PlannerTaskKind
   variant: PlannerVariant
+  reason: PlannerReason
   company: string
   daysLeft?: number
+  /** follow_up görevlerinde: kaç gündür yanıt bekleniyor (reason metninde kullanılır). */
+  daysWaiting?: number
   href: string
 }
 
@@ -56,16 +62,19 @@ export function generateTasks(apps: Application[]): PlannerTask[] {
         }
       }
 
-      tasks.push({ id: `${app.id}-interview_prep`, kind: 'interview_prep', variant, daysLeft, company: app.company_name, href, sortKey })
+      tasks.push({ id: `${app.id}-interview_prep`, kind: 'interview_prep', variant, reason: 'reason_interview', daysLeft, company: app.company_name, href, sortKey })
     }
 
     if (app.status === 'pending') {
       const referenceDate = app.applied_at ?? app.created_at
-      if (referenceDate && differenceInDays(new Date(), new Date(referenceDate)) >= FOLLOW_UP_AFTER_DAYS) {
+      const daysWaiting = referenceDate ? differenceInDays(new Date(), new Date(referenceDate)) : 0
+      if (referenceDate && daysWaiting >= FOLLOW_UP_AFTER_DAYS) {
         tasks.push({
           id: `${app.id}-follow_up`,
           kind: 'follow_up',
           variant: 'follow_up',
+          reason: 'reason_follow_up',
+          daysWaiting,
           company: app.company_name,
           href,
           sortKey: KIND_PRIORITY.follow_up,
@@ -77,6 +86,7 @@ export function generateTasks(apps: Application[]): PlannerTask[] {
           id: `${app.id}-fit_score`,
           kind: 'fit_score',
           variant: 'fit_score',
+          reason: 'reason_fit_score',
           company: app.company_name,
           href,
           sortKey: KIND_PRIORITY.fit_score,
@@ -89,4 +99,18 @@ export function generateTasks(apps: Application[]): PlannerTask[] {
     .sort((a, b) => a.sortKey - b.sortKey)
     .slice(0, 5)
     .map(({ sortKey, ...task }) => task)
+}
+
+/**
+ * Gelecekteki mülakatlar, en yakın önce.
+ *
+ * `applications.interview_date` tek kaynaktır — Takvim sayfası da, ana sayfadaki
+ * "Yaklaşan mülakatlar" kartı da bunu kullanır (aynı türetimi iki yerde
+ * yazmamak için burada).
+ */
+export function getUpcomingInterviews(apps: Application[]): Application[] {
+  const now = new Date()
+  return apps
+    .filter((app) => app.interview_date && new Date(app.interview_date) >= now)
+    .sort((a, b) => new Date(a.interview_date!).getTime() - new Date(b.interview_date!).getTime())
 }

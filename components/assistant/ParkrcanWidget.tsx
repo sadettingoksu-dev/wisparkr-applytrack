@@ -82,7 +82,7 @@ export function ParkrcanWidget({ lower = false }: { lower?: boolean } = {}) {
 
       {/* Sohbet paneli */}
       {open && (
-        <div className={`fixed ${anchorY} right-5 z-40 flex h-[28rem] max-h-[calc(100vh-8rem)] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl`}>
+        <div className={`fixed ${anchorY} right-5 z-[45] flex h-[28rem] max-h-[calc(100vh-8rem)] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl`}>
           {/* Başlık */}
           <div className="flex items-center gap-3 bg-gradient-to-r from-purple-600 to-fuchsia-500 px-4 py-3 text-white">
             {/* eslint-disable-next-line @next/next/no-img-element */}

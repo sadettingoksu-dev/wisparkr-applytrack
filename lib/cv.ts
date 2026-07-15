@@ -24,13 +24,13 @@ export const cvPersonalSchema = z.object({
   photo: z.string().default(''),
   links: z.array(cvLinkSchema).default([]),
   // Opsiyonel ek bilgiler ("Daha fazla bilgi ekle"). Boş string = gösterilmez.
+  // Yalnızca TR iş piyasasında gerçekten sorulanlar tutulur; uyruk, belge türü,
+  // hobiler ve ödüller kaldırıldı (ödüller zaten sertifikalar bölümüyle
+  // çakışıyordu). Zod bilinmeyen anahtarları soyar; eski cv_data'daki bu alanlar
+  // parse'ı bozmaz, ilk kayıtta sessizce düşer.
   birthDate: z.string().default(''),
-  nationality: z.string().default(''),
   militaryStatus: z.string().default(''),
-  documentType: z.string().default(''),
   driversLicense: z.string().default(''),
-  hobbies: z.string().default(''),
-  awards: z.string().default(''),
 })
 
 export const cvExperienceSchema = z.object({
@@ -49,7 +49,6 @@ export const cvEducationSchema = z.object({
   degree: z.string().default(''),
   field: z.string().default(''),
   location: z.string().default(''),
-  gpa: z.string().default(''),
   start: z.string().default(''),
   end: z.string().default(''),
   current: z.boolean().default(false),
@@ -94,6 +93,29 @@ export type CvLanguage = z.infer<typeof cvLanguageSchema>
 export type CvCertification = z.infer<typeof cvCertificationSchema>
 
 const CV_TEXT_LIMIT = 15000
+
+/** Türkçe harfleri ASCII karşılığına indirger (dosya adları için). */
+const TR_MAP: Record<string, string> = {
+  ç: 'c', Ç: 'c', ğ: 'g', Ğ: 'g', ı: 'i', İ: 'i', ö: 'o', Ö: 'o',
+  ş: 's', Ş: 's', ü: 'u', Ü: 'u', â: 'a', Â: 'a', î: 'i', Î: 'i', û: 'u', Û: 'u',
+}
+
+/**
+ * Dosya adı için güvenli slug — Türkçe harfleri ÖNCE translitere eder.
+ *
+ * Doğrudan `[^a-z0-9]` ile temizlemek Türkçe harfleri siliyordu:
+ * "Ayşe Yılmaz" → "ay-e-y-lmaz", "Şişecam" → "i-ecam". Tamamen Türkçe harfli
+ * bir ad ise boşa çöküyordu.
+ */
+export function trSlug(input: string): string {
+  return (input || '')
+    .replace(/[çÇğĞıİöÖşŞüÜâÂîÎûÛ]/g, (ch) => TR_MAP[ch] ?? ch)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // kalan aksanlar (é, ñ ...)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
 
 /** Builds an empty CV, optionally seeding name/email from the auth profile. */
 export function emptyCvData(seed?: { fullName?: string; email?: string }): CvData {
@@ -203,9 +225,7 @@ export function flattenCvData(data: CvData): string {
   if (contact) lines.push(contact)
   const details = [
     p.birthDate && `Doğum tarihi: ${p.birthDate}`,
-    p.nationality && `Uyruk: ${p.nationality}`,
     p.militaryStatus && `Askerlik: ${p.militaryStatus}`,
-    p.documentType && `Belge türü: ${p.documentType}`,
     p.driversLicense && `Ehliyet: ${p.driversLicense}`,
   ]
     .filter(Boolean)
@@ -240,7 +260,7 @@ export function flattenCvData(data: CvData): string {
         .filter(Boolean)
         .join('')
       const per = period(ed.start, ed.end, ed.current)
-      const meta = [ed.location, ed.gpa && `Not ort.: ${ed.gpa}`].filter(Boolean).join(' · ')
+      const meta = ed.location
       lines.push([head, per && `(${per})`, meta && `— ${meta}`].filter(Boolean).join(' '))
       if (ed.note.trim()) lines.push(`- ${ed.note.trim()}`)
     }
@@ -274,14 +294,6 @@ export function flattenCvData(data: CvData): string {
         [c.name, c.issuer && ` - ${c.issuer}`, c.date && ` (${c.date})`].filter(Boolean).join('')
       )
     }
-  }
-
-  if (p.awards.trim()) {
-    lines.push('', 'DERECELER & ÖDÜLLER', p.awards.trim())
-  }
-
-  if (p.hobbies.trim()) {
-    lines.push('', 'HOBİLER', p.hobbies.trim())
   }
 
   return lines.join('\n').slice(0, CV_TEXT_LIMIT)
