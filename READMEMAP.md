@@ -28,7 +28,8 @@
 - **Durum: Kod hazır, build+tsc temiz, push edildi. Dalda; master'a merge + migration 0018/0019 bekliyor.**
 
 ### 2026-07-07 — Faz 5: Maaş müzakere koçu + rakip analizi (gerçek özellikler)
-> ⚠️ **Migration `0019_salary_competitor.sql` UYGULANMASI GEREKİR** (`applications.salary_coach` + `competitor_analysis` jsonb). Kod kolonlarsız da çalışır (sonuç kalıcı olmaz). Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ.
+> ⚠️ **Migration `0019_salary_competitor.sql` UYGULANMASI GEREKİR** (`applications.salary_coach` + `competitor_analysis` jsonb). Kod kolonlarsız da çalışır (sonuç kalıcı olmaz).
+> ✅ Kod 2026-07-07'de **PR #49 ile master'a merge edildi ve canlıda** (eski "merge edilmedi" notu bayattı).
 
 - [x] **Maaş müzakere koçu (gerçek özellik):** `analyzeSalary` (lib/anthropic.ts) → pozisyon/şehir/(teklif) için TR aylık brüt piyasa aralığı + teklif değerlendirmesi + karşı-teklif + hazır müzakere replikleri + ipuçları. `/api/ai/salary-coach` (Pro `salaryNegotiationCoach`, metered). `SalaryCoachCard` başvuru detayında **yalnızca `offer` statüsünde** (teklif aşamasında değerli).
 - [x] **Rakip analizi (gerçek özellik):** `analyzeCompetition` (lib/anthropic.ts) → tipik aday profili + adayın havuzda nerede durduğu + farklılaştırıcılar + rekabetçi konum skoru (0-100). `/api/ai/competitor-analysis` (Pro `competitorAnalysis`, metered). `CompetitorAnalysisCard` detayda her zaman. NOT: `/compare` sayfasından FARKLI (o kendi başvurularını karşılaştırır).
@@ -42,7 +43,8 @@
 - Commit: (Faz 4). Branch: feat/web-landing-redesign. Build + tsc temiz.
 
 ### 2026-07-07 — Faz 3: CV araba-tamiri sihirbazı
-> ⚠️ **Migration `0018_cv_diagnosis.sql` UYGULANMASI GEREKİR** (`applications.cv_diagnosis jsonb`). Kod migration olmadan da çalışır (teşhis üretilir) ama sonuç KALICI OLMAZ; kolon eklenince kalıcılık gelir. Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ — canlıda değil.
+> ⚠️ **Migration `0018_cv_diagnosis.sql` UYGULANMASI GEREKİR** (`applications.cv_diagnosis jsonb`). Kod migration olmadan da çalışır (teşhis üretilir) ama sonuç KALICI OLMAZ; kolon eklenince kalıcılık gelir.
+> ✅ Kod 2026-07-07'de **PR #49 ile master'a merge edildi ve canlıda** (eski "merge edilmedi" notu bayattı).
 
 - [x] **Ayrı tam sayfa sihirbaz** `/applications/[id]/cv-repair` — 3 adım: **Teşhis → Onarım → Teslim**. `components/cv/CvRepairWizard.tsx` (adım göstergeci, arıza listesi, belge var/yok, otomatik onarılacaklar, önce→sonra skor, PDF indirme + Pro daveti).
 - [x] **`diagnoseCv` (lib/anthropic.ts):** CV'yi ilana karşı usta gibi muayene → arızalar (kategori: document/skill/experience/keyword/format; şiddet: critical/important/minor; etki puanı; arıza+onarım metni) + genel hazırlık skoru. `CvDiagnosisResult`/`CvDiagnosisItem` tipleri `lib/types.ts`'ten export.
