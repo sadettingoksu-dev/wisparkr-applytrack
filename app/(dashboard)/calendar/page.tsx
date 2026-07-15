@@ -3,7 +3,7 @@ import { differenceInDays } from 'date-fns'
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { formatDate, formatRelative } from '@/utils/format'
-import { FOLLOW_UP_AFTER_DAYS } from '@/lib/planner'
+import { FOLLOW_UP_AFTER_DAYS, getUpcomingInterviews } from '@/lib/planner'
 import { CalendarGrid } from '@/components/calendar/CalendarGrid'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { getServerDict } from '@/lib/i18n-server'
@@ -20,9 +20,7 @@ export default async function CalendarPage() {
 
   const apps = (applications ?? []) as Application[]
 
-  const upcomingInterviews = apps
-    .filter((app) => app.interview_date && new Date(app.interview_date) >= new Date())
-    .sort((a, b) => new Date(a.interview_date!).getTime() - new Date(b.interview_date!).getTime())
+  const upcomingInterviews = getUpcomingInterviews(apps)
 
   const followUps = apps.filter((app) => {
     if (app.status !== 'pending') return false

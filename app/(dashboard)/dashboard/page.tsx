@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Briefcase, MessageSquare, Trophy, TrendingUp, Send, ListChecks, ArrowRight, BarChart2, FilePlus, FileText, Bot, Mic } from 'lucide-react'
+import { Briefcase, MessageSquare, Trophy, TrendingUp, Send, ListChecks, ArrowRight, BarChart2, CalendarDays, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { MetricCard } from '@/components/dashboard/MetricCard'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -9,8 +9,10 @@ import { ParkrcanWidget } from '@/components/assistant/ParkrcanWidget'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { generateTasks, type PlannerTaskKind } from '@/lib/planner'
+import { Button } from '@/components/ui/Button'
+import { generateTasks, getUpcomingInterviews, type PlannerTaskKind } from '@/lib/planner'
 import { STATUS_BADGE_CLASSES } from '@/utils/constants'
+import { formatDate } from '@/utils/format'
 import { getServerDict } from '@/lib/i18n-server'
 import { format } from '@/lib/i18n'
 import type { Application } from '@/lib/types'
@@ -48,31 +50,28 @@ export default async function DashboardPage() {
 
   const tasks = generateTasks(apps)
   const recentApps = apps.slice(0, 5)
+  const upcoming = getUpcomingInterviews(apps).slice(0, 5)
 
   return (
     <div className="space-y-6">
-      <PageHeader title={greeting} subtitle={t.dashboard.subtitle} infoPage="dashboard" />
+      {/* Tek birincil aksiyon. Eskiden burada 4 "hızlı işlem" kartı vardı ama
+          dördü de sidebar'da zaten var; metrik kartlarıyla birlikte üst üste
+          8 kart hiyerarşiyi yok ediyordu. */}
+      <PageHeader
+        title={greeting}
+        subtitle={t.dashboard.subtitle}
+        infoPage="dashboard"
+        actions={
+          <Link href="/applications/new">
+            <Button>
+              <Plus className="h-4 w-4" />
+              {t.dashboard.qaNewApp}
+            </Button>
+          </Link>
+        }
+      />
 
       <OnboardingBanner hasApplications={apps.length > 0} hasCv={!!(profileData as { cv_text?: string } | null)?.cv_text} />
-
-      {/* Hızlı işlemler — en sık kullanılan aksiyonlara tek tık */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {[
-          { href: '/applications/new', label: t.dashboard.qaNewApp, icon: FilePlus },
-          { href: '/cv-builder', label: t.dashboard.qaCv, icon: FileText },
-          { href: '/assistant', label: t.dashboard.qaAssistant, icon: Bot },
-          { href: '/interview', label: t.dashboard.qaInterview, icon: Mic },
-        ].map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href}>
-            <Card className="flex items-center gap-3 transition-shadow hover:shadow-lg">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-                <Icon className="h-4 w-4" />
-              </span>
-              <span className="text-sm font-medium text-slate-800">{label}</span>
-            </Card>
-          </Link>
-        ))}
-      </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label={t.dashboard.metricTotal} value={total} icon={Briefcase} />
@@ -86,11 +85,16 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Yapılacaklar */}
+        {/* Sıradaki adımlar — lib/planner.ts'in başvuru verisinden TÜRETTİĞİ
+            liste. Kullanıcı buraya elle bir şey ekleyemez; bu yüzden her
+            satırın altında neden çıktığı yazar ve başlıkta otomatik olduğu
+            belirtilir (eski "Yapılacaklar" adı ekleme yapılabilir sanısı
+            veriyordu). */}
         <div>
           <div className="mb-3 flex items-center gap-2">
             <ListChecks className="h-5 w-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-slate-900">{t.dashboard.todos}</h2>
+            <h2 className="text-lg font-semibold text-slate-900">{t.dashboard.nextSteps}</h2>
+            <span className="text-xs text-slate-400">{t.dashboard.nextStepsHint}</span>
           </div>
           {tasks.length === 0 ? (
             <Card>
@@ -101,11 +105,15 @@ export default async function DashboardPage() {
               {tasks.map((task) => {
                 const Icon = TASK_ICONS[task.kind]
                 const label = format(t.planner[task.variant], { company: task.company, days: task.daysLeft ?? 0 })
+                const reason = format(t.planner[task.reason], { days: task.daysWaiting ?? 0 })
                 return (
                   <Link key={task.id} href={task.href}>
                     <Card className="flex items-center gap-3 transition-shadow hover:shadow-lg">
                       <Icon className="h-5 w-5 flex-shrink-0 text-purple-600" />
-                      <p className="text-sm font-medium text-slate-900">{label}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-slate-900">{label}</p>
+                        <p className="text-xs text-slate-400">{reason}</p>
+                      </div>
                     </Card>
                   </Link>
                 )
@@ -114,48 +122,84 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Son başvurular */}
+        {/* Yaklaşan mülakatlar — Takvim'in verisi (applications.interview_date). */}
         <div>
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Briefcase className="h-5 w-5 text-purple-600" />
-              <h2 className="text-lg font-semibold text-slate-900">{t.dashboard.recentApps}</h2>
+              <CalendarDays className="h-5 w-5 text-purple-600" />
+              <h2 className="text-lg font-semibold text-slate-900">{t.calendar.upcomingInterviews}</h2>
             </div>
-            <Link href="/applications" className="flex items-center gap-1 text-xs text-purple-600 hover:underline">
+            <Link href="/calendar" className="flex items-center gap-1 text-xs text-purple-600 hover:underline">
               {t.dashboard.all} <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
-          {recentApps.length === 0 ? (
-            <EmptyState
-              icon={Briefcase}
-              title={t.dashboard.noApps}
-              description={t.dashboard.noAppsDesc}
-              ctaLabel={t.dashboard.noAppsCta}
-              ctaHref="/applications/new"
-            />
+          {upcoming.length === 0 ? (
+            <Card>
+              <p className="text-sm text-slate-500">{t.calendar.noUpcoming}</p>
+            </Card>
           ) : (
-            <Card className="divide-y divide-slate-200">
-              {recentApps.map((app) => (
-                <Link
-                  key={app.id}
-                  href={`/applications/${app.id}`}
-                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:opacity-75"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-800">{app.position_title}</p>
-                    <p className="truncate text-xs text-slate-400">{app.company_name}</p>
-                  </div>
-                  <Badge className={`ml-3 shrink-0 ${STATUS_BADGE_CLASSES[app.status]}`}>
-                    {t.status[app.status]}
-                  </Badge>
+            <div className="space-y-3">
+              {upcoming.map((app) => (
+                <Link key={app.id} href={`/applications/${app.id}`}>
+                  <Card className="flex items-center justify-between gap-3 transition-shadow hover:shadow-lg">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900">{app.position_title}</p>
+                      <p className="truncate text-xs text-slate-400">{app.company_name}</p>
+                    </div>
+                    <span className="shrink-0 text-xs font-medium text-purple-600">
+                      {formatDate(app.interview_date!, 'd MMM HH:mm')}
+                    </span>
+                  </Card>
                 </Link>
               ))}
-            </Card>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Analitik artık dashboard içinde */}
+      {/* Son başvurular — tam genişlik */}
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-5 w-5 text-purple-600" />
+            <h2 className="text-lg font-semibold text-slate-900">{t.dashboard.recentApps}</h2>
+          </div>
+          <Link href="/applications" className="flex items-center gap-1 text-xs text-purple-600 hover:underline">
+            {t.dashboard.all} <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+        {recentApps.length === 0 ? (
+          <EmptyState
+            icon={Briefcase}
+            title={t.dashboard.noApps}
+            description={t.dashboard.noAppsDesc}
+            ctaLabel={t.dashboard.noAppsCta}
+            ctaHref="/applications/new"
+          />
+        ) : (
+          <Card className="divide-y divide-slate-200">
+            {recentApps.map((app) => (
+              <Link
+                key={app.id}
+                href={`/applications/${app.id}`}
+                className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:opacity-75"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-800">{app.position_title}</p>
+                  <p className="truncate text-xs text-slate-400">{app.company_name}</p>
+                </div>
+                <Badge className={`ml-3 shrink-0 ${STATUS_BADGE_CLASSES[app.status]}`}>
+                  {t.status[app.status]}
+                </Badge>
+              </Link>
+            ))}
+          </Card>
+        )}
+      </div>
+
+      {/* Analitik artık dashboard içinde. Üstteki metrik kartları SAYILARI,
+          buradaki kartlar ORANLARI gösterir — daha önce ikisi de toplam ve
+          ortalama skoru basıyordu (aynı sayfada aynı sayı iki kez). */}
       <div>
         <div className="mb-3 flex items-center gap-2">
           <BarChart2 className="h-5 w-5 text-purple-600" />

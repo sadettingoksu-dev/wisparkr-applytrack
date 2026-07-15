@@ -8,10 +8,13 @@
   /* Inline gradyanların (conic/radial) "boş" kısmı. CSS sınıfıyla
      çevrilemediği için değişkenle taşınır — bkz. ShowcaseMock. */
   --track: #ede9fe;
+  /* Landing hero zemini — inline style (app/page.tsx HERO_BG). */
+  --hero-bg: #f8fafc;
 }
 
 html.dark {
   --track: rgba(124, 58, 237, 0.28);
+  --hero-bg: #020617;
 }
 
 body {
@@ -168,6 +171,12 @@ html.dark { color-scheme: dark; }
    KASITLI — zemin her iki temada da mor, dokunulmuyor. */
 .dark .bg-white\/85 { background-color: rgba(15, 23, 42, 0.85) !important; }
 .dark .bg-white\/80 { background-color: rgba(15, 23, 42, 0.8) !important; }
+.dark .hover\:bg-white:hover { background-color: #0f172a !important; }
+.dark .bg-slate-50\/60 { background-color: rgba(2, 6, 23, 0.6) !important; }
+/* mor tonların opaklıklı varyantları (dekoratif vurgu kutuları) */
+.dark .bg-purple-50\/50 { background-color: rgba(124, 58, 237, 0.13) !important; }
+.dark .bg-purple-50\/60 { background-color: rgba(124, 58, 237, 0.14) !important; }
+.dark .hover\:bg-purple-50\/40:hover { background-color: rgba(124, 58, 237, 0.12) !important; }
 
 /* eksik gri kademeleri */
 .dark .bg-slate-200 { background-color: #334155 !important; }

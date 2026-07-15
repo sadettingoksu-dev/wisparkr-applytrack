@@ -1,36 +1,14 @@
-import { Kanban } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
-import { KanbanBoard } from '@/components/kanban/KanbanBoard'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { PageHeader } from '@/components/ui/PageHeader'
-import { getServerDict } from '@/lib/i18n-server'
-import type { Application } from '@/lib/types'
+import { redirect } from 'next/navigation'
 
-export default async function BoardPage() {
-  const t = getServerDict()
-  const supabase = createClient()
-  const { data: applications } = await supabase
-    .from('applications')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  const apps = (applications ?? []) as Application[]
-
-  return (
-    <div className="space-y-6">
-      <PageHeader title={t.board.title} subtitle={t.board.subtitle} infoPage="board" />
-
-      {apps.length === 0 ? (
-        <EmptyState
-          icon={Kanban}
-          title={t.board.empty}
-          description={t.board.emptyDesc}
-          ctaLabel={t.board.newApplication}
-          ctaHref="/applications/new"
-        />
-      ) : (
-        <KanbanBoard initialApplications={apps} />
-      )}
-    </div>
-  )
+/**
+ * Kanban panosu Başvurular sayfasına bir görünüm olarak taşındı.
+ *
+ * İki sayfa da birebir aynı sorguyu atıyor, aynı Application tipini ve aynı
+ * PATCH /api/applications/[id] ucunu kullanıyordu; ayrı duran pano ise
+ * arama/filtre/sıralama/plan-limiti uyarısından yoksundu. Artık tek yerde.
+ *
+ * Bu yönlendirme eski yer imleri ve dış linkler için duruyor.
+ */
+export default function BoardPage() {
+  redirect('/applications?view=board')
 }

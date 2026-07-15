@@ -79,7 +79,9 @@ export default function NewApplicationPage() {
       }
       return
     }
-    router.push('/board')
+    // Pano artık ayrı bir sayfa değil; kanonik hedef Başvurular listesi —
+    // yeni kayıt "en yeni" sıralamasıyla zaten en üstte görünür.
+    router.push('/applications')
   }
 
   return (

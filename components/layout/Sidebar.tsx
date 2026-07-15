@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
-import { LayoutDashboard, Kanban, FileText, Files, FilePlus, CalendarDays, CreditCard, GraduationCap, Bot, Mic, ChevronDown, Lock, Briefcase } from 'lucide-react'
+import { LayoutDashboard, FileText, Files, FilePlus, CalendarDays, GraduationCap, Bot, Mic, ChevronDown, Lock, Briefcase } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { useI18n } from '@/components/i18n/I18nProvider'
@@ -17,12 +17,16 @@ type NavGroup = { key: string; icon: LucideIcon; children: NavLeaf[] }
 type NavItem = NavLeaf | NavGroup
 
 // Analitik dashboard'a taşındı; takvim ayrı kaldı.
+// Kanban panosu Başvurular'ın içine bir görünüm oldu (/applications?view=board),
+// ayrı "Başvuru Paneli" maddesi kalktı.
+// "Plan & Faturalama" da kalktı: hesap menüsünde "Planı yükselt" var ve sayfa
+// zaten Ayarlar'ın altında (/settings/billing) — sidebar'da üçüncü kez durmasına
+// gerek yok. Kilitli özellikler hâlâ oraya yönlendiriyor (BILLING_HREF).
 // `feature` taşıyan öğeler, kullanıcının efektif planı o özelliği içermiyorsa
 // sönükleşir ve tıklanınca faturalama sayfasına yönlendirir.
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', key: 'dashboard', icon: LayoutDashboard },
   { href: '/calendar', key: 'calendar', icon: CalendarDays },
-  { href: '/board', key: 'board', icon: Kanban },
   { href: '/applications', key: 'applications', icon: FileText },
   { href: '/jobs', key: 'jobs', icon: Briefcase, feature: 'similarJobs' },
   {
@@ -35,7 +39,6 @@ const NAV_ITEMS: NavItem[] = [
   },
   { href: '/cv-builder', key: 'cvBuilder', icon: FilePlus },
   { href: '/documents', key: 'documents', icon: Files },
-  { href: '/settings/billing', key: 'billing', icon: CreditCard },
 ]
 
 const BILLING_HREF = '/settings/billing'

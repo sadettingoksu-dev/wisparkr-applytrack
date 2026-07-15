@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Search, ChevronLeft, ChevronRight, Trash2, X } from 'lucide-react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { Search, ChevronLeft, ChevronRight, Trash2, X, List, Kanban } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { STATUS_BADGE_CLASSES } from '@/utils/constants'
 import { formatDate } from '@/utils/format'
 import { format } from '@/lib/i18n'
@@ -32,6 +33,8 @@ interface Labels {
   bulkDelete: string
   bulkDeleteConfirm: string
   clearSelection: string
+  viewList: string
+  viewBoard: string
 }
 
 export function ApplicationsList({
@@ -44,12 +47,27 @@ export function ApplicationsList({
   statusLabels: Record<ApplicationStatus, string>
 }) {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<ApplicationStatus | 'all'>('all')
   const [sort, setSort] = useState<SortKey>('newest')
   const [page, setPage] = useState(0)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [busy, setBusy] = useState(false)
+
+  // Görünüm URL'de tutulur (?view=board) — böylece yer imlenebilir/paylaşılabilir
+  // ve eski /board linkleri buraya yönlenebilir.
+  const view: 'list' | 'board' = searchParams.get('view') === 'board' ? 'board' : 'list'
+
+  function setView(next: 'list' | 'board') {
+    const params = new URLSearchParams(searchParams.toString())
+    if (next === 'board') params.set('view', 'board')
+    else params.delete('view')
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    setSelected(new Set())
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -171,12 +189,42 @@ export function ApplicationsList({
           <option value="company">{labels.sortCompany}</option>
           <option value="position">{labels.sortPosition}</option>
         </select>
+
+        {/* Liste ⇄ Pano. Araç çubuğu ortak olduğu için arama/filtre/sıralama
+            artık Pano'da da çalışır (ayrı /board sayfasında yoktu). */}
+        <div className="inline-flex shrink-0 rounded-xl border border-slate-200 bg-white p-0.5">
+          {([
+            { id: 'list', label: labels.viewList, icon: List },
+            { id: 'board', label: labels.viewBoard, icon: Kanban },
+          ] as const).map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setView(id)}
+              aria-pressed={view === id}
+              className={
+                'inline-flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-sm font-medium transition-colors ' +
+                (view === id
+                  ? 'bg-purple-50 text-purple-700'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700')
+              }
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {filtered.length === 0 ? (
         <Card>
           <p className="text-sm text-slate-500">{labels.noResults}</p>
         </Card>
+      ) : view === 'board' ? (
+        /* key: KanbanBoard filtrelenmiş listeyi yalnızca BAŞLANGIÇ state'i olarak
+           alır (kendi optimistik state'ini tutar). Filtre değişince yeniden
+           kurulmazsa pano eski listeyi gösterirdi. */
+        <KanbanBoard key={`${query}|${status}|${sort}`} initialApplications={filtered} />
       ) : (
         <>
           {/* tümünü seç */}

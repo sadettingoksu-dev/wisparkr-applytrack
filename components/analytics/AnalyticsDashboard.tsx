@@ -168,20 +168,31 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
         </div>
       )}
 
-      {/* Özet metrikler */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label={t.analytics.total} value={total} />
+      {/* Özet metrikler.
+          `embedded` (ana sayfa): orada zaten toplam / mülakat / teklif / ort.
+          skor metrik kartları var. Burada da total ve avgScore basılınca AYNI
+          sayı tek sayfada iki kez görünüyordu — bu, panelin dağınık
+          görünmesinin başlıca sebebiydi. Gömülüyken yalnızca ORANLAR gösterilir
+          (sayılar üstteki kartlarda); yanıt oranı da küçük bir alt metin
+          olmaktan çıkıp kendi kartına terfi eder.
+          Bağımsız sayfada ise metrik kartları yok, tam set gösterilir. */}
+      <div className={`grid gap-4 ${embedded ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
+        {!embedded && <StatCard label={t.analytics.total} value={total} />}
         <StatCard
           label={t.analytics.interviewRate}
           value={`%${interviewRate}`}
           sub={format(t.analytics.interviewRateSub, { n: byStatus.interview + byStatus.offer })}
         />
         <StatCard label={t.analytics.offerRate} value={`%${offerRate}`} sub={format(t.analytics.offerRateSub, { n: byStatus.offer })} />
-        <StatCard
-          label={t.analytics.avgScore}
-          value={avgScore !== null ? `%${avgScore}` : '—'}
-          sub={maxScore !== null ? format(t.analytics.maxScoreSub, { n: maxScore }) : undefined}
-        />
+        {embedded ? (
+          <StatCard label={t.analytics.responseRate} value={`%${responseRate}`} />
+        ) : (
+          <StatCard
+            label={t.analytics.avgScore}
+            value={avgScore !== null ? `%${avgScore}` : '—'}
+            sub={maxScore !== null ? format(t.analytics.maxScoreSub, { n: maxScore }) : undefined}
+          />
+        )}
       </div>
 
       <div className={`grid gap-6 ${showPanel ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1 lg:grid-cols-2'}`}>

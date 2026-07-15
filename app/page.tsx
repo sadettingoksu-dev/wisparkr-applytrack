@@ -12,9 +12,12 @@ import { createClient } from '@/lib/supabase/server'
 import { getDictionary, LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n'
 
 // Yumuşak marka ışıması — kareli zemin kaldırıldı. Üstte hafif mor/fuşya
-// glow, aşağı doğru temiz beyaza karışır. Yalnızca sunum; yapıyı bozmaz.
+// glow, aşağı doğru zemine karışır. Yalnızca sunum; yapıyı bozmaz.
+// Zemin rengi değişkenden gelir: inline style'a CSS sınıf override'ı
+// ulaşamadığı için sabit #f8fafc koyu temada kocaman beyaz bir blok
+// bırakıyordu (navbar ve alttaki şerit koyuyken hero bembeyazdı).
 const HERO_BG: React.CSSProperties = {
-  backgroundColor: '#f8fafc',
+  backgroundColor: 'var(--hero-bg)',
   backgroundImage:
     'radial-gradient(60% 55% at 50% 0%, rgba(168,85,247,0.10), transparent 70%)',
 }
