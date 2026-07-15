@@ -6,7 +6,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { OnboardingBanner } from '@/components/dashboard/OnboardingBanner'
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
 import { ParkrcanWidget } from '@/components/assistant/ParkrcanWidget'
-import { PageInfo } from '@/components/ui/PageInfo'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { generateTasks, type PlannerTaskKind } from '@/lib/planner'
@@ -51,13 +51,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{greeting}</h1>
-          <p className="text-sm text-slate-500">{t.dashboard.subtitle}</p>
-        </div>
-        <PageInfo page="dashboard" />
-      </div>
+      <PageHeader title={greeting} subtitle={t.dashboard.subtitle} infoPage="dashboard" />
 
       <OnboardingBanner hasApplications={apps.length > 0} hasCv={!!(profileData as { cv_text?: string } | null)?.cv_text} />
 

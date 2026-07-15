@@ -5,7 +5,7 @@ import { getPlan } from '@/lib/plans'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { PageInfo } from '@/components/ui/PageInfo'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { CompareSelector } from '@/components/applications/CompareSelector'
 import { LimitBanner } from '@/components/applications/LimitBanner'
 import { ApplicationsList } from '@/components/applications/ApplicationsList'
@@ -34,28 +34,28 @@ export default async function ApplicationsPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.applications.title}</h1>
-          <p className="text-sm text-slate-500">{t.applications.subtitle}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <PageInfo page="applications" />
-          {apps.length >= 2 && <CompareSelector apps={apps} />}
-          {/* Liste boşken üstteki buton gizlenir; ortadaki empty-state CTA tek giriş noktası kalır. */}
-          {!limitReached && apps.length > 0 && (
-            <Link href="/applications/new">
-              <Button>
-                <Plus className="h-4 w-4" />
-                {t.applications.newApplication}
-                {max !== null && (
-                  <span className="ml-1 text-xs opacity-60">({apps.length}/{max})</span>
-                )}
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title={t.applications.title}
+        subtitle={t.applications.subtitle}
+        infoPage="applications"
+        actions={
+          <>
+            {apps.length >= 2 && <CompareSelector apps={apps} />}
+            {/* Liste boşken üstteki buton gizlenir; ortadaki empty-state CTA tek giriş noktası kalır. */}
+            {!limitReached && apps.length > 0 && (
+              <Link href="/applications/new">
+                <Button>
+                  <Plus className="h-4 w-4" />
+                  {t.applications.newApplication}
+                  {max !== null && (
+                    <span className="ml-1 text-xs opacity-60">({apps.length}/{max})</span>
+                  )}
+                </Button>
+              </Link>
+            )}
+          </>
+        }
+      />
 
       {showBanner && <LimitBanner used={apps.length} max={max ?? 2} />}
 

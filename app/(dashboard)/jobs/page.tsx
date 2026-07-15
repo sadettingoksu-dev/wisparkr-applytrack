@@ -1,6 +1,7 @@
 import { Briefcase, AlertCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { JobCard } from '@/components/jobs/JobCard'
 import { LockedFeatureCard } from '@/components/billing/LockedFeatureCard'
 import { getCvMatchedJobs } from '@/lib/jobFeed'
@@ -26,10 +27,7 @@ export default async function JobsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">{t.jobs.title}</h1>
-        <p className="text-sm text-slate-500">{t.jobs.subtitle}</p>
-      </div>
+      <PageHeader title={t.jobs.title} subtitle={t.jobs.subtitle} />
 
       {hasFeature ? (
         <>

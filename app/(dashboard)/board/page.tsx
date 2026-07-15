@@ -2,7 +2,7 @@ import { Kanban } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { PageInfo } from '@/components/ui/PageInfo'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Application } from '@/lib/types'
 
@@ -18,13 +18,7 @@ export default async function BoardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.board.title}</h1>
-          <p className="text-sm text-slate-500">{t.board.subtitle}</p>
-        </div>
-        <PageInfo page="board" />
-      </div>
+      <PageHeader title={t.board.title} subtitle={t.board.subtitle} infoPage="board" />
 
       {apps.length === 0 ? (
         <EmptyState

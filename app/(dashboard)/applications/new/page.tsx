@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useI18n } from '@/components/i18n/I18nProvider'
 
 export default function NewApplicationPage() {
@@ -83,17 +84,17 @@ export default function NewApplicationPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.newApp.title}</h1>
-          <p className="text-sm text-slate-500">{t.newApp.subtitle}</p>
-        </div>
-        {limitInfo?.max !== null && limitInfo && (
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
-            {limitInfo.used}/{limitInfo.max} {t.newApp.applicationsSuffix}
-          </span>
-        )}
-      </div>
+      <PageHeader
+        title={t.newApp.title}
+        subtitle={t.newApp.subtitle}
+        actions={
+          limitInfo?.max !== null && limitInfo ? (
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+              {limitInfo.used}/{limitInfo.max} {t.newApp.applicationsSuffix}
+            </span>
+          ) : null
+        }
+      />
 
       <Card className="space-y-3">
         <label className="text-sm font-medium text-slate-800">{t.newApp.urlLabel}</label>

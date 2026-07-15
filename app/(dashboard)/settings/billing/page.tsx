@@ -6,7 +6,7 @@ import { format } from '@/lib/i18n'
 import { CheckCircle2, XCircle, Clock } from 'lucide-react'
 import { CancelButton } from '@/components/billing/CancelButton'
 import { ProUpgradeCard } from '@/components/billing/ProUpgradeCard'
-import { PageInfo } from '@/components/ui/PageInfo'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { getServerDict } from '@/lib/i18n-server'
 import type { Profile, Subscription, AiUsage } from '@/lib/types'
 
@@ -99,13 +99,7 @@ export default async function BillingPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.billing.title}</h1>
-          <p className="text-sm text-slate-500">{t.billing.subtitle}</p>
-        </div>
-        <PageInfo page="billing" />
-      </div>
+      <PageHeader title={t.billing.title} subtitle={t.billing.subtitle} infoPage="billing" />
 
       {/* Aktif plan / deneme durumu */}
       <Card className="space-y-3">

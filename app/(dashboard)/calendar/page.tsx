@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { formatDate, formatRelative } from '@/utils/format'
 import { FOLLOW_UP_AFTER_DAYS } from '@/lib/planner'
 import { CalendarGrid } from '@/components/calendar/CalendarGrid'
-import { PageInfo } from '@/components/ui/PageInfo'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { getServerDict } from '@/lib/i18n-server'
 import { format } from '@/lib/i18n'
 import type { Application } from '@/lib/types'
@@ -32,13 +32,7 @@ export default async function CalendarPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t.calendar.title}</h1>
-          <p className="text-sm text-slate-500">{t.calendar.subtitle}</p>
-        </div>
-        <PageInfo page="calendar" />
-      </div>
+      <PageHeader title={t.calendar.title} subtitle={t.calendar.subtitle} infoPage="calendar" />
 
       {/* Takvim grid */}
       <Card>
