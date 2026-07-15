@@ -24,7 +24,7 @@ const CHIPS = [
 export function AuthShowcase() {
   const { t } = useI18n()
   return (
-    <div className="relative hidden w-full overflow-hidden rounded-[2rem] border border-purple-100 bg-gradient-to-br from-purple-100 via-fuchsia-50 to-white lg:flex lg:flex-col">
+    <div className="relative hidden w-full overflow-hidden rounded-[2rem] border border-purple-100 bg-gradient-to-br from-purple-100 via-fuchsia-50 to-white dark:from-purple-950 dark:via-fuchsia-950 dark:to-slate-950 lg:flex lg:flex-col">
       {/* Mor ışıltı */}
       <div className="pointer-events-none absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-purple-300/30 blur-3xl" />
       <div className="pointer-events-none absolute -right-16 bottom-1/4 h-64 w-64 rounded-full bg-fuchsia-300/30 blur-3xl" />

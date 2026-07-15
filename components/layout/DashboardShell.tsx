@@ -91,8 +91,12 @@ export function DashboardShell({ name, email, avatarUrl, plan, effectivePlan, ch
             <NotificationBell />
           </div>
         </header>
-        {/* Yalnızca bu alan kaydırılır (masaüstünde) */}
-        <main className="px-4 pb-8 pt-6 sm:px-8 lg:flex-1 lg:overflow-y-auto">{children}</main>
+        {/* Yalnızca bu alan kaydırılır (masaüstünde).
+            pb-32: sağ-altta yüzen widget'lar (parkrcan bottom-24 + h-16 → üstü
+            ~10rem; geri bildirim bottom-5) sabit konumlu olduğu için sayfanın
+            SONU onların altında kalıyordu. Bu boşluk son içeriği erişilebilir
+            tutar — bkz. globals.css'teki katman ölçeği. */}
+        <main className="px-4 pb-32 pt-6 sm:px-8 lg:flex-1 lg:overflow-y-auto">{children}</main>
       </div>
     </div>
   )

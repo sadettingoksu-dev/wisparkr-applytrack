@@ -48,7 +48,7 @@ export function ShowcaseMock({ index, t }: { index: number; t: Dictionary }) {
       <div className="flex items-center gap-4">
         <div
           className="relative flex h-20 w-20 shrink-0 items-center justify-center rounded-full"
-          style={{ background: 'conic-gradient(#a855f7 82%, #ede9fe 0)' }}
+          style={{ background: 'conic-gradient(#a855f7 82%, var(--track) 0)' }}
         >
           <div className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-white">
             <span className="text-lg font-bold text-purple-700">82%</span>

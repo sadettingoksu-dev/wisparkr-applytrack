@@ -190,9 +190,12 @@ export function ApplicationsList({
             {labels.selectAll}
           </label>
 
-          {/* toplu işlem çubuğu */}
+          {/* Toplu işlem çubuğu.
+              top-16: mobilde sayfa kayar ve üst şerit (sticky, ~4rem) bu çubuğu
+              örterdi. Masaüstünde <main> kendi kaydırma bağlamı olduğundan
+              şeridin altına girmez → lg:top-2. */}
           {selected.size > 0 && (
-            <div className="sticky top-2 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2.5">
+            <div className="sticky top-16 z-20 flex flex-wrap items-center gap-3 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2.5 lg:top-2">
               <span className="text-sm font-medium text-purple-800">
                 {format(labels.selected, { count: selected.size })}
               </span>

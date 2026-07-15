@@ -71,7 +71,7 @@ export function FeedbackWidget() {
 
       {/* panel */}
       {open && (
-        <div className="fixed bottom-5 right-5 z-40 w-[calc(100vw-2.5rem)] max-w-sm rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
+        <div className="fixed bottom-5 right-5 z-[45] w-[calc(100vw-2.5rem)] max-w-sm rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl">
           <div className="mb-3 flex items-start justify-between">
             <div>
               <h3 className="text-sm font-semibold text-slate-900">{f.title}</h3>

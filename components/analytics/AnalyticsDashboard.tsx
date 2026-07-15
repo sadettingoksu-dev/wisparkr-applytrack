@@ -315,7 +315,7 @@ export function AnalyticsDashboard({ apps, embedded = false }: { apps: Applicati
         {/* Sağ: detay paneli */}
         {showPanel && (
           <div className="lg:col-span-1">
-            <Card className="sticky top-4 space-y-3">
+            <Card className="sticky top-16 z-20 space-y-3 lg:top-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Award className="h-4 w-4 text-purple-600" />
