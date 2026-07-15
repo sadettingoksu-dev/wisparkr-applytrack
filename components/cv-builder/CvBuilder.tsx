@@ -669,7 +669,12 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
               <p className="text-[11px] text-slate-400">{t.cvBuilder.languagesHint}</p>
               {cv.languages.map((l, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <input className={`${inputClass} w-40 shrink-0`} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+                  {/* inputClass `w-full` ile başlıyor; sınıfa w-40 eklemek çakışıyor
+                      (w-full kazanıp satırı yiyor, kaydırıcı 0 genişlikte kalıyordu).
+                      Bunun yerine sarmalayıcı ölçüyü verir, input onu doldurur. */}
+                  <div className="w-40 shrink-0">
+                    <input className={inputClass} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+                  </div>
                   <div className="min-w-0 flex-1">
                     <LanguageLevelPicker
                       value={l.level}
