@@ -13,8 +13,8 @@
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
 ### 2026-07-15 — Panel düzeni, karanlık mod, CV motoru, ödeme temizliği (6 faz)
-> ⚠️ Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ — hiçbiri canlıda değil.
-> ⚠️ Migration `0018_cv_diagnosis.sql` + `0019_salary_competitor.sql` HÂLÂ UYGULANMADI.
+> ✅ **PR #50 ile master'a merge edildi ve CANLIDA** (2026-07-15). Deploy doğrulandı: CSP'de artık `*.lemonsqueezy.com` yok, `/api/billing/webhook` 404, `/board` → `/applications?view=board`, karanlık modda hero `#020617`.
+> ✅ **Migration `0018` + `0019` UYGULANDI (2026-07-15)** — REST probe ile doğrulandı: `applications.cv_diagnosis`, `salary_coach`, `competitor_analysis` canlı şemada VAR. Artık CV teşhisi / maaş koçu / rakip analizi sonuçları kalıcı (her açılışta yeniden AI çağrısı gitmiyor).
 
 - [x] **Karanlık mod:** Asıl "beyaz parlama" iki inline style'dı — CSS sınıf override'ı onlara ulaşamıyor: `app/page.tsx` HERO_BG (`#f8fafc` → landing hero'su bembeyaz kalıyordu) ve ShowcaseMock'un conic-gradient'i. İkisi de CSS değişkenine (`--hero-bg`, `--track`) taşındı. Ayrıca opaklık son ekli sınıflar (`bg-white/85` → panel üst şeridi) `.dark .bg-white` seçicisine takılmıyordu; 20+ sınıf eklendi (offer/rejected rozetleri, ayraçlar, `text-slate-300`). Açık tema birebir korundu (hesaplanmış değerlerle doğrulandı).
 - [x] **PageHeader:** 16 sayfa kendi `<h1>`'ini yazıyordu; ortak bileşene geçirildi. CV Oluştur'un başlığı HİÇ YOKTU (sözlükte duruyordu, bağlanmamıştı).
@@ -25,11 +25,11 @@
 - [x] **CV PDF motoru:** (a) Uzun beceri/dil adı puanların üstüne biniyordu → `flexBasis:0` + `flexShrink:0` (deneyim satırındaki doğru desen kopyalandı). (b) Fotoğrafsız kullanıcıda sidebar ~130pt yukarı kayıyordu → koşulsuz çerçeve + baş harf rozeti; **9 şablonda 0.00pt fark ile doğrulandı** (pdfjs). (c) `yildiz` iki kolonu da laciverttti → ana kolon beyaz (`mainHeadColor`/`nameColor` token'ları eklendi, altın accent beyazda okunmuyordu). (d) Dosya adı: `cv-ay-e-y-lmaz.pdf` → **`Wisparkr-CV-Ayse-Yilmaz.pdf`** (`trSlug`; aynı hata cv-pdf ucunda şirket adında da vardı). (e) Şablon kartları sabit PNG'ydi ve "Elif Yılmaz" gömülüydü → **TemplateThumb** (kullanıcının canlı verisi; renkler `buildSurfaces` ile PDF ile aynı kaynaktan → drift yok). (f) 9 kart + önizleme tek ekrana sığıyor. (g) `density` token'ı gerçekten bağlandı.
 - [x] **LemonSqueezy tamamen kaldırıldı:** adaptör + webhook + bağımlılık + env + CSP. Rota sözleşmeleri korundu (checkout → 503 nazik mesaj). Kilitleme bozulmadı — **kanıt: free'de /interview kilitli, trial'da açık**. `legal.ts`'te ürünle çelişen 3 bayat ifade de düzeltildi (iptal davranışı, 5 vs 3 gün deneme, Career Coach).
 - [x] **Mülakat tarihi otomatik:** inbound-email sınıflandırmasına `interview_date` eklendi (ayrı AI turu yok). Prompt'a 21 günlük takvim tablosu — yalnızca "şu an" verince model "önümüzdeki Salı"yı +7 gün sanıyordu. Gerçek imzalı webhook ile doğrulandı: `pending`→`interview`, tarih → 21 Tem Salı 14:00. Red mailinde/tarihsiz davette uydurmuyor; elle girilen tarihi ezmiyor.
-- **Durum: Kod hazır, build+tsc temiz, push edildi. Dalda; master'a merge + migration 0018/0019 bekliyor.**
+- **Durum: CANLIDA.** Merge (PR #50) + migration 0018/0019 tamam, ikisi de doğrulandı. Bekleyen manuel adım YOK.
 
 ### 2026-07-07 — Faz 5: Maaş müzakere koçu + rakip analizi (gerçek özellikler)
-> ⚠️ **Migration `0019_salary_competitor.sql` UYGULANMASI GEREKİR** (`applications.salary_coach` + `competitor_analysis` jsonb). Kod kolonlarsız da çalışır (sonuç kalıcı olmaz).
-> ✅ Kod 2026-07-07'de **PR #49 ile master'a merge edildi ve canlıda** (eski "merge edilmedi" notu bayattı).
+> ✅ **Migration `0019_salary_competitor.sql` UYGULANDI (2026-07-15)** — `applications.salary_coach` + `competitor_analysis` canlı şemada doğrulandı (REST probe). Sonuçlar artık kalıcı.
+> ✅ Kod 2026-07-07'de PR #49 ile master'a merge edildi ve canlıda.
 
 - [x] **Maaş müzakere koçu (gerçek özellik):** `analyzeSalary` (lib/anthropic.ts) → pozisyon/şehir/(teklif) için TR aylık brüt piyasa aralığı + teklif değerlendirmesi + karşı-teklif + hazır müzakere replikleri + ipuçları. `/api/ai/salary-coach` (Pro `salaryNegotiationCoach`, metered). `SalaryCoachCard` başvuru detayında **yalnızca `offer` statüsünde** (teklif aşamasında değerli).
 - [x] **Rakip analizi (gerçek özellik):** `analyzeCompetition` (lib/anthropic.ts) → tipik aday profili + adayın havuzda nerede durduğu + farklılaştırıcılar + rekabetçi konum skoru (0-100). `/api/ai/competitor-analysis` (Pro `competitorAnalysis`, metered). `CompetitorAnalysisCard` detayda her zaman. NOT: `/compare` sayfasından FARKLI (o kendi başvurularını karşılaştırır).
@@ -43,8 +43,8 @@
 - Commit: (Faz 4). Branch: feat/web-landing-redesign. Build + tsc temiz.
 
 ### 2026-07-07 — Faz 3: CV araba-tamiri sihirbazı
-> ⚠️ **Migration `0018_cv_diagnosis.sql` UYGULANMASI GEREKİR** (`applications.cv_diagnosis jsonb`). Kod migration olmadan da çalışır (teşhis üretilir) ama sonuç KALICI OLMAZ; kolon eklenince kalıcılık gelir.
-> ✅ Kod 2026-07-07'de **PR #49 ile master'a merge edildi ve canlıda** (eski "merge edilmedi" notu bayattı).
+> ✅ **Migration `0018_cv_diagnosis.sql` UYGULANDI (2026-07-15)** — `applications.cv_diagnosis` canlı şemada doğrulandı (REST probe). Teşhis sonuçları artık kalıcı.
+> ✅ Kod 2026-07-07'de PR #49 ile master'a merge edildi ve canlıda.
 
 - [x] **Ayrı tam sayfa sihirbaz** `/applications/[id]/cv-repair` — 3 adım: **Teşhis → Onarım → Teslim**. `components/cv/CvRepairWizard.tsx` (adım göstergeci, arıza listesi, belge var/yok, otomatik onarılacaklar, önce→sonra skor, PDF indirme + Pro daveti).
 - [x] **`diagnoseCv` (lib/anthropic.ts):** CV'yi ilana karşı usta gibi muayene → arızalar (kategori: document/skill/experience/keyword/format; şiddet: critical/important/minor; etki puanı; arıza+onarım metni) + genel hazırlık skoru. `CvDiagnosisResult`/`CvDiagnosisItem` tipleri `lib/types.ts`'ten export.
