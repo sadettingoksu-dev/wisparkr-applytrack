@@ -52,6 +52,7 @@ const tr = {
     pricing: 'Planlar',
     faq: 'Sıkça Sorulan Sorular',
     login: 'Giriş Yap',
+    dashboard: 'Panele git',
   },
   hero: {
     badge: 'AI destekli iş başvuru yönetimi',
@@ -1281,6 +1282,7 @@ const en: Dictionary = {
     pricing: 'Plans',
     faq: 'FAQ',
     login: 'Sign In',
+    dashboard: 'Go to app',
   },
   hero: {
     badge: 'AI-powered job application management',
@@ -2503,6 +2505,7 @@ const de: Dictionary = {
     pricing: 'Pläne',
     faq: 'FAQ',
     login: 'Anmelden',
+    dashboard: 'Zur App',
   },
   hero: {
     badge: 'KI-gestützte Verwaltung von Bewerbungen',
@@ -3725,6 +3728,7 @@ const es: Dictionary = {
     pricing: 'Planes',
     faq: 'Preguntas frecuentes',
     login: 'Iniciar sesión',
+    dashboard: 'Ir al panel',
   },
   hero: {
     badge: 'Gestión de candidaturas con IA',
@@ -4947,6 +4951,7 @@ const fr: Dictionary = {
     pricing: 'Offres',
     faq: 'FAQ',
     login: 'Se connecter',
+    dashboard: 'Aller au tableau de bord',
   },
   hero: {
     badge: 'Gestion des candidatures assistée par IA',

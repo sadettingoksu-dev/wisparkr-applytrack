@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { useI18n } from '@/components/i18n/I18nProvider'
@@ -61,13 +62,26 @@ export function NavbarAuth() {
     )
   }
 
+  // Giriş yapmış kullanıcı pazarlama sayfasındayken panele dönebilmeli.
+  // Eskiden `/` otomatik panele yönlendiriyordu, o yüzden böyle bir butona
+  // gerek yoktu; yönlendirme kaldırılınca (kullanıcı wisparkr.com yazıp siteyi
+  // görebilsin diye) bu tek çıkış yolu oldu — hesap menüsünde panel linki yok.
   return (
-    <UserMenu
-      name={user.name}
-      email={user.email}
-      avatarUrl={user.avatarUrl}
-      plan={user.plan}
-      variant="navbar"
-    />
+    <div className="flex items-center gap-3">
+      <Link
+        href="/dashboard"
+        className="hidden items-center gap-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-500 px-3.5 py-1.5 text-sm font-medium text-white shadow-brand-sm transition-opacity hover:opacity-90 sm:inline-flex"
+      >
+        {t.nav.dashboard}
+        <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
+      <UserMenu
+        name={user.name}
+        email={user.email}
+        avatarUrl={user.avatarUrl}
+        plan={user.plan}
+        variant="navbar"
+      />
+    </div>
   )
 }
