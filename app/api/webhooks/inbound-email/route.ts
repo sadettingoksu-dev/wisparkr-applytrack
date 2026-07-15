@@ -80,7 +80,7 @@ export async function POST(request: Request) {
           status: app.status,
         }))
       )
-    : { classification: 'other' as EmailClassification, application_id: null }
+    : { classification: 'other' as EmailClassification, application_id: null, interview_date: null }
 
   const matchedApp = apps.find((app) => app.id === result.application_id) ?? null
 
@@ -95,7 +95,14 @@ export async function POST(request: Request) {
 
   const newStatus = STATUS_BY_CLASSIFICATION[result.classification]
   if (matchedApp && newStatus) {
-    await admin.from('applications').update({ status: newStatus } as never).eq('id', matchedApp.id)
+    // Mülakat tarihi e-postadan çıkarıldıysa aynı update'te yaz.
+    // Tarih yalnızca çıkarılabildiğinde yazılır — null ile mevcut değeri
+    // (kullanıcının elle girmiş olabileceği tarihi) EZMEYİZ. Yeni bir davet
+    // tarih taşıyorsa üzerine yazar; bu, ertelenen mülakatlar için doğru
+    // davranış (en güncel davet kazanır).
+    const patch: { status: string; interview_date?: string } = { status: newStatus }
+    if (result.interview_date) patch.interview_date = result.interview_date
+    await admin.from('applications').update(patch as never).eq('id', matchedApp.id)
   }
 
   // Kullanıcının bildirim tercihlerini gözet: mülakat daveti → notify_interview,
