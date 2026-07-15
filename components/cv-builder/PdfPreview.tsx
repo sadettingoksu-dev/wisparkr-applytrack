@@ -40,8 +40,9 @@ export function PdfPreview({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-slate-500">{t.cvBuilder.wizard.previewTitle}</p>
+      {/* Başlık BURADA DEĞİL — sihirbazın StepHeader'ı zaten "CV Önizleme"
+          diyor, ikisi birden yazınca aynı başlık iki kez görünüyordu. */}
+      <div className="flex items-center justify-end">
         <button
           type="button"
           onClick={() => {
@@ -55,10 +56,17 @@ export function PdfPreview({
         </button>
       </div>
 
-      {/* A4 oranı (210 × 297 → 1 / 1.4142). */}
+      {/* A4 oranı (210 × 297 → 1 / 1.4142).
+          Eskiden `w-full` idi ve yükseklik sınırı yoktu: max-w-3xl (768px)
+          içinde önizleme 768 × 1.4142 ≈ 1086px oluyor, ekrana sığmıyordu.
+          Artık yükseklikten sınırlanır, genişlik A4 oranından türer ve ortalanır.
+          45vh: üstteki kabuk (sayfa başlığı + adım göstergesi + adım başlığı +
+          alt navigasyon + boşluklar) ~455px yiyor; 45vh, 950px'lik bir ekranda
+          adımın kaydırmadan sığdığı en büyük değer. Detay için gerçek PDF tek
+          tık uzakta (indir) — burada amaç düzeni/rengi görmek. */}
       <div
-        className="relative w-full overflow-hidden rounded-xl bg-neutral-200 shadow-xl ring-1 ring-slate-300"
-        style={{ aspectRatio: '1 / 1.4142' }}
+        className="relative mx-auto max-h-[45vh] w-full overflow-hidden rounded-xl bg-neutral-200 shadow-xl ring-1 ring-slate-300"
+        style={{ aspectRatio: '1 / 1.4142', maxWidth: 'calc(45vh / 1.4142)' }}
       >
         {loading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-neutral-100">

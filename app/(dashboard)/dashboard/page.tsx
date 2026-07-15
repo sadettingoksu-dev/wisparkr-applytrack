@@ -53,7 +53,9 @@ export default async function DashboardPage() {
   const upcoming = getUpcomingInterviews(apps).slice(0, 5)
 
   return (
-    <div className="space-y-6">
+    // pb-10: parkrcan yalnızca burada render ediliyor ve geri bildirim
+    // widget'ından yukarıda duruyor (bottom-24 + h-16) — kabuğun pb-24'üne ek.
+    <div className="space-y-6 pb-10">
       {/* Tek birincil aksiyon. Eskiden burada 4 "hızlı işlem" kartı vardı ama
           dördü de sidebar'da zaten var; metrik kartlarıyla birlikte üst üste
           8 kart hiyerarşiyi yok ediyordu. */}

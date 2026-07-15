@@ -94,6 +94,29 @@ export type CvCertification = z.infer<typeof cvCertificationSchema>
 
 const CV_TEXT_LIMIT = 15000
 
+/** Türkçe harfleri ASCII karşılığına indirger (dosya adları için). */
+const TR_MAP: Record<string, string> = {
+  ç: 'c', Ç: 'c', ğ: 'g', Ğ: 'g', ı: 'i', İ: 'i', ö: 'o', Ö: 'o',
+  ş: 's', Ş: 's', ü: 'u', Ü: 'u', â: 'a', Â: 'a', î: 'i', Î: 'i', û: 'u', Û: 'u',
+}
+
+/**
+ * Dosya adı için güvenli slug — Türkçe harfleri ÖNCE translitere eder.
+ *
+ * Doğrudan `[^a-z0-9]` ile temizlemek Türkçe harfleri siliyordu:
+ * "Ayşe Yılmaz" → "ay-e-y-lmaz", "Şişecam" → "i-ecam". Tamamen Türkçe harfli
+ * bir ad ise boşa çöküyordu.
+ */
+export function trSlug(input: string): string {
+  return (input || '')
+    .replace(/[çÇğĞıİöÖşŞüÜâÂîÎûÛ]/g, (ch) => TR_MAP[ch] ?? ch)
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // kalan aksanlar (é, ñ ...)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
 /** Builds an empty CV, optionally seeding name/email from the auth profile. */
 export function emptyCvData(seed?: { fullName?: string; email?: string }): CvData {
   return cvDataSchema.parse({

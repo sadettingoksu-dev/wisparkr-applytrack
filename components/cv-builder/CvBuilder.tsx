@@ -378,25 +378,26 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
 
   return (
     <div className="space-y-5">
-      {/* Kaydet. Başlık/altyazı BURADA DEĞİL — sayfa (cv-builder/page.tsx)
-          ortak PageHeader'ı render ediyor; ikisi birden olunca aynı başlık
-          iki kez basılıyordu. */}
-      <div className="flex items-center justify-end gap-2">
-        {saved && (
-          <span className="hidden items-center gap-1 text-xs font-medium text-emerald-600 sm:flex">
-            <Check className="h-3.5 w-3.5" />
-            {t.common.saved}
-          </span>
-        )}
-        <Button onClick={handleSave} disabled={saving} variant="secondary">
-          {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-          {t.common.save}
-        </Button>
-      </div>
-
-      {/* Adım göstergesi */}
-      <Card className="!p-4">
-        <Stepper labels={stepLabels} current={step} onJump={jumpTo} />
+      {/* Adım göstergesi + Kaydet aynı satırda.
+          Başlık/altyazı BURADA DEĞİL — sayfa (cv-builder/page.tsx) ortak
+          PageHeader'ı render ediyor; ikisi birden olunca aynı başlık iki kez
+          basılıyordu. Kaydet de kendi satırındaydı ve boşuna ~56px yiyordu. */}
+      <Card className="flex items-center gap-4 !p-4">
+        <div className="min-w-0 flex-1">
+          <Stepper labels={stepLabels} current={step} onJump={jumpTo} />
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {saved && (
+            <span className="hidden items-center gap-1 text-xs font-medium text-emerald-600 lg:flex">
+              <Check className="h-3.5 w-3.5" />
+              {t.common.saved}
+            </span>
+          )}
+          <Button onClick={handleSave} disabled={saving} variant="secondary">
+            {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+            {t.common.save}
+          </Button>
+        </div>
       </Card>
 
       {error && <p className="text-xs text-red-500">{error}</p>}
@@ -731,11 +732,15 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
 
         {/* ADIM 3 — Şablon */}
         {step === 2 && (
-          <div className="mx-auto max-w-5xl">
+          // max-w-3xl: 5 sütunlu grid'de hücre genişliği kart genişliğine yakın
+          // kalsın (max-w-5xl'de kartlar hücrelerin içinde kayboluyordu).
+          <div className="mx-auto max-w-3xl">
             <StepHeader title={t.cvBuilder.wizard.templateTitle} desc={t.cvBuilder.wizard.templateDesc} />
             {/* Önizleme bir sonraki adımda (Önizleme) gösteriliyor; burada sadece seçim. */}
-            <div className="mt-4">
-              <TemplatePicker value={template} onChange={setTemplate} />
+            <div className="mt-3">
+              {/* cv: kartlarda kullanıcının kendi adı/fotoğrafı görünsün.
+                  showHeading=false: adımın StepHeader'ı zaten "Şablon Seç" diyor. */}
+              <TemplatePicker value={template} onChange={setTemplate} cv={cv} showHeading={false} />
             </div>
           </div>
         )}
