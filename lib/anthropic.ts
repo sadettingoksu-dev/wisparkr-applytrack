@@ -414,6 +414,67 @@ export async function polishCv(
   return validated.data
 }
 
+const summaryOptionsSchema = z.object({
+  options: z
+    .array(
+      z.object({
+        tone: z.enum(['professional', 'natural']),
+        text: z.string().min(1),
+      })
+    )
+    .length(2),
+})
+
+export type SummaryTone = 'professional' | 'natural'
+export interface SummaryOption {
+  tone: SummaryTone
+  text: string
+}
+
+/**
+ * Adayın girdiği CV verisinden profesyonel özet için İKİ seçenek üretir:
+ * aynı bilgiler, farklı ton (kurumsal / doğal). Kullanıcı birini seçer.
+ *
+ * Eskiden burada 16 hazır cümlelik bir liste vardı; herkes aynı cümleleri
+ * kullanıyordu ve içerik adayın gerçek deneyimiyle ilgisizdi.
+ */
+export async function generateSummaryOptions(
+  anthropic: Anthropic,
+  cvText: string
+): Promise<SummaryOption[]> {
+  const prompt = [
+    'Aşağıda bir adayın CV bilgileri var. Bu bilgilere dayanarak CV’nin en üstünde yer alacak',
+    '"profesyonel özet" paragrafı için İKİ FARKLI seçenek yaz.',
+    '- Seçenek 1 (professional): kurumsal, ölçülü, işveren diline yakın.',
+    '- Seçenek 2 (natural): daha doğal ve insani, birinci ağızdan, samimi ama profesyonel.',
+    '- İKİSİ DE AYNI gerçeklere dayansın; yalnızca ton farklı olsun.',
+    '- Adayın CV’sinde OLMAYAN deneyim, yıl, şirket, rakam veya beceri UYDURMA.',
+    '- Her biri 2-4 cümle, tek paragraf, madde işareti yok.',
+    '- CV boşsa veya çok az bilgi varsa genel geçer klişe yazma; eldeki bilgiyle yetin.',
+    TURKISH_WRITING_RULE,
+    'SADECE şu JSON formatında cevap ver, başka hiçbir metin ekleme:',
+    '{"options": [{"tone": "professional", "text": "..."}, {"tone": "natural", "text": "..."}]}',
+    '',
+    'CV:',
+    cvText.slice(0, 8000),
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  const response = await anthropic.messages.create({
+    model: DEFAULT_MODEL,
+    max_tokens: 1500,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const textBlock = response.content.find((block) => block.type === 'text')
+  const text = textBlock && textBlock.type === 'text' ? textBlock.text : '{}'
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  const candidate = jsonMatch ? JSON.parse(jsonMatch[0]) : null
+  const validated = summaryOptionsSchema.safeParse(candidate)
+  if (!validated.success) throw new Error('invalid AI response shape')
+  return validated.data.options
+}
+
 const skillsGapSchema = z.object({
   matched: z.array(z.string()).max(20).default([]),
   missing: z.array(z.string()).max(20).default([]),

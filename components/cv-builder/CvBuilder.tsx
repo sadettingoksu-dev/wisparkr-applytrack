@@ -24,6 +24,7 @@ import { TemplatePicker, type CvTemplate } from '@/components/cv/TemplatePicker'
 import { PdfPreview } from '@/components/cv-builder/PdfPreview'
 import { Stepper } from '@/components/cv-builder/Stepper'
 import { SharePanel } from '@/components/cv-builder/SharePanel'
+import { LanguageLevelPicker } from '@/components/cv-builder/LanguageLevelPicker'
 import { useI18n } from '@/components/i18n/I18nProvider'
 import { hasCvContent } from '@/lib/cv'
 import type {
@@ -34,7 +35,7 @@ import type {
   CvLanguage,
   CvCertification,
 } from '@/lib/cv'
-import type { CvReviewResult } from '@/lib/anthropic'
+import type { CvReviewResult, SummaryOption } from '@/lib/anthropic'
 
 const inputClass =
   'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-200 transition-colors'
@@ -78,17 +79,15 @@ async function fileToCompressedDataUrl(file: File, maxDim = 400, quality = 0.85)
 }
 
 const emptyExperience: CvExperience = { company: '', role: '', location: '', country: '', start: '', end: '', current: false, bullets: [] }
-const emptyEducation: CvEducation = { school: '', degree: '', field: '', location: '', gpa: '', start: '', end: '', current: false, note: '' }
+const emptyEducation: CvEducation = { school: '', degree: '', field: '', location: '', start: '', end: '', current: false, note: '' }
 
 // "Daha fazla bilgi ekle" ile açılabilen opsiyonel kişisel alanlar.
+// Yalnızca TR iş piyasasında gerçekten sorulanlar; uyruk / belge türü /
+// hobiler / ödüller kaldırıldı (gürültü, ödüller sertifikalarla çakışıyordu).
 const PERSONAL_EXTRA_KEYS = [
   'birthDate',
-  'nationality',
   'militaryStatus',
-  'documentType',
   'driversLicense',
-  'hobbies',
-  'awards',
 ] as const
 type PersonalExtraKey = (typeof PERSONAL_EXTRA_KEYS)[number]
 const emptyProject: CvProject = { name: '', description: '', link: '', bullets: [] }
@@ -112,6 +111,10 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
   )
   // Sosyal platformlar (bağlantılar) bölümü — dolu linki varsa baştan açık.
   const [showSocial, setShowSocial] = useState(() => initial.personal.links.length > 0)
+  // AI özet (son adım)
+  const [summaryBusy, setSummaryBusy] = useState(false)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
+  const [summaryOptions, setSummaryOptions] = useState<SummaryOption[] | null>(null)
 
   function patch(p: Partial<CvData>) {
     setCv((c) => ({ ...c, ...p }))
@@ -119,13 +122,38 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
   }
   const setPersonal = (p: Partial<CvData['personal']>) => patch({ personal: { ...cv.personal, ...p } })
 
-  // Özet ("kendinizden bahsedin") öneri cümlesini metnin sonuna ekler.
-  function appendSummary(sentence: string) {
-    setCv((c) => {
-      const base = c.summary.trim()
-      return { ...c, summary: base ? `${base} ${sentence}` : sentence }
-    })
-    setSaved(false)
+  /**
+   * AI özet seçenekleri. Eskiden burada 16 hazır cümle vardı ve kullanıcı
+   * onları özete ekliyordu — herkeste aynı klişeler çıkıyor, üstelik metin
+   * adayın gerçek deneyimiyle ilgisiz oluyordu. Artık kendi verisinden iki
+   * ton üretilip seçtiriliyor.
+   *
+   * handleReview ile aynı akış: önce KAYDET (sunucu cv_data'yı okur), sonra üret.
+   */
+  async function handleSummary() {
+    setSummaryBusy(true)
+    setSummaryError(null)
+    setSummaryOptions(null)
+    const ok = await handleSave()
+    if (!ok) {
+      setSummaryBusy(false)
+      return
+    }
+    try {
+      const res = await fetch('/api/cv/summary', { method: 'POST' })
+      const json = await res.json()
+      if (!res.ok) setSummaryError(json.error?.message ?? t.cvBuilder.summaryError)
+      else setSummaryOptions(json.data.options as SummaryOption[])
+    } catch {
+      setSummaryError(t.cvBuilder.summaryError)
+    } finally {
+      setSummaryBusy(false)
+    }
+  }
+
+  function chooseSummary(text: string) {
+    patch({ summary: text })
+    setSummaryOptions(null)
   }
 
   async function handleSave(): Promise<boolean> {
@@ -316,26 +344,54 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
     scrollTop()
   }
 
+  /**
+   * Adımın "anlamlı asgarisi" dolu mu.
+   *
+   * ENGELLEMEZ — CvData'da tek bir zorunlu alan yok (bkz. lib/cv.ts, hepsi
+   * .default('')), yani "her şey doldu" diye kesin bir sinyal yok. Bu yüzden
+   * sessizce otomatik zıplamak yerine: dolduğunda "Devam" butonu belirginleşir
+   * ve Enter kısayolu açılır. Kullanıcı isterse yine boş geçebilir.
+   */
+  const stepReady =
+    step === 0
+      ? cv.personal.fullName.trim().length > 0
+      : step === 1
+        ? cv.experience.length > 0 || cv.education.length > 0 || cv.skills.length > 0
+        : true
+
+  /**
+   * Enter → sonraki adım.
+   * - textarea'da Enter yeni satırdır, dokunma (yalnızca INPUT).
+   * - defaultPrevented: beceri girişi Enter'ı kendi kullanıyor (beceri ekler);
+   *   preventDefault propagation'ı durdurmadığı için burada elemek şart.
+   */
+  function handleStepKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'Enter' || e.defaultPrevented) return
+    const el = e.target as HTMLElement
+    if (el.tagName !== 'INPUT') return
+    const type = (el as HTMLInputElement).type
+    if (type === 'checkbox' || type === 'file' || type === 'radio') return
+    if (!stepReady || step >= lastStep || saving) return
+    e.preventDefault()
+    void goNext()
+  }
+
   return (
     <div className="space-y-5">
-      {/* Üst başlık + kaydet */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="truncate text-lg font-bold text-slate-900 sm:text-xl">{t.cvBuilder.title}</h1>
-          <p className="hidden text-xs text-slate-500 sm:block">{t.cvBuilder.subtitle}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          {saved && (
-            <span className="hidden items-center gap-1 text-xs font-medium text-emerald-600 sm:flex">
-              <Check className="h-3.5 w-3.5" />
-              {t.common.saved}
-            </span>
-          )}
-          <Button onClick={handleSave} disabled={saving} variant="secondary">
-            {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            {t.common.save}
-          </Button>
-        </div>
+      {/* Kaydet. Başlık/altyazı BURADA DEĞİL — sayfa (cv-builder/page.tsx)
+          ortak PageHeader'ı render ediyor; ikisi birden olunca aynı başlık
+          iki kez basılıyordu. */}
+      <div className="flex items-center justify-end gap-2">
+        {saved && (
+          <span className="hidden items-center gap-1 text-xs font-medium text-emerald-600 sm:flex">
+            <Check className="h-3.5 w-3.5" />
+            {t.common.saved}
+          </span>
+        )}
+        <Button onClick={handleSave} disabled={saving} variant="secondary">
+          {saving ? <Spinner /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+          {t.common.save}
+        </Button>
       </div>
 
       {/* Adım göstergesi */}
@@ -346,7 +402,7 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
       {/* Adım içeriği — her adım değişiminde animasyonu yeniden oynatmak için key={step} */}
-      <div key={step} className="wisparkr-step">
+      <div key={step} className="wisparkr-step" onKeyDown={handleStepKeyDown}>
         {/* ADIM 1 — Kişisel */}
         {step === 0 && (
           <div className="mx-auto max-w-3xl space-y-4">
@@ -422,24 +478,13 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
               {/* Daha fazla bilgi ekle — opsiyonel kişisel alanlar */}
               <div className="space-y-2 border-t border-slate-100 pt-3">
                 {shownExtras.map((key) => (
-                  key === 'hobbies' || key === 'awards' ? (
-                    <textarea
-                      key={key}
-                      className={inputClass}
-                      rows={2}
-                      placeholder={t.cvBuilder[key]}
-                      value={cv.personal[key]}
-                      onChange={(e) => setPersonal({ [key]: e.target.value } as Partial<CvData['personal']>)}
-                    />
-                  ) : (
-                    <input
-                      key={key}
-                      className={inputClass}
-                      placeholder={t.cvBuilder[key]}
-                      value={cv.personal[key]}
-                      onChange={(e) => setPersonal({ [key]: e.target.value } as Partial<CvData['personal']>)}
-                    />
-                  )
+                  <input
+                    key={key}
+                    className={inputClass}
+                    placeholder={t.cvBuilder[key]}
+                    value={cv.personal[key]}
+                    onChange={(e) => setPersonal({ [key]: e.target.value } as Partial<CvData['personal']>)}
+                  />
                 ))}
 
                 {/* Sosyal platformlar (bağlantılar) */}
@@ -494,24 +539,9 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
               </div>
             </Card>
 
-            {/* Özet — "Bize kendinizden bahsedin" */}
-            <Card className="space-y-3">
-              <h2 className="text-base font-semibold text-slate-900">{t.cvBuilder.summary}</h2>
-              <p className="text-sm text-slate-700">{t.cvBuilder.summaryTip}</p>
-              <textarea className={`${inputClass} text-[15px]`} rows={4} placeholder={t.cvBuilder.summaryPlaceholder} value={cv.summary} onChange={(e) => patch({ summary: e.target.value })} />
-              <div className="flex flex-wrap gap-1.5">
-                {t.cvBuilder.summarySuggestions.map((s, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => appendSummary(s)}
-                    className="rounded-full border border-slate-300 px-3 py-1.5 text-left text-[13px] text-slate-700 transition-colors hover:border-purple-500/40 hover:bg-purple-50 hover:text-purple-700"
-                  >
-                    + {s}
-                  </button>
-                ))}
-              </div>
-            </Card>
+            {/* NOT: Özet kartı buradan KALDIRILDI → son adıma ("Tamamla") taşındı.
+                Özet, adayın deneyim/eğitim/becerilerinden üretiliyor; o bilgiler
+                daha girilmeden özet yazmak sırayı ters çeviriyordu. */}
           </div>
         )}
 
@@ -557,7 +587,6 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
                     <input className={inputClass} placeholder={t.cvBuilder.eduCity} value={ed.location} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, location: e.target.value } : x)) })} />
                     <input className={inputClass} placeholder={t.cvBuilder.degree} value={ed.degree} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, degree: e.target.value } : x)) })} />
                     <input className={inputClass} placeholder={t.cvBuilder.field} value={ed.field} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, field: e.target.value } : x)) })} />
-                    <input className={inputClass} placeholder={t.cvBuilder.gpa} value={ed.gpa} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, gpa: e.target.value } : x)) })} />
                     <div className="flex gap-2">
                       <input className={inputClass} placeholder={t.cvBuilder.start} value={ed.start} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, start: e.target.value } : x)) })} />
                       <input className={inputClass} placeholder={t.cvBuilder.end} value={ed.end} disabled={ed.current} onChange={(e) => patch({ education: cv.education.map((x, idx) => (idx === i ? { ...x, end: e.target.value } : x)) })} />
@@ -639,9 +668,14 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
               <h2 className="text-sm font-semibold text-slate-900">{t.cvBuilder.languages}</h2>
               <p className="text-[11px] text-slate-400">{t.cvBuilder.languagesHint}</p>
               {cv.languages.map((l, i) => (
-                <div key={i} className="flex gap-2">
-                  <input className={inputClass} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
-                  <input className={inputClass} placeholder={t.cvBuilder.langLevel} value={l.level} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, level: e.target.value } : x)) })} />
+                <div key={i} className="flex items-center gap-2">
+                  <input className={`${inputClass} w-40 shrink-0`} placeholder={t.cvBuilder.langName} value={l.name} onChange={(e) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, name: e.target.value } : x)) })} />
+                  <div className="min-w-0 flex-1">
+                    <LanguageLevelPicker
+                      value={l.level}
+                      onChange={(level) => patch({ languages: cv.languages.map((x, idx) => (idx === i ? { ...x, level } : x)) })}
+                    />
+                  </div>
                   <button onClick={() => patch({ languages: cv.languages.filter((_, idx) => idx !== i) })} className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-400">
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -713,6 +747,53 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
         {step === 4 && (
           <div className="mx-auto max-w-3xl space-y-4">
             <StepHeader title={t.cvBuilder.wizard.finishTitle} desc={t.cvBuilder.wizard.finishDesc} />
+
+            {/* Profesyonel özet — AI ile.
+                Son adımda: özet, aşağıdaki tüm bilgilerden (deneyim/eğitim/
+                beceri) türetiliyor, o yüzden ancak burada anlamlı. */}
+            <Card className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+                  <Sparkles className="h-4 w-4 text-purple-600" />
+                  {t.cvBuilder.summary}
+                </h2>
+                <Button onClick={handleSummary} disabled={summaryBusy} variant="secondary">
+                  {summaryBusy ? <Spinner /> : <Sparkles className="h-4 w-4" />}
+                  {summaryBusy ? t.cvBuilder.summaryGenerating : t.cvBuilder.summaryCta}
+                </Button>
+              </div>
+              <p className="text-[11px] text-slate-400">{t.cvBuilder.summaryHint}</p>
+              {summaryError && <p className="text-xs text-red-500">{summaryError}</p>}
+
+              {/* İki seçenek — kullanıcı birini seçer */}
+              {summaryOptions && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {summaryOptions.map((opt) => (
+                    <button
+                      key={opt.tone}
+                      type="button"
+                      onClick={() => chooseSummary(opt.text)}
+                      className="rounded-xl border-2 border-slate-200 p-3 text-left transition-colors hover:border-purple-500/50 hover:bg-purple-50"
+                    >
+                      <p className="mb-1.5 text-xs font-semibold text-purple-700">
+                        {opt.tone === 'professional' ? t.cvBuilder.summaryToneProfessional : t.cvBuilder.summaryToneNatural}
+                      </p>
+                      <p className="text-xs leading-relaxed text-slate-600">{opt.text}</p>
+                      <p className="mt-2 text-[11px] font-medium text-purple-600">{t.cvBuilder.summaryChoose}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Seçilen/elle yazılan özet — her zaman düzenlenebilir */}
+              <textarea
+                className={`${inputClass} text-[15px]`}
+                rows={4}
+                placeholder={t.cvBuilder.summaryPlaceholder}
+                value={cv.summary}
+                onChange={(e) => patch({ summary: e.target.value })}
+              />
+            </Card>
 
             {/* Profesyonellik kontrolü (AI) */}
             <Card className="space-y-3">
@@ -792,7 +873,14 @@ export function CvBuilder({ initial, plan }: { initial: CvData; plan: string }) 
           {t.cvBuilder.wizard.back}
         </Button>
         {step < lastStep && (
-          <Button variant="primary" onClick={goNext} disabled={saving}>
+          <Button
+            variant="primary"
+            onClick={goNext}
+            disabled={saving}
+            // Adımın asgarisi dolunca belirginleş (halka). Devre dışı BIRAKILMAZ:
+            // tüm alanlar opsiyonel, kullanıcı boş geçebilmeli.
+            className={stepReady ? 'ring-2 ring-purple-300 ring-offset-2 dark:ring-offset-slate-950' : 'opacity-90'}
+          >
             {saving ? <Spinner /> : null}
             {t.cvBuilder.wizard.next}
             <ChevronRight className="h-4 w-4" />

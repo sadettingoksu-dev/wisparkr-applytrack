@@ -24,13 +24,13 @@ export const cvPersonalSchema = z.object({
   photo: z.string().default(''),
   links: z.array(cvLinkSchema).default([]),
   // Opsiyonel ek bilgiler ("Daha fazla bilgi ekle"). Boş string = gösterilmez.
+  // Yalnızca TR iş piyasasında gerçekten sorulanlar tutulur; uyruk, belge türü,
+  // hobiler ve ödüller kaldırıldı (ödüller zaten sertifikalar bölümüyle
+  // çakışıyordu). Zod bilinmeyen anahtarları soyar; eski cv_data'daki bu alanlar
+  // parse'ı bozmaz, ilk kayıtta sessizce düşer.
   birthDate: z.string().default(''),
-  nationality: z.string().default(''),
   militaryStatus: z.string().default(''),
-  documentType: z.string().default(''),
   driversLicense: z.string().default(''),
-  hobbies: z.string().default(''),
-  awards: z.string().default(''),
 })
 
 export const cvExperienceSchema = z.object({
@@ -49,7 +49,6 @@ export const cvEducationSchema = z.object({
   degree: z.string().default(''),
   field: z.string().default(''),
   location: z.string().default(''),
-  gpa: z.string().default(''),
   start: z.string().default(''),
   end: z.string().default(''),
   current: z.boolean().default(false),
@@ -203,9 +202,7 @@ export function flattenCvData(data: CvData): string {
   if (contact) lines.push(contact)
   const details = [
     p.birthDate && `Doğum tarihi: ${p.birthDate}`,
-    p.nationality && `Uyruk: ${p.nationality}`,
     p.militaryStatus && `Askerlik: ${p.militaryStatus}`,
-    p.documentType && `Belge türü: ${p.documentType}`,
     p.driversLicense && `Ehliyet: ${p.driversLicense}`,
   ]
     .filter(Boolean)
@@ -240,7 +237,7 @@ export function flattenCvData(data: CvData): string {
         .filter(Boolean)
         .join('')
       const per = period(ed.start, ed.end, ed.current)
-      const meta = [ed.location, ed.gpa && `Not ort.: ${ed.gpa}`].filter(Boolean).join(' · ')
+      const meta = ed.location
       lines.push([head, per && `(${per})`, meta && `— ${meta}`].filter(Boolean).join(' '))
       if (ed.note.trim()) lines.push(`- ${ed.note.trim()}`)
     }
@@ -274,14 +271,6 @@ export function flattenCvData(data: CvData): string {
         [c.name, c.issuer && ` - ${c.issuer}`, c.date && ` (${c.date})`].filter(Boolean).join('')
       )
     }
-  }
-
-  if (p.awards.trim()) {
-    lines.push('', 'DERECELER & ÖDÜLLER', p.awards.trim())
-  }
-
-  if (p.hobbies.trim()) {
-    lines.push('', 'HOBİLER', p.hobbies.trim())
   }
 
   return lines.join('\n').slice(0, CV_TEXT_LIMIT)
