@@ -9,9 +9,11 @@ export interface PlanConfig {
   priceYearly: number
   /** ISO para birimi kodu; TR pazarı için 'TRY'. */
   currency: 'TRY' | 'USD'
-  lemonSqueezyVariantId: string | null
-  /** Yıllık faturalama için Lemon Squeezy variant ID'si. */
-  lemonSqueezyVariantIdYearly: string | null
+  /** Ödeme sağlayıcısındaki fiyat/plan kimliği (aylık). Sağlayıcı bağımsız:
+      LemonSqueezy kaldırıldı, iyzico/PayTR gelince aynı alan doldurulacak. */
+  providerPriceId: string | null
+  /** Yıllık faturalama için sağlayıcı fiyat kimliği. */
+  providerPriceIdYearly: string | null
   limits: {
     /** null = unlimited */
     maxApplications: number | null
@@ -49,8 +51,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     priceMonthly: 0,
     priceYearly: 0,
     currency: 'TRY',
-    lemonSqueezyVariantId: null,
-    lemonSqueezyVariantIdYearly: null,
+    providerPriceId: null,
+    providerPriceIdYearly: null,
     // Kalıcı ücretsiz tier: deneme bittikten sonra düşülen kısıtlı seviye.
     // Başvuru takibi kanca (retention) → SINIRSIZ. Paywall AI değerinde.
     // Hafif AI (fit score, skills gap, sohbet) küçük aylık havuzdan yer;
@@ -81,8 +83,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     priceMonthly: 299,
     priceYearly: 2990, // yıllıkta 2 ay bedava
     currency: 'TRY',
-    lemonSqueezyVariantId: process.env.LEMONSQUEEZY_VARIANT_PRO || null,
-    lemonSqueezyVariantIdYearly: process.env.LEMONSQUEEZY_VARIANT_PRO_YEARLY || null,
+    providerPriceId: null,
+    providerPriceIdYearly: null,
     limits: { maxApplications: null, aiQuestionsPerMonth: null },
     features: {
       kanban: true,
@@ -110,8 +112,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     priceMonthly: 299,
     priceYearly: 2990,
     currency: 'TRY',
-    lemonSqueezyVariantId: process.env.LEMONSQUEEZY_VARIANT_CAREER_COACH || null,
-    lemonSqueezyVariantIdYearly: process.env.LEMONSQUEEZY_VARIANT_CAREER_COACH_YEARLY || null,
+    providerPriceId: null,
+    providerPriceIdYearly: null,
     limits: { maxApplications: null, aiQuestionsPerMonth: null },
     features: {
       kanban: true,
@@ -176,12 +178,6 @@ export function getEffectivePlanId(profile: TrialableProfile | null | undefined)
 /** PlanConfig resolved through trial logic. */
 export function getEffectivePlan(profile: TrialableProfile | null | undefined): PlanConfig {
   return PLANS[getEffectivePlanId(profile)]
-}
-
-/** Maps a Lemon Squeezy variant ID back to a plan, used by the billing webhook. */
-export function getPlanByVariantId(variantId: string | number): PlanConfig | null {
-  const id = String(variantId)
-  return Object.values(PLANS).find((p) => p.lemonSqueezyVariantId === id) ?? null
 }
 
 /** Ordered list for rendering pricing cards. Tek ücretli plan: Free -> Pro. */

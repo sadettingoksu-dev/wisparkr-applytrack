@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server'
 import { requireAuth, isAuthedContext } from '@/lib/apiAuth'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { isLemonSqueezyConfigured, cancelSubscription } from '@/lib/lemonsqueezy'
 
 export const runtime = 'nodejs'
 
 /**
- * Cancels the user's active subscription. Lemon Squeezy stops future billing at
- * period end, but a *voluntary* cancellation takes effect immediately in our app:
- * we downgrade the profile to `free` right away so the UI doesn't show a
- * misleading "active until <date>" countdown. Natural expiry (subscription_expired
- * webhook) also lands on free, so both paths are consistent.
+ * Kullanıcının aktif aboneliğini iptal eder.
+ *
+ * Gönüllü iptal ANINDA geçerli olur: profili hemen `free`'ye düşürürüz, böylece
+ * arayüz yanıltıcı bir "şu tarihe kadar aktif" sayacı göstermez.
+ *
+ * NOT: Ödeme sağlayıcısı tarafında faturayı durdurma adımı ŞU AN YOK —
+ * LemonSqueezy kaldırıldı, iyzico/PayTR henüz gelmedi. Yeni sağlayıcı
+ * geldiğinde iptal çağrısı aşağıya, DB güncellemesinden ÖNCE eklenecek.
+ * Bu bir gerileme değil: yerel abonelik kaydı ve plan zaten doğru kapanıyor.
  */
 export async function POST() {
   const ctx = await requireAuth()
@@ -26,7 +29,7 @@ export async function POST() {
     .limit(1)
     .maybeSingle()
 
-  const subscription = sub as { id: string; ls_subscription_id: string | null; status: string; renews_at: string | null } | null
+  const subscription = sub as { id: string; status: string; renews_at: string | null } | null
 
   if (!subscription || subscription.status === 'cancelled' || subscription.status === 'expired') {
     return NextResponse.json(
@@ -35,20 +38,7 @@ export async function POST() {
     )
   }
 
-  // LS'de fatura dönem sonunda durur; bizde iptal anında geçerli olur (aşağıda plan=free).
-  let endsAt = subscription.renews_at
-
-  if (isLemonSqueezyConfigured() && subscription.ls_subscription_id) {
-    try {
-      const lsEndsAt = await cancelSubscription(subscription.ls_subscription_id)
-      if (lsEndsAt) endsAt = lsEndsAt
-    } catch (err) {
-      return NextResponse.json(
-        { error: { code: 'CANCEL_FAILED', message: 'Abonelik iptal edilemedi, lütfen tekrar dene.' } },
-        { status: 502 }
-      )
-    }
-  }
+  const endsAt = subscription.renews_at
 
   const { error } = await admin
     .from('subscriptions')
