@@ -12,6 +12,21 @@
 
 ## Tamamlananlar (kronolojik, en yeni en üstte)
 
+### 2026-07-15 — Panel düzeni, karanlık mod, CV motoru, ödeme temizliği (6 faz)
+> ⚠️ Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ — hiçbiri canlıda değil.
+> ⚠️ Migration `0018_cv_diagnosis.sql` + `0019_salary_competitor.sql` HÂLÂ UYGULANMADI.
+
+- [x] **Karanlık mod:** Asıl "beyaz parlama" iki inline style'dı — CSS sınıf override'ı onlara ulaşamıyor: `app/page.tsx` HERO_BG (`#f8fafc` → landing hero'su bembeyaz kalıyordu) ve ShowcaseMock'un conic-gradient'i. İkisi de CSS değişkenine (`--hero-bg`, `--track`) taşındı. Ayrıca opaklık son ekli sınıflar (`bg-white/85` → panel üst şeridi) `.dark .bg-white` seçicisine takılmıyordu; 20+ sınıf eklendi (offer/rejected rozetleri, ayraçlar, `text-slate-300`). Açık tema birebir korundu (hesaplanmış değerlerle doğrulandı).
+- [x] **PageHeader:** 16 sayfa kendi `<h1>`'ini yazıyordu; ortak bileşene geçirildi. CV Oluştur'un başlığı HİÇ YOKTU (sözlükte duruyordu, bağlanmamıştı).
+- [x] **Sidebar 9→7:** "Başvuru Paneli" (birleşti) + "Plan & Faturalama" (zaten hesap menüsünde) + "Web sitesi" linki kaldırıldı.
+- [x] **Kanban → Başvurular:** `/applications` içinde Liste ⇄ Pano anahtarı (`?view=board`), `/board` → redirect. Araç çubuğu ortak → **arama/filtre artık Pano'da da çalışıyor** (ayrı sayfada yoktu).
+- [x] **Ana sayfa:** 4 hızlı işlem kartı kaldırıldı (dördü de sidebar'da). Analitik üstteki metrik kartlarıyla AYNI iki sayıyı tekrarlıyordu → gömülüyken artık yalnızca ORANLAR. "Yapılacaklar" → **"Sıradaki adımlar"** + "otomatik çıkarıldı" ipucu + her satırda NEDEN ("12 gündür yanıt yok"). Yeni "Yaklaşan mülakatlar" sütunu.
+- [x] **CV Oluşturucu:** 16 hazır klişe cümle silindi → son adımda **"AI ile özetini oluştur"** (2 ton: profesyonel/doğal, `/api/cv/summary`, plan kilidi yok). Dil seviyesi: serbest metin → 4 kademeli kaydırıcı (`langLevelToScore` skalasıyla birebir; mevcut veri aynı fonksiyonla en yakın kademeye oturur). Kaldırılan alanlar: gpa, uyruk, belge türü, hobiler, ödüller. Enter ile adım geçişi + hazır olunca belirginleşen buton.
+- [x] **CV PDF motoru:** (a) Uzun beceri/dil adı puanların üstüne biniyordu → `flexBasis:0` + `flexShrink:0` (deneyim satırındaki doğru desen kopyalandı). (b) Fotoğrafsız kullanıcıda sidebar ~130pt yukarı kayıyordu → koşulsuz çerçeve + baş harf rozeti; **9 şablonda 0.00pt fark ile doğrulandı** (pdfjs). (c) `yildiz` iki kolonu da laciverttti → ana kolon beyaz (`mainHeadColor`/`nameColor` token'ları eklendi, altın accent beyazda okunmuyordu). (d) Dosya adı: `cv-ay-e-y-lmaz.pdf` → **`Wisparkr-CV-Ayse-Yilmaz.pdf`** (`trSlug`; aynı hata cv-pdf ucunda şirket adında da vardı). (e) Şablon kartları sabit PNG'ydi ve "Elif Yılmaz" gömülüydü → **TemplateThumb** (kullanıcının canlı verisi; renkler `buildSurfaces` ile PDF ile aynı kaynaktan → drift yok). (f) 9 kart + önizleme tek ekrana sığıyor. (g) `density` token'ı gerçekten bağlandı.
+- [x] **LemonSqueezy tamamen kaldırıldı:** adaptör + webhook + bağımlılık + env + CSP. Rota sözleşmeleri korundu (checkout → 503 nazik mesaj). Kilitleme bozulmadı — **kanıt: free'de /interview kilitli, trial'da açık**. `legal.ts`'te ürünle çelişen 3 bayat ifade de düzeltildi (iptal davranışı, 5 vs 3 gün deneme, Career Coach).
+- [x] **Mülakat tarihi otomatik:** inbound-email sınıflandırmasına `interview_date` eklendi (ayrı AI turu yok). Prompt'a 21 günlük takvim tablosu — yalnızca "şu an" verince model "önümüzdeki Salı"yı +7 gün sanıyordu. Gerçek imzalı webhook ile doğrulandı: `pending`→`interview`, tarih → 21 Tem Salı 14:00. Red mailinde/tarihsiz davette uydurmuyor; elle girilen tarihi ezmiyor.
+- **Durum: Kod hazır, build+tsc temiz, push edildi. Dalda; master'a merge + migration 0018/0019 bekliyor.**
+
 ### 2026-07-07 — Faz 5: Maaş müzakere koçu + rakip analizi (gerçek özellikler)
 > ⚠️ **Migration `0019_salary_competitor.sql` UYGULANMASI GEREKİR** (`applications.salary_coach` + `competitor_analysis` jsonb). Kod kolonlarsız da çalışır (sonuç kalıcı olmaz). Branch `feat/web-landing-redesign` master'a MERGE EDİLMEDİ.
 
@@ -140,8 +155,14 @@
 - [~] **NEXT_PUBLIC_APP_URL** (2026-06-27): Vercel Production'da BOŞ (`""`) set edilmişti. Kod tarafı dayanıklı hale getirildi — `lib/lemonsqueezy.ts` artık `process.env.NEXT_PUBLIC_APP_URL || 'https://wisparkr.com'` fallback'i kullanıyor (checkout redirect düzeldi), paylaşım rotası zaten `|| origin` kullanıyor. KALAN: env'i panelden `https://wisparkr.com` yapmak (CLI bu shell'de değeri kaydedemedi; temizlik amaçlı, fonksiyonel acil değil).
 
 ### Ödeme / Gelir
-- [ ] LemonSqueezy entegrasyonu (API key, store ID, variant ID'ler boş)
+- [x] **LemonSqueezy KALDIRILDI (2026-07-15).** Gerçek abone yoktu (API anahtarı test modundaydı). Kod, bağımlılık, env, CSP temizlendi.
+- [ ] **iyzico/PayTR entegrasyonu — şirket kurulduktan sonra.** Doldurulacak yerler: `app/api/billing/checkout/route.ts` (sözleşme hazır: `POST {plan,period}` → `{data:{checkout_url}}`, şu an 503), `cancel/route.ts` (sağlayıcı iptal çağrısı DB update'inden ÖNCE), `plans.ts` `providerPriceId`, yeni webhook (`profiles.plan` yazacak), `next.config.mjs` CSP, `lib/legal.ts` (resmi satıcı + iade koşulları geri yazılmalı — MoR artık biz olacağız, LS gibi değil).
 - [ ] Vercel Pro'ya geç (ticari kullanım için $20/ay) — ekiple karar verilecek
+
+### İş ilanı kaynağı (ERTELENDİ — kullanıcı isteğiyle)
+- [ ] **Jooble API anahtarı al → Vercel'e `JOOBLE_API_KEY` ekle. 0₺, 0 satır kod.** `lib/jobFeed.ts` Jooble'a ZATEN bağlı (`JOOBLE_LOCATION = 'Türkiye'`, satır 23) ama anahtar yokken satır 211'de sessizce atlanıyor — bu yüzden yalnızca Remotive'in global remote ilanları görünüyor. Kaynak: jooble.org/api/about (ücretsiz, 69 ülke).
+- [ ] Yetersizse: Careerjet TR adaptörü (yine ücretsiz). Apify (~$0.1/1000 ilan) ancak bunlar yetmezse — asıl maliyeti bakım yükü + ToS gri alanı.
+- [ ] Yeni kaynak eklemek kolay: `jobFeed.ts:244` `Promise.all`'a `fetchX()` + `normalizeX()` → `FeedJob` üretsin. UI değişmez.
 
 ### Supabase
 - [x] Migration 0006-0012 çalıştırıldı/doğrulandı (2026-06-27, REST probe ile)
